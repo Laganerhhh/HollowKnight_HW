@@ -391,7 +391,7 @@ TextureImporter:
         width: 310
         height: 333
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -412,7 +412,7 @@ TextureImporter:
         width: 310
         height: 333
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -420,6 +420,342 @@ TextureImporter:
       bones: []
       spriteID: 4d8fe7083d406fd43b7fa12ecd58dd25
       internalID: 443212004
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Defense_0
+      rect:
+        serializedVersion: 2
+        x: 56
+        y: 4567
+        width: 313
+        height: 353
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a2815ea4e57aae04eb9c025cd0ad0b0d
+      internalID: 1271111751
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Defense_1
+      rect:
+        serializedVersion: 2
+        x: 370
+        y: 4568
+        width: 368
+        height: 350
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ac150313a6a37b8469dc0b5190c1ab79
+      internalID: 1499274255
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Defense_2
+      rect:
+        serializedVersion: 2
+        x: 739
+        y: 4569
+        width: 369
+        height: 351
+      alignment: 9
+      pivot: {x: 0.4884432, y: 0.49594906}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 718b9c08b4100ba4cb95076f8c819201
+      internalID: 727384548
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Defense_3
+      rect:
+        serializedVersion: 2
+        x: 1130
+        y: 4573
+        width: 351
+        height: 352
+      alignment: 9
+      pivot: {x: 0.56117946, y: 0.48394498}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1da4174131df51949a0e5fa513ad57da
+      internalID: 421957154
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fback_0
+      rect:
+        serializedVersion: 2
+        x: 109
+        y: 3307
+        width: 287
+        height: 352
+      alignment: 9
+      pivot: {x: 0.48888394, y: 0.5229735}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 02efcd3076f668542a9d010e16e2fc44
+      internalID: 128534276
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fback_1
+      rect:
+        serializedVersion: 2
+        x: 391
+        y: 3305
+        width: 399
+        height: 438
+      alignment: 9
+      pivot: {x: 0.58745116, y: 0.395495}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 962d2c2cf6411d346aad2014c7ed37ac
+      internalID: -676823880
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fback_2
+      rect:
+        serializedVersion: 2
+        x: 809
+        y: 3309
+        width: 375
+        height: 471
+      alignment: 9
+      pivot: {x: 0.57141566, y: 0.36607462}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c0be5c877dc32e042858bcf1eb06b965
+      internalID: 1243009440
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fback_3
+      rect:
+        serializedVersion: 2
+        x: 1215
+        y: 3308
+        width: 361
+        height: 484
+      alignment: 9
+      pivot: {x: 0.6170472, y: 0.35446393}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ed7d0933d407ac440b843674145343f4
+      internalID: -612713102
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fback_4
+      rect:
+        serializedVersion: 2
+        x: 1599
+        y: 3311
+        width: 359
+        height: 484
+      alignment: 9
+      pivot: {x: 0.65162593, y: 0.34354067}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0d0b688f91cd73541908c45fa271b3c1
+      internalID: 1171182782
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fback_5
+      rect:
+        serializedVersion: 2
+        x: 90
+        y: 2863
+        width: 594
+        height: 342
+      alignment: 9
+      pivot: {x: 0.28740412, y: 0.49130732}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 30e5ca7bc62a73c46ba486847ce40c0d
+      internalID: 1862446434
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fback_6
+      rect:
+        serializedVersion: 2
+        x: 700
+        y: 2863
+        width: 407
+        height: 344
+      alignment: 9
+      pivot: {x: 0.56451476, y: 0.48805344}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0431797685176f2499116d7bbf9e0ce4
+      internalID: -723135528
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fback_7
+      rect:
+        serializedVersion: 2
+        x: 41
+        y: 2501
+        width: 376
+        height: 329
+      alignment: 9
+      pivot: {x: 0.63068503, y: 0.50263655}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8c27b6895f810b347a749aac57bdacaf
+      internalID: 1033058547
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fback_8
+      rect:
+        serializedVersion: 2
+        x: 417
+        y: 2498
+        width: 362
+        height: 327
+      alignment: 9
+      pivot: {x: 0.65390724, y: 0.53537726}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1205d96290b3dda42a2d650379e210b7
+      internalID: 1685651817
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fback_9
+      rect:
+        serializedVersion: 2
+        x: 783
+        y: 2504
+        width: 387
+        height: 325
+      alignment: 9
+      pivot: {x: 0.6584807, y: 0.55144083}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d882dc80458af7f41982381650707fbd
+      internalID: -481609939
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fback_10
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 2147
+        width: 595
+        height: 326
+      alignment: 9
+      pivot: {x: 0.26836056, y: 0.5500496}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2f8ab20644cc9154593ee9c9ab22cba2
+      internalID: 1379081213
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fback_11
+      rect:
+        serializedVersion: 2
+        x: 624
+        y: 2188
+        width: 562
+        height: 295
+      alignment: 9
+      pivot: {x: 0.70340735, y: 0.65655124}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8d804c8eecc2d3a418ccb29f931068b0
+      internalID: 1115666314
       vertices: []
       indices: 
       edges: []
@@ -435,8 +771,22 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      GreatHuskSentry_2: 1243009440
-      GreatHuskSentry_6: -723135528
+      Defense_0: 1271111751
+      Defense_1: 1499274255
+      Defense_2: 1243009440
+      Defense_3: 421957154
+      fback_0: 128534276
+      fback_1: -676823880
+      fback_10: 1379081213
+      fback_11: 1115666314
+      fback_2: 1243009440
+      fback_3: -612713102
+      fback_4: 1171182782
+      fback_5: 1862446434
+      fback_6: -723135528
+      fback_7: 1033058547
+      fback_8: 1685651817
+      fback_9: -481609939
       idle_0: 1374245807
       idle_1: 1298603357
       idle_2: 425075303
