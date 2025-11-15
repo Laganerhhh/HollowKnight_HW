@@ -4839,51 +4839,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 2001754278036497430, guid: f5fff55a9483a714da75bf546c21b083, type: 3}
   m_PrefabInstance: {fileID: 4175750906781424213}
   m_PrefabAsset: {fileID: 0}
---- !u!61 &1964387836
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1964387825}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 1
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: -0.020668209, y: -0.59711754}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 0.66, y: 1.32}
-    newSize: {x: 0.66, y: 1.32}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  serializedVersion: 2
-  m_Size: {x: 0.5509473, y: 0.18200421}
-  m_EdgeRadius: 0
 --- !u!1 &1988161589
 GameObject:
   m_ObjectHideFlags: 0
@@ -5576,10 +5531,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 2001754278036497430, guid: f5fff55a9483a714da75bf546c21b083, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1964387836}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f5fff55a9483a714da75bf546c21b083, type: 3}
 --- !u!1001 &6183854713824596797
 PrefabInstance:

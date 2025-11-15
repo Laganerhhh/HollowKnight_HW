@@ -19,7 +19,8 @@ enum PlayerState
     Dash = 1,
     Attack = 2,
     SuperDash = 3,
-    FireBall = 4
+    FireBall = 4,
+    Climb = 5
 }
 
 public class PlayerController : MonoBehaviour
@@ -191,20 +192,22 @@ public class PlayerController : MonoBehaviour
             case PlayerState.FireBall:
                 //处理火球状态的逻辑
                 break;
+
+            case PlayerState.Climb:
+                //处理攀爬状态的逻辑
+                break;
         }
     }
 
     private void AttackMove()
     {
         //攻击移动逻辑
-        float x_speed = speed * (isOnGround ? 1f : 0.5f);
-        rb.velocity = new Vector2(moveX * x_speed, rb.velocity.y);
+        rb.velocity = new Vector2(moveX * speed, rb.velocity.y);
     }
 
     private void Movement()
     {
-        float x_speed = speed * (isOnGround ? 1f : 0.65f);
-        rb.velocity = new Vector2(moveX * x_speed, rb.velocity.y);
+        rb.velocity = new Vector2(moveX * speed, rb.velocity.y);
 
         if (moveX > 0)
         {
@@ -454,5 +457,10 @@ public class PlayerController : MonoBehaviour
     private void JumpCancel()
     {
         anim.ResetTrigger("jump");
+    }
+
+    public bool IsOnGround()
+    {
+        return isOnGround;
     }
 }
