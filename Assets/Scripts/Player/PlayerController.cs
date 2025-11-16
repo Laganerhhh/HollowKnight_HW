@@ -463,4 +463,16 @@ public class PlayerController : MonoBehaviour
     {
         return isOnGround;
     }
+
+    //PlayerClimb通知PlayerController开始攀爬
+    public void OnClimbStart()
+    {
+        currentState = PlayerState.Climb;
+    }
+
+    //PlayerClimb通知PlayerController攀爬结束，恢复移动状态
+    public void OnClimbEnd()
+    {
+        currentState = PlayerState.Movement;
+    }
 }
