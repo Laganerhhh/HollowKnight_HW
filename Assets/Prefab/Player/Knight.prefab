@@ -522,13 +522,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 42dd3129a233c904fa5d469231b0364e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentClimbState: 0
   leftWallCheck: {fileID: 3067388240327494515}
   rightWallCheck: {fileID: 6802475372730667555}
   wallCheckDistance: 0.1
   wallLayer:
     serializedVersion: 2
     m_Bits: 256
-  ClimbJumpForce: {x: 5, y: 10}
+  ClimbJumpForce: {x: 5, y: 15}
+  wallSlideSpeed: 0.1
+  isTouchingLeftWall: 0
+  isTouchingRightWall: 0
 --- !u!1 &2809861003531292320
 GameObject:
   m_ObjectHideFlags: 0

@@ -69,22 +69,30 @@ public class PlayerClimb : MonoBehaviour
     public Vector2 ClimbJumpForce = new Vector2(5f, 10f); //攀爬跳跃的力
     public float wallSlideSpeed = 2f; //攀爬时的下滑速度
 
-    private bool isTouchingLeftWall;
-    private bool isTouchingRightWall;
+    [SerializeField]private bool isTouchingLeftWall;
+    [SerializeField]private bool isTouchingRightWall;
+
+    private bool isFacingRight = true;
 
     private float inputX;
     private float inputY;
 
     void CheckWall()
     {
+        isFacingRight = transform.localScale.x < 0;
         //从检测点向左侧发射一条很短的射线
-        isTouchingLeftWall = Physics2D.Raycast(leftWallCheck.position, Vector2.left, wallCheckDistance, wallLayer);
-        //向右侧发射
-        isTouchingRightWall = Physics2D.Raycast(rightWallCheck.position, Vector2.right, wallCheckDistance, wallLayer);
-
-        //可视化调试射线（非常重要！）
-        Debug.DrawRay(leftWallCheck.position, Vector2.left * wallCheckDistance, Color.red);
-        Debug.DrawRay(rightWallCheck.position, Vector2.right * wallCheckDistance, Color.red);
+        if (isFacingRight)
+        {
+            //面向右侧，左检测点检测右边墙壁
+            isTouchingLeftWall = Physics2D.Raycast(rightWallCheck.position, Vector2.left, wallCheckDistance, wallLayer);
+            isTouchingRightWall = Physics2D.Raycast(leftWallCheck.position, Vector2.right, wallCheckDistance, wallLayer);
+        }
+        else
+        {
+            //面向左侧，右检测点检测右边墙壁
+            isTouchingLeftWall = Physics2D.Raycast(leftWallCheck.position, Vector2.left, wallCheckDistance, wallLayer);
+            isTouchingRightWall = Physics2D.Raycast(rightWallCheck.position, Vector2.right, wallCheckDistance, wallLayer);
+        }
     }
 
     private void HandleJumpingState()
@@ -110,20 +118,18 @@ public class PlayerClimb : MonoBehaviour
         CheckWall();
         inputX = Input.GetAxisRaw("Horizontal");
         inputY = Input.GetAxisRaw("Vertical");
-        //如果不再接触墙壁，或者水平输入远离墙壁，则退出攀爬状态
-        if ((!isTouchingLeftWall && !isTouchingRightWall) ||
-            (isTouchingLeftWall && inputX > 0.1f) ||
-            (isTouchingRightWall && inputX < -0.1f)) 
+        //如果不再接触墙壁
+        if (!isTouchingLeftWall && !isTouchingRightWall)
         {
-            //如果没有按下跳跃键，直接退出攀爬
-            if (!Input.GetKeyDown(KeyCode.K))
-                ClimbingToJumping();
-            else
-                ClimbingToClimbJumping();
+            ClimbingToJumping();
+        }
+        else if (Input.GetKeyDown(KeyCode.K)) //攀爬跳跃
+        {
+            ClimbingToClimbJumping();
         }
         else
         {
-            //在攀爬状态下，会缓慢下落
+            //什么都不做，在攀爬状态下，则会缓慢下落
             rb.velocity = new Vector2(rb.velocity.x, Mathf.Max(rb.velocity.y, -wallSlideSpeed));
         }
     }
@@ -169,9 +175,14 @@ public class PlayerClimb : MonoBehaviour
             jumpDir = Vector2.right;
         else if (isTouchingRightWall)
             jumpDir = Vector2.left;
-        rb.velocity = new Vector2(jumpDir.x * ClimbJumpForce.x, ClimbJumpForce.y);
 
-        playerController.OnClimbEnd();
+        float jumpFactor = 1f;
+        //如果输入方向与墙壁相反，则增加跳跃水平力度
+        if ((isTouchingLeftWall && inputX > 0.1f) || (isTouchingRightWall && inputX < -0.1f))
+        {
+            jumpFactor = 1.5f;
+        }
+        rb.velocity = new Vector2(jumpDir.x * ClimbJumpForce.x * jumpFactor, ClimbJumpForce.y);
 
         //一段时间后，状态切换回Jumping
         Invoke("ClimbJumpingToJumping", 0.2f);
@@ -180,6 +191,8 @@ public class PlayerClimb : MonoBehaviour
     private void ClimbJumpingToJumping()
     {
         currentClimbState = ClimbState.Jumping;
+        animator.SetBool("isClimbing", false);
+        playerController.OnClimbEnd();
     }
 
 }
