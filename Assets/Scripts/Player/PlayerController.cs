@@ -138,8 +138,9 @@ public class PlayerController : MonoBehaviour
 
     private void OnAttackStart()
     {
-        //播放攻击音效
-        SoundManager.instance.PlaySound(SoundIndex.player_sword);
+        //随机播放5个攻击音效
+        int soundIndex = Random.Range(1, 6);
+        SoundManager.instance.PlaySound(SoundIndex.player_sword + soundIndex);
     }
     public void OnAttackEnd()
     {
@@ -474,5 +475,14 @@ public class PlayerController : MonoBehaviour
     public void OnClimbEnd()
     {
         currentState = PlayerState.Movement;
+    }
+
+    //通知playerSuperDash可以超级冲刺
+    public bool CanSuperDash()
+    {
+        if (currentState == PlayerState.Movement && moveChanged == 0 && isOnGround)
+            return true;
+        else
+            return false;
     }
 }

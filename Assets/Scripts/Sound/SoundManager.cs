@@ -53,6 +53,16 @@ public class SoundManager : MonoBehaviour
         }
     }
 
+    public AudioClip GetAudioClip(string soundName)
+    {
+        AudioClip clip = Resources.Load<AudioClip>($"Audios/{soundName}");
+        if (clip == null)
+        {
+            Debug.LogWarning($"Sound {soundName} not found!");
+        }
+        return clip;
+    }
+
     public void StopBGM()
     {
         audioSource.Stop();

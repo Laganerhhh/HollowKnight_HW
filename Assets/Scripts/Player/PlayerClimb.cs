@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Timeline.Actions;
 using UnityEngine;
 
 enum ClimbState
@@ -17,6 +18,9 @@ public class PlayerClimb : MonoBehaviour
     private Rigidbody2D rb;
     private Animator animator;
 
+    private AudioClip climbSlideSound;
+    private AudioSource audioSource;
+
     [SerializeField] private ClimbState currentClimbState = ClimbState.None;
 
     private bool isJumping = false;
@@ -31,6 +35,9 @@ public class PlayerClimb : MonoBehaviour
         playerController = GetComponent<PlayerController>();
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
+        audioSource = GetComponent<AudioSource>();
+
+        climbSlideSound = SoundManager.instance.GetAudioClip(SoundIndex.player_wallslide);
     }
 
     void Update()
@@ -69,8 +76,8 @@ public class PlayerClimb : MonoBehaviour
     public Vector2 ClimbJumpForce = new Vector2(5f, 10f); //攀爬跳跃的力
     public float wallSlideSpeed = 2f; //攀爬时的下滑速度
 
-    [SerializeField]private bool isTouchingLeftWall;
-    [SerializeField]private bool isTouchingRightWall;
+    private bool isTouchingLeftWall;
+    private bool isTouchingRightWall;
 
     private bool isFacingRight = true;
 
@@ -154,6 +161,11 @@ public class PlayerClimb : MonoBehaviour
         currentClimbState = ClimbState.Climbing;
         animator.SetBool("isClimbing", true);
 
+        //播放攀爬音效
+        audioSource.clip = climbSlideSound;
+        audioSource.loop = true;
+        audioSource.Play();
+
         playerController.OnClimbStart();
     }
 
@@ -162,6 +174,9 @@ public class PlayerClimb : MonoBehaviour
         currentClimbState = ClimbState.Jumping;
 
         animator.SetBool("isClimbing", false);
+        //停止攀爬音效
+        audioSource.Stop();
+
         playerController.OnClimbEnd();
     }
 
@@ -183,6 +198,9 @@ public class PlayerClimb : MonoBehaviour
             jumpFactor = 1.5f;
         }
         rb.velocity = new Vector2(jumpDir.x * ClimbJumpForce.x * jumpFactor, ClimbJumpForce.y);
+
+        //播放音效
+        SoundManager.instance.PlaySound(SoundIndex.player_wall_jump);
 
         //一段时间后，状态切换回Jumping
         Invoke("ClimbJumpingToJumping", 0.2f);

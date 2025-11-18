@@ -25,7 +25,7 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        SoundManager.instance.PlayBGM(SoundIndex.colosseumLv1_BG, 0.5f);
+        SoundManager.instance.PlayBGM(SoundIndex.colosseumLv1_BG, 0.4f);
         playerAnimator = player.GetComponent<Animator>();
     }
 

@@ -138,8 +138,9 @@ public class SuperDash : MonoBehaviour
 
     private void HandleIdleState()
     {
+        bool CanSuperDash = playerController.CanSuperDash();
         //按下I开始蓄力前摇
-        if (Input.GetKeyDown(KeyCode.I))
+        if (CanSuperDash && Input.GetKeyDown(KeyCode.I))
         {
             ChangeState(DashState.Charging);
         }
