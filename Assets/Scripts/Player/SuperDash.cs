@@ -24,6 +24,9 @@ public class SuperDash : MonoBehaviour
 
     private AudioClip superDashSound; //冲刺音效
 
+    [Header("超级冲刺特效")]
+    [SerializeField] private SuperDashEff superDashEff;
+
     private void Start()
     {
         animator = GetComponent<Animator>();
@@ -129,6 +132,8 @@ public class SuperDash : MonoBehaviour
                 //停止播放冲刺音效
                 audioSource.Stop();
                 rb.gravityScale = 1.5f;
+
+                OnSuperDashEnd();
                 break;
 
             case DashState.Stopping:
@@ -231,5 +236,15 @@ public class SuperDash : MonoBehaviour
         audioSource.Stop();
         animator.ResetTrigger("superDash");
         EnterState(DashState.Idle);
+    }
+
+    private void OnSuperDashStart()
+    {
+        superDashEff.OnSuperDashStart();
+    }
+
+    private void OnSuperDashEnd()
+    {
+        superDashEff.OnSuperDashEnd();
     }
 }

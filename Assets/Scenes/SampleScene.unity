@@ -5748,10 +5748,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Knight
       objectReference: {fileID: 0}
-    - target: {fileID: 5098436731516415718, guid: f5fff55a9483a714da75bf546c21b083, type: 3}
-      propertyPath: ClimbJumpForce.y
-      value: 8
-      objectReference: {fileID: 0}
     - target: {fileID: 6760559849741997760, guid: f5fff55a9483a714da75bf546c21b083, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
