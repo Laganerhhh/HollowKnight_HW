@@ -11,6 +11,10 @@ public class PlayerHealth : MonoBehaviour
 
     private PlayerController playerController;
 
+    //是否处于无敌状态
+    public bool isInvincible = false;
+    [SerializeField] private float invincibleDuration = 1.0f;
+
     void Start()
     {
         current_health = max_health;
@@ -20,6 +24,9 @@ public class PlayerHealth : MonoBehaviour
 
     public void TakeDamage(int damage)
     {
+        if (isInvincible)
+            return;
+
         damage = Mathf.Min(damage, current_health);
         current_health -= damage;
         if (current_health <= 0)
@@ -32,6 +39,9 @@ public class PlayerHealth : MonoBehaviour
         }
         else
         {
+            //进入无敌状态
+            isInvincible = true;
+            StartCoroutine(InvincibleTimer());
             //受伤动画
             animator.SetTrigger("hit");
             SoundManager.instance.PlaySound(SoundIndex.player_injured);
@@ -42,8 +52,19 @@ public class PlayerHealth : MonoBehaviour
         }
     }
 
+    IEnumerator InvincibleTimer()
+    {
+        yield return new WaitForSeconds(invincibleDuration);
+        isInvincible = false;
+    }
+
     private void OnHitAnimEnd()
     {
         playerController.enabled = true;
+    }
+
+    private void OnDeathAnimEnd()
+    {
+        GameManager.instance.GameOver();
     }
 }

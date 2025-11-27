@@ -84,6 +84,8 @@ public class PlayerClimb : MonoBehaviour
     private float inputX;
     private float inputY;
 
+    private bool canClimb = true;
+
     void CheckWall()
     {
         isFacingRight = transform.localScale.x < 0;
@@ -158,6 +160,8 @@ public class PlayerClimb : MonoBehaviour
 
     private void JumpingToClimbing()
     {
+        if (!canClimb) return;
+
         currentClimbState = ClimbState.Climbing;
         animator.SetBool("isClimbing", true);
 
@@ -169,6 +173,13 @@ public class PlayerClimb : MonoBehaviour
         playerController.OnClimbStart();
     }
 
+    IEnumerator ClimbCooldown()
+    {
+        canClimb = false;
+        yield return new WaitForSeconds(0.2f);
+        canClimb = true;
+    }
+
     private void ClimbingToJumping()
     {
         currentClimbState = ClimbState.Jumping;
@@ -178,6 +189,8 @@ public class PlayerClimb : MonoBehaviour
         audioSource.Stop();
 
         playerController.OnClimbEnd();
+
+        StartCoroutine(ClimbCooldown());
     }
 
     private void ClimbingToClimbJumping()
@@ -204,6 +217,7 @@ public class PlayerClimb : MonoBehaviour
 
         //一段时间后，状态切换回Jumping
         Invoke("ClimbJumpingToJumping", 0.2f);
+        StartCoroutine(ClimbCooldown());
     }
 
     private void ClimbJumpingToJumping()

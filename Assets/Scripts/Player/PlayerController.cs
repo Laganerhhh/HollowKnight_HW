@@ -468,6 +468,7 @@ public class PlayerController : MonoBehaviour
     //PlayerClimb通知PlayerController开始攀爬
     public void OnClimbStart()
     {
+        canJumpTwice = true; //重置二段跳
         currentState = PlayerState.Climb;
     }
 
@@ -484,5 +485,13 @@ public class PlayerController : MonoBehaviour
             return true;
         else
             return false;
+    }
+
+    /// <summary>
+    /// 给玩家一个反冲的力
+    /// </summary>
+    public void ApplyKnockback(float force, Vector2 direction)
+    {
+        rb.AddForce(direction * force, ForceMode2D.Impulse);
     }
 }

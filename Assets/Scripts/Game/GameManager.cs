@@ -29,6 +29,14 @@ public class GameManager : MonoBehaviour
         playerAnimator = player.GetComponent<Animator>();
     }
 
+    /// <summary>
+    /// 获取玩家控制脚本
+    /// </summary>
+    /// <returns></returns>
+    public PlayerController GetPlayerController()
+    {
+        return player.GetComponent<PlayerController>();
+    }
 
     public void GameOver()
     {
