@@ -28,10 +28,12 @@ public class HealthIcon : MonoBehaviour
         if (isLoseHealth) //掉血时播放动画
         {
             animator.SetTrigger("lose_health");
+            CancelInvoke("PlayHealthIconAnim");
         }
         else //回血
         {
-            //TODO
+            animator.SetTrigger("recover_health");
+            InvokeRepeating("PlayHealthIconAnim", time_interval, time_interval);
         }
     }
 

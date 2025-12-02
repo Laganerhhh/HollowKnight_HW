@@ -21,7 +21,7 @@ public class TrapsBase : MonoBehaviour
 
     protected virtual void OnTriggerEnter2D(Collider2D collision)
     {
-        Debug.Log("TrapsBase OnTriggerEnter2D>> " + name);
+       
     }
 
 }

@@ -9,6 +9,8 @@ public class SoulPowerUI : MonoBehaviour
 
     private Image image;
 
+    private Animator animator;
+
     private void Awake()
     {
         Instance = this;
@@ -21,11 +23,28 @@ public class SoulPowerUI : MonoBehaviour
     void Start()
     {
         image = GetComponent<Image>();
+        animator = GetComponent<Animator>();
+        SetSoulPower(1f);
     }
 
     public void SetSoulPower(float value)
     {
         value = Mathf.Clamp01(value);
         image.fillAmount = value;
+
+        if (value >= 1f)
+        {
+            InvokeRepeating("PlayFullSoulPowerAnimation", 0f, 2f);
+        }
+        else
+        {
+            CancelInvoke("PlayFullSoulPowerAnimation");
+        }
     }
+
+    private void PlayFullSoulPowerAnimation()
+    {
+        animator.SetTrigger("full_power");
+    }
+
 }

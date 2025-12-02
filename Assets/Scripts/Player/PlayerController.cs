@@ -5,7 +5,7 @@ using UnityEngine;
 /// </summary>
 /// 
 
-enum AttackDirection
+public enum AttackDirection
 {
     None = 0,
     LeftRight = 1,
@@ -203,7 +203,7 @@ public class PlayerController : MonoBehaviour
     private void AttackMove()
     {
         //攻击移动逻辑
-        rb.velocity = new Vector2(moveX * speed, rb.velocity.y);
+        transform.position += new Vector3(moveX * speed * 0.5f * Time.deltaTime, 0, 0);
     }
 
     private void Movement()

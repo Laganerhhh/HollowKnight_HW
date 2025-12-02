@@ -10,6 +10,7 @@ public class PlayerHealth : MonoBehaviour
     private Animator animator;
 
     private PlayerController playerController;
+    private PlayerSoulPower playerSoulPower;
 
     //是否处于无敌状态
     public bool isInvincible = false;
@@ -20,6 +21,25 @@ public class PlayerHealth : MonoBehaviour
         current_health = max_health;
         animator = GetComponent<Animator>();
         playerController = GetComponent<PlayerController>();
+        playerSoulPower = GetComponent<PlayerSoulPower>();
+    }
+
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.P) && current_health < max_health)
+        {
+            animator.SetTrigger("recover_health");
+        }
+    }
+
+    //回血，当回血动画播放完毕调用
+    private void RecoverHealth()
+    {
+        if (playerSoulPower.UseSoulPower(SoulPowerSkill.Recovery))
+        {
+            HealthUIMgr.Instance.GainHealth(current_health, 1, max_health);
+            current_health += 1;
+        }
     }
 
     public void TakeDamage(int damage)
