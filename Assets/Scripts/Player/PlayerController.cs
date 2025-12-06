@@ -465,6 +465,11 @@ public class PlayerController : MonoBehaviour
         return isOnGround;
     }
 
+    public bool IsClimbing()
+    {
+        return currentState == PlayerState.Climb;
+    }
+
     //PlayerClimb通知PlayerController开始攀爬
     public void OnClimbStart()
     {
@@ -481,7 +486,7 @@ public class PlayerController : MonoBehaviour
     //通知playerSuperDash可以超级冲刺
     public bool CanSuperDash()
     {
-        if (currentState == PlayerState.Movement && moveChanged == 0 && isOnGround)
+        if ((currentState == PlayerState.Movement && moveChanged == 0 && isOnGround) || currentState == PlayerState.Climb)
             return true;
         else
             return false;

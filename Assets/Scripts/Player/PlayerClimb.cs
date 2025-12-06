@@ -18,6 +18,8 @@ public class PlayerClimb : MonoBehaviour
     private Rigidbody2D rb;
     private Animator animator;
 
+    private SuperDash playerSuperDash;
+
     private AudioClip climbSlideSound;
     private AudioSource audioSource;
 
@@ -33,6 +35,7 @@ public class PlayerClimb : MonoBehaviour
     void Start()
     {
         playerController = GetComponent<PlayerController>();
+        playerSuperDash = GetComponent<SuperDash>();
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         audioSource = GetComponent<AudioSource>();
@@ -62,7 +65,7 @@ public class PlayerClimb : MonoBehaviour
     private void HandleNoneState()
     {
         CheckIsJumping();
-        if (isJumping)
+        if (isJumping && !playerSuperDash.IsSuperDashing())
         {
             NoneToJumping();
         }
@@ -130,11 +133,22 @@ public class PlayerClimb : MonoBehaviour
         //如果不再接触墙壁
         if (!isTouchingLeftWall && !isTouchingRightWall)
         {
-            ClimbingToJumping();
+            if (playerSuperDash.IsSuperDashing())
+            {
+                ClimbingToNone();
+            }
+            else
+                ClimbingToJumping();
         }
         else if (Input.GetKeyDown(KeyCode.K)) //攀爬跳跃
         {
             ClimbingToClimbJumping();
+        }
+        else if (playerSuperDash.GetDashState()  == SuperDash.DashState.Charging 
+        || playerSuperDash.GetDashState() == SuperDash.DashState.Waiting)
+        {
+            //如果在攀爬状态下按下超级冲刺键，会附着在墙壁上
+            rb.velocity = Vector2.zero;
         }
         else
         {
@@ -156,6 +170,13 @@ public class PlayerClimb : MonoBehaviour
     private void JumpingToNone()
     {
         currentClimbState = ClimbState.None;
+    }
+
+    private void ClimbingToNone()
+    {
+        //一般不会有这个状态转换，只有在攀爬状态下按下超级冲刺键才会触发
+        currentClimbState = ClimbState.None;
+        animator.SetBool("isClimbing", false);
     }
 
     private void JumpingToClimbing()
@@ -187,6 +208,7 @@ public class PlayerClimb : MonoBehaviour
         animator.SetBool("isClimbing", false);
         //停止攀爬音效
         audioSource.Stop();
+
 
         playerController.OnClimbEnd();
 

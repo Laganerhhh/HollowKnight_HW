@@ -7,7 +7,7 @@ using UnityEngine.XR;
 /// </summary>
 public class SuperDash : MonoBehaviour
 {
-    private enum DashState { Idle, Charging, Waiting, Dashing, Stopping };
+    public enum DashState { Idle, Charging, Waiting, Dashing, Stopping };
     private DashState currentState = DashState.Idle;
     [SerializeField] private float chargeTime = 1.0f;
     [SerializeField] private float maxChargeTime = 2.5f;
@@ -24,6 +24,8 @@ public class SuperDash : MonoBehaviour
 
     private AudioClip superDashSound; //冲刺音效
 
+    private bool isClimbingSuperDash = false;
+
     [Header("超级冲刺特效")]
     [SerializeField] private SuperDashEff superDashEff;
 
@@ -39,6 +41,11 @@ public class SuperDash : MonoBehaviour
         {
             Debug.LogError("冲刺音效未加载");
         }
+    }
+
+    public DashState GetDashState()
+    {
+        return currentState;
     }
 
     void Update()
@@ -67,6 +74,11 @@ public class SuperDash : MonoBehaviour
         }
     }
 
+    public bool IsSuperDashing()
+    {
+        return currentState == DashState.Dashing;
+    }
+
     private void ChangeState(DashState newState)
     {
         ExitState(currentState);
@@ -93,6 +105,13 @@ public class SuperDash : MonoBehaviour
                 break;
 
             case DashState.Dashing:
+                //如果是在墙壁上，则会朝远离墙壁的方向冲刺
+                if (isClimbingSuperDash)
+                {
+                    //改变角色朝向
+                    transform.localScale = new Vector3(-transform.localScale.x, 1, 1);
+                    isClimbingSuperDash = false;
+                }
                 dashTimer = 0.0f;
                 rb.gravityScale = 0;
                 animator.SetTrigger("superDash_sprint");
@@ -156,8 +175,12 @@ public class SuperDash : MonoBehaviour
     {
         //等待动画播放完毕后开始蓄力等待
         AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
-        if (stateInfo.IsName("superDash_charged") && stateInfo.normalizedTime >= 1.0f)
+        if ((stateInfo.IsName("superDash_charged") || stateInfo.IsName("climb_superdash_repeat")) && stateInfo.normalizedTime >= 1.0f)
         {
+            if (stateInfo.IsName("climb_superdash_repeat"))
+            {
+                isClimbingSuperDash = true;
+            }
             ChangeState(DashState.Waiting);
         }
         //松开I键则返回Idle状态
