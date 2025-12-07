@@ -2,6 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum TrapsType
+{
+    Static,
+    Moveable
+}
+
 /// <summary>
 /// 陷阱的基类
 /// </summary>
@@ -11,6 +17,10 @@ public class TrapsBase : MonoBehaviour
     protected PlayerController playerController;
 
     protected Animator animator;
+
+    public TrapsType trapsType = TrapsType.Static; //陷阱类型
+
+
 
     void Start()
     {
@@ -23,5 +33,6 @@ public class TrapsBase : MonoBehaviour
     {
        
     }
+
 
 }

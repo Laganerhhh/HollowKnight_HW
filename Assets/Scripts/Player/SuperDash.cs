@@ -96,12 +96,14 @@ public class SuperDash : MonoBehaviour
 
             case DashState.Charging:
                 playerController.enabled = false;
+                rb.gravityScale = 0;
                 chargeTimer = 0.0f;
                 animator.SetTrigger("superDash");
                 SoundManager.instance.PlaySound(SoundIndex.player_superDash_charge);
                 break;
 
             case DashState.Waiting:
+                rb.gravityScale = 0;
                 break;
 
             case DashState.Dashing:
@@ -141,9 +143,12 @@ public class SuperDash : MonoBehaviour
             case DashState.Charging:
                 chargeTimer = 0.0f;
                 isPlayingReadySound = false;
+                rb.gravityScale = 1.5f;
                 break;
 
             case DashState.Waiting:
+                chargeTimer = 0.0f;
+                rb.gravityScale = 1.5f;
                 break;
 
             case DashState.Dashing:
@@ -245,7 +250,7 @@ public class SuperDash : MonoBehaviour
     {
         //等待动画播放完毕后返回Idle状态
         AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
-        if (stateInfo.IsName("idle"))
+        if (stateInfo.IsName("idle") || stateInfo.IsName("fall"))
         {
             //恢复玩家控制移动
             playerController.enabled = true;

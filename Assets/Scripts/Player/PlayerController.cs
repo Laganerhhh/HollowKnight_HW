@@ -47,7 +47,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private GameObject fireBallPrefab;
     [SerializeField] private Transform fireBallSpawnPoint;
 
-    private bool canAttack = true;
+    [SerializeField] private bool canAttack = true;
     [SerializeField] private float attackCooldown = 0.5f;
 
     private float moveX;
@@ -58,6 +58,22 @@ public class PlayerController : MonoBehaviour
     private Rigidbody2D rb;
     private Animator anim;
     private PlayerSoulPower soulPower;
+
+    void OnEnable()
+    {
+        //重设置动画状态
+        currentState = PlayerState.Movement;
+        moveChanged = 0;
+        anim.SetInteger("movement", moveChanged);
+    }
+
+    void Awake()
+    {
+        rb = GetComponent<Rigidbody2D>();
+        anim = GetComponent<Animator>();
+        soulPower = GetComponent<PlayerSoulPower>();
+    }
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -499,4 +515,6 @@ public class PlayerController : MonoBehaviour
     {
         rb.AddForce(direction * force, ForceMode2D.Impulse);
     }
+
+
 }
