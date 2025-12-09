@@ -9,7 +9,7 @@ public class Spikes : TrapsBase
         base.OnTriggerEnter2D(collision);
         if (collision.CompareTag("Player"))
         {
-            playerHealth.TakeDamage(1);
+            playerHealth.TakeDamage(1, DamageType.TrapDamage);
         }
     }
 }

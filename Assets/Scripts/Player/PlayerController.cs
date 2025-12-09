@@ -58,6 +58,7 @@ public class PlayerController : MonoBehaviour
     private Rigidbody2D rb;
     private Animator anim;
     private PlayerSoulPower soulPower;
+    private PlayerHealth playerHealth;
 
     void OnEnable()
     {
@@ -72,6 +73,58 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
         soulPower = GetComponent<PlayerSoulPower>();
+        playerHealth = GetComponent<PlayerHealth>();
+    }
+
+    // 将安全点的 Y 固定为检测到的平台顶部（更安全），如果未检测到平台则使用当前坐标
+    void UpdateSafePositionToPlatformTop()
+    {
+        if (playerHealth == null) return;
+        int terrainLayer = LayerMask.NameToLayer("Terrian");
+        if (terrainLayer < 0)
+        {
+            // 若层不存在，直接使用当前位置
+            playerHealth.safePosition = transform.position;
+            return;
+        }
+
+        int layerMask = 1 << terrainLayer;
+        float rayDist = 1.0f;
+        //要忽略自己身上的碰撞体，可以使用Raycast的layerMask参数
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, rayDist, layerMask);
+        //debug用
+        Debug.DrawRay(transform.position, Vector2.down * rayDist, Color.red, 1.0f);
+        // 如果射线命中并且命中的地面属于可移动平台，则不记录安全点
+        if (hit.collider != null && hit.collider.GetComponentInParent<MoveableItem>() != null)
+        {
+            return;
+        }
+
+        if (hit.collider != null)
+        {
+            Bounds b = hit.collider.bounds;
+            float topY = b.max.y;
+            float offset = 0.1f; // 置于地面上方一点，避免卡住
+            playerHealth.safePosition = new Vector2(transform.position.x, topY + offset);
+        }
+    }
+
+    // 使用指定的地面 Collider 来设置安全点（忽略可移动平台）
+    void SetSafePositionFromCollider(Collider2D col)
+    {
+        if (playerHealth == null || col == null) return;
+
+        // 如果该地面属于可移动物体（父链上有 MoveableItem），不要把它作为安全点
+        if (col.GetComponentInParent<MoveableItem>() != null)
+            return;
+
+        Bounds b = col.bounds;
+        float topY = b.max.y;
+        float offset = 0.1f;
+        //需要检查一下，避免穿透地面
+        RaycastHit2D hit = Physics2D.Raycast(new Vector2(transform.position.x, topY + 1f), Vector2.down, 1.5f);
+        if (hit.collider != null && hit.collider == col)
+            playerHealth.safePosition = new Vector2(transform.position.x, topY + offset);
     }
 
     void Start()
@@ -82,6 +135,11 @@ public class PlayerController : MonoBehaviour
     }
 
     private bool canCombo = false;
+    // 当前接触的地面碰撞体（用于更精确地设置安全点）
+    private Collider2D currentGroundCollider;
+    // 在地面持续多长时间后才自动更新安全点，避免第一帧就记录移动平台位置
+    [SerializeField] private float minGroundedTimeForSafe = 0.05f;
+    private float groundedTime = 0f;
 
     private void HandleMovementInput()
     {
@@ -241,6 +299,30 @@ public class PlayerController : MonoBehaviour
 
         anim.SetInteger("movement", moveChanged);
 
+        // 在地面时根据当前 ground collider 延时记录安全点，避免在刚落地第一帧就记录
+        if (isOnGround)
+        {
+            if (currentGroundCollider != null)
+            {
+                groundedTime += Time.deltaTime;
+                if (groundedTime >= minGroundedTimeForSafe)
+                {
+                    SetSafePositionFromCollider(currentGroundCollider);
+                }
+            }
+            else
+            {
+                // fallback: try raycast-based update (keeps previous behavior)
+                groundedTime += Time.deltaTime;
+                if (groundedTime >= minGroundedTimeForSafe)
+                    UpdateSafePositionToPlatformTop();
+            }
+        }
+        else
+        {
+            groundedTime = 0f;
+        }
+
 
         //添加下落时间
         if (!isOnGround && rb.velocity.y < 0)
@@ -371,6 +453,16 @@ public class PlayerController : MonoBehaviour
         {
             if (isOnGround)
             {
+                // 记录跳跃前的安全点为当前 ground collider 的平台顶部（优先），如果该平台是可移动的则不记录
+                if (currentGroundCollider != null)
+                {
+                    SetSafePositionFromCollider(currentGroundCollider);
+                }
+                else
+                {
+                    UpdateSafePositionToPlatformTop();
+                }
+
                 jumpPressTime = 0f;
                 canJumpTwice = true; //在地面时重置二段跳
                 isJumping = true;
@@ -436,6 +528,8 @@ public class PlayerController : MonoBehaviour
         {
             if (col.gameObject.layer == LayerMask.NameToLayer("Terrian"))
             {
+                // 离开当前地面
+                if (currentGroundCollider == col) currentGroundCollider = null;
                 isOnGround = false;
                 anim.SetBool("isOnGround", isOnGround);
             }
@@ -446,6 +540,9 @@ public class PlayerController : MonoBehaviour
             && !isOnGround)
             {
                 //在地面的一些处理
+                // 记录当前接触的地面碰撞体
+                currentGroundCollider = col;
+                groundedTime = 0f; // 重置计时
                 TransitionToGround();
             }
             else if (col.gameObject.layer == LayerMask.NameToLayer("Terrian")
@@ -464,6 +561,8 @@ public class PlayerController : MonoBehaviour
         isOnGround = true;
         JumpCancel();
         fall_time = 0f; //重置下落时间
+        // 更新玩家的最后安全点为平台顶部（更安全）
+        UpdateSafePositionToPlatformTop();
     }
 
     private void OnLand()

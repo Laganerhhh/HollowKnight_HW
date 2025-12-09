@@ -2,6 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum DamageType
+{
+    NormalDamage,
+    TrapDamage
+}
+
 public class PlayerHealth : MonoBehaviour
 {
     public int current_health = 5;
@@ -11,6 +17,12 @@ public class PlayerHealth : MonoBehaviour
 
     private PlayerController playerController;
     private PlayerSoulPower playerSoulPower;
+    private Rigidbody2D rb2d;
+
+    // 最后一个安全位置（掉落或陷阱将回到此位置）
+    public Vector2 safePosition;
+    [Tooltip("低于此 Y 值视为掉落，需要重置到安全点")] public float fallDeathY = -20f;
+    [Tooltip("重生后短时间无敌，避免连续伤害")] public float respawnInvincibleDuration = 1.0f;
 
     //是否处于无敌状态
     public bool isInvincible = false;
@@ -22,6 +34,36 @@ public class PlayerHealth : MonoBehaviour
         animator = GetComponent<Animator>();
         playerController = GetComponent<PlayerController>();
         playerSoulPower = GetComponent<PlayerSoulPower>();
+        rb2d = GetComponent<Rigidbody2D>();
+
+        // 初始化安全点为当前出生点
+        safePosition = transform.position;
+    }
+
+    IEnumerator RespawnAndInvincible()
+    {
+        // 等待一帧以确保受伤反馈（动画等）开始
+        yield return null;
+        RespawnToSafePosition();
+        // 进入短暂无敌
+        isInvincible = true;
+        yield return new WaitForSeconds(respawnInvincibleDuration);
+        isInvincible = false;
+    }
+
+    void RespawnToSafePosition()
+    {
+        // 将玩家移动到安全点并重置速度与状态
+        transform.position = safePosition;
+        if (rb2d != null)
+        {
+            rb2d.velocity = Vector2.zero;
+            rb2d.angularVelocity = 0f;
+        }
+        if (playerController != null)
+        {
+            playerController.enabled = true;
+        }
     }
 
     void Update()
@@ -29,6 +71,13 @@ public class PlayerHealth : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.P) && current_health < max_health)
         {
             animator.SetTrigger("recover_health");
+        }
+
+        // 掉落检测：如果低于阈值则认为掉落，回到安全点并进入短暂无敌
+        if (transform.position.y < fallDeathY)
+        {
+            TakeDamage(1);
+            StartCoroutine(RespawnAndInvincible());
         }
     }
 
@@ -42,7 +91,7 @@ public class PlayerHealth : MonoBehaviour
         }
     }
 
-    public void TakeDamage(int damage)
+    public void TakeDamage(int damage, DamageType damageType = DamageType.NormalDamage)
     {
         if (isInvincible)
             return;
@@ -69,6 +118,12 @@ public class PlayerHealth : MonoBehaviour
             //UI生命值受伤
             HealthUIMgr.Instance.LoseHealth(current_health, damage, max_health);
 
+            // 如果是陷阱伤害，立即重置到最近的安全位置
+            if (damageType == DamageType.TrapDamage)
+            {
+                StartCoroutine(RespawnAndInvincible());
+            }
+            
         }
     }
 
@@ -77,6 +132,7 @@ public class PlayerHealth : MonoBehaviour
         yield return new WaitForSeconds(invincibleDuration);
         isInvincible = false;
     }
+
 
     private void OnHitAnimEnd()
     {
