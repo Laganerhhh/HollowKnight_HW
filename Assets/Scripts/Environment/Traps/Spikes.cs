@@ -10,6 +10,10 @@ public class Spikes : TrapsBase
         if (collision.CompareTag("Player"))
         {
             playerHealth.TakeDamage(1, DamageType.TrapDamage);
+            if (haveAnimator && animator != null)
+            {
+                animator.SetTrigger("interact");
+            }
         }
     }
 }

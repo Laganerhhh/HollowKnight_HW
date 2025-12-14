@@ -20,13 +20,14 @@ public class TrapsBase : MonoBehaviour
 
     public TrapsType trapsType = TrapsType.Static; //陷阱类型
 
-
+    public bool haveAnimator = false; //是否有动画
 
     void Start()
     {
         playerHealth = FindObjectOfType<PlayerHealth>();
         playerController = FindObjectOfType<PlayerController>();
-        animator = GetComponent<Animator>();
+        if (haveAnimator)
+            animator = GetComponent<Animator>();
     }
 
     protected virtual void OnTriggerEnter2D(Collider2D collision)

@@ -28,6 +28,9 @@ public class PlayerHealth : MonoBehaviour
     public bool isInvincible = false;
     [SerializeField] private float invincibleDuration = 1.0f;
 
+    [Header("免伤率")]
+    [SerializeField] private float damageReductionRate = 0.0f;
+
     void Start()
     {
         current_health = max_health;
@@ -95,7 +98,7 @@ public class PlayerHealth : MonoBehaviour
     {
         if (isInvincible)
             return;
-
+        damage = Mathf.RoundToInt(damage * (1.0f - damageReductionRate));
         damage = Mathf.Min(damage, current_health);
         current_health -= damage;
         if (current_health <= 0)
