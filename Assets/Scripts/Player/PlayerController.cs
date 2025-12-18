@@ -68,6 +68,12 @@ public class PlayerController : MonoBehaviour
         anim.SetInteger("movement", moveChanged);
     }
 
+    void OnDisable()
+    {
+        ResetAllParameters();
+        anim.SetInteger("movement", 0);
+    }
+
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -102,10 +108,8 @@ public class PlayerController : MonoBehaviour
 
         if (hit.collider != null)
         {
-            Bounds b = hit.collider.bounds;
-            float topY = b.max.y;
             float offset = 0.1f; // 置于地面上方一点，避免卡住
-            playerHealth.safePosition = new Vector2(transform.position.x, topY + offset);
+            playerHealth.safePosition = new Vector2(transform.position.x, transform.position.y + offset);
         }
     }
 
@@ -118,13 +122,11 @@ public class PlayerController : MonoBehaviour
         if (col.GetComponentInParent<MoveableItem>() != null)
             return;
 
-        Bounds b = col.bounds;
-        float topY = b.max.y;
         float offset = 0.1f;
         //需要检查一下，避免穿透地面
-        RaycastHit2D hit = Physics2D.Raycast(new Vector2(transform.position.x, topY + 1f), Vector2.down, 1.5f);
+        RaycastHit2D hit = Physics2D.Raycast(new Vector2(transform.position.x, transform.position.y + 1f), Vector2.down, 1.5f);
         if (hit.collider != null && hit.collider == col)
-            playerHealth.safePosition = new Vector2(transform.position.x, topY + offset);
+            playerHealth.safePosition = new Vector2(transform.position.x, transform.position.y + offset);
     }
 
     void Start()
@@ -151,7 +153,8 @@ public class PlayerController : MonoBehaviour
     private void HandleDashInput()
     {
         //处理冲刺输入逻辑
-        if (Input.GetKeyDown(KeyCode.L) && canDash)
+        bool dashInput = (InputManager.instance != null) ? InputManager.instance.GetButtonDown(InputManager.GameButton.Dash) : Input.GetKeyDown(KeyCode.L);
+        if (dashInput && canDash)
         {
             currentState = PlayerState.Dash;
         }
@@ -160,7 +163,8 @@ public class PlayerController : MonoBehaviour
     private void HandleAttackInput()
     {
         //处理攻击输入逻辑
-        if (Input.GetKeyDown(KeyCode.J) && canAttack)
+        bool attackInput = (InputManager.instance != null) ? InputManager.instance.GetButtonDown(InputManager.GameButton.Attack) : Input.GetKeyDown(KeyCode.J);
+        if (attackInput && canAttack)
         {
             currentState = PlayerState.Attack;
             //根据按键方向确定攻击方向
@@ -359,7 +363,8 @@ public class PlayerController : MonoBehaviour
 
     private void HandleFireBallInput()
     {
-        if (Input.GetKeyDown(KeyCode.U) && canFireBall && anim.GetCurrentAnimatorStateInfo(0).IsName("idle"))
+        bool fireInput = (InputManager.instance != null) ? InputManager.instance.GetButtonDown(InputManager.GameButton.FireBall) : Input.GetKeyDown(KeyCode.U);
+        if (fireInput && canFireBall && anim.GetCurrentAnimatorStateInfo(0).IsName("idle"))
         {
             if (!soulPower.UseSoulPower(SoulPowerSkill.FireBall))
                 return;
@@ -449,7 +454,8 @@ public class PlayerController : MonoBehaviour
 
     private void Jump()
     {
-        if (Input.GetKeyDown(KeyCode.K))
+        bool jumpDown = (InputManager.instance != null) ? InputManager.instance.GetButtonDown(InputManager.GameButton.Jump) : Input.GetKeyDown(KeyCode.K);
+        if (jumpDown)
         {
             if (isOnGround)
             {
@@ -480,7 +486,8 @@ public class PlayerController : MonoBehaviour
             }
         }
 
-        if (Input.GetKey(KeyCode.K) && isJumping)
+        bool jumpHeld = (InputManager.instance != null) ? InputManager.instance.GetButton(InputManager.GameButton.Jump) : Input.GetKey(KeyCode.K);
+        if (jumpHeld && isJumping)
         {
             jumpPressTime += Time.deltaTime;
             jumpPressTime = Mathf.Min(jumpPressTime, maxJumpPressTime);
@@ -488,7 +495,8 @@ public class PlayerController : MonoBehaviour
             rb.AddForce(new Vector2(0, jumpForce * jumpForceFactor * Time.deltaTime), ForceMode2D.Force);
         }
 
-        if (Input.GetKeyUp(KeyCode.K))
+        bool jumpUp = (InputManager.instance != null) ? InputManager.instance.GetButtonUp(InputManager.GameButton.Jump) : Input.GetKeyUp(KeyCode.K);
+        if (jumpUp)
         {
             jumpPressTime = 0f;
             isJumping = false;
@@ -612,8 +620,19 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     public void ApplyKnockback(float force, Vector2 direction)
     {
+        rb.velocity = new Vector2(rb.velocity.x, 0);
         rb.AddForce(direction * force, ForceMode2D.Impulse);
+        //反冲之后，会重置二段跳
+        canJumpTwice = true;
     }
 
-
+    public void ResetAllParameters()
+    {
+        //重置所有参数
+        canAttack = true;
+        canDash = true;
+        canJumpTwice = true;
+        currentState = PlayerState.Movement;
+        moveChanged = 0;
+    }
 }

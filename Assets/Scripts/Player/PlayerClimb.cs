@@ -140,7 +140,7 @@ public class PlayerClimb : MonoBehaviour
             else
                 ClimbingToJumping();
         }
-        else if (Input.GetKeyDown(KeyCode.K)) //攀爬跳跃
+        else if ((InputManager.instance != null && InputManager.instance.GetButtonDown(InputManager.GameButton.Jump)) || Input.GetKeyDown(KeyCode.K)) //攀爬跳跃
         {
             ClimbingToClimbJumping();
         }

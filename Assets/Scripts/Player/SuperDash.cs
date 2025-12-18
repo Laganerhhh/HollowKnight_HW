@@ -168,8 +168,9 @@ public class SuperDash : MonoBehaviour
     private void HandleIdleState()
     {
         bool CanSuperDash = playerController.CanSuperDash();
-        //按下I开始蓄力前摇
-        if (CanSuperDash && Input.GetKeyDown(KeyCode.I))
+        //按下 I（键盘） 或 Y（手柄） 开始蓄力前摇
+        bool superDashDown = (InputManager.instance != null) ? InputManager.instance.GetButtonDown(InputManager.GameButton.SuperDash) : Input.GetKeyDown(KeyCode.I);
+        if (CanSuperDash && superDashDown)
         {
             ChangeState(DashState.Charging);
         }
@@ -188,8 +189,9 @@ public class SuperDash : MonoBehaviour
             }
             ChangeState(DashState.Waiting);
         }
-        //松开I键则返回Idle状态
-        if (Input.GetKeyUp(KeyCode.I))
+        //松开 I / Y 则返回 Idle
+        bool superDashUp = (InputManager.instance != null) ? InputManager.instance.GetButtonUp(InputManager.GameButton.SuperDash) : Input.GetKeyUp(KeyCode.I);
+        if (superDashUp)
         {
             animator.SetTrigger("superDash_cancel");
             ChangeState(DashState.Idle);
@@ -216,7 +218,8 @@ public class SuperDash : MonoBehaviour
         }
 
         //等待松开按键
-        if (Input.GetKeyUp(KeyCode.I))
+        bool waitingSuperUp = (InputManager.instance != null) ? InputManager.instance.GetButtonUp(InputManager.GameButton.SuperDash) : Input.GetKeyUp(KeyCode.I);
+        if (waitingSuperUp)
         {
             if (chargeTimer >= chargeTime)
                 ChangeState(DashState.Dashing);
@@ -240,7 +243,8 @@ public class SuperDash : MonoBehaviour
             ChangeState(DashState.Stopping);
         }
 
-        if (Input.GetKeyDown(KeyCode.K)) //按下跳跃键停止冲刺
+        bool jumpDown = (InputManager.instance != null) ? InputManager.instance.GetButtonDown(InputManager.GameButton.Jump) : Input.GetKeyDown(KeyCode.K);
+        if (jumpDown) //按下跳跃键停止冲刺
         {
             ChangeState(DashState.Stopping);
         }

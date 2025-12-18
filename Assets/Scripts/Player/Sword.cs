@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class Sword : MonoBehaviour
@@ -11,14 +12,10 @@ public class Sword : MonoBehaviour
 
     private PlayerController playerController;
 
-
     void Start()
     {
         playerController = GameManager.instance.GetPlayerController();
-
-
     }
-
 
     void OnTriggerEnter2D(Collider2D collision)
     {
@@ -31,7 +28,19 @@ public class Sword : MonoBehaviour
         else if (collision.tag == "Traps")
         {
             //剑气命中陷阱在击中点产生特效
-            Instantiate(hitEffect, collision.ClosestPoint(transform.position), Quaternion.identity);
+            //根据接触点法线方向产生特效（通过碰撞体中心到最近点向量近似法线）
+            Vector2 hitPoint = collision.ClosestPoint(transform.position);
+            Vector2 normal;
+            // 使用碰撞体包围盒中心到命中点的方向近似法线
+            Vector2 center = collision.bounds.center;
+            normal = (hitPoint - center).normalized;
+            if (normal.sqrMagnitude < 0.001f)
+            {
+                normal = Vector2.up;
+            }
+            Quaternion rot = Quaternion.FromToRotation(Vector3.up, normal);
+            Instantiate(hitEffect, hitPoint, rot);
+
             SoundManager.instance.PlaySound(SoundIndex.player_hitRecoil);
 
             Vector2 knockbackDirection = GetAttackDirection();
@@ -39,6 +48,7 @@ public class Sword : MonoBehaviour
             playerController.ApplyKnockback(knockbackForce, knockbackDirection);
         }
     }
+
 
     private Vector2 GetAttackDirection()
     {

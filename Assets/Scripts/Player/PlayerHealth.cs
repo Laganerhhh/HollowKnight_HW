@@ -45,8 +45,8 @@ public class PlayerHealth : MonoBehaviour
 
     IEnumerator RespawnAndInvincible()
     {
-        // 等待一帧以确保受伤反馈（动画等）开始
-        yield return null;
+        // 等待受伤动画结束后再重置位置
+        yield return new WaitForSeconds(0.4f);
         RespawnToSafePosition();
         // 进入短暂无敌
         isInvincible = true;
@@ -117,7 +117,9 @@ public class PlayerHealth : MonoBehaviour
             //受伤动画
             animator.SetTrigger("hit");
             SoundManager.instance.PlaySound(SoundIndex.player_injured);
+            playerController.ResetAllParameters();
             playerController.enabled = false;
+            rb2d.velocity = Vector2.zero;
             //UI生命值受伤
             HealthUIMgr.Instance.LoseHealth(current_health, damage, max_health);
 

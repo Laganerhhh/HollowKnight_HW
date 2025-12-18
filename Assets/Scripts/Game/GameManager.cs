@@ -7,6 +7,8 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
 
+    public Transform respawnPoint;
+
     public GameObject player;
 
     private Animator playerAnimator;
@@ -25,7 +27,6 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        SoundManager.instance.PlayBGM(SoundIndex.colosseumLv1_BG, 0.4f);
         playerAnimator = player.GetComponent<Animator>();
     }
 
@@ -46,6 +47,7 @@ public class GameManager : MonoBehaviour
         //重新加载当前关卡
         UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
 
+        player.transform.position = respawnPoint.position;
         playerAnimator.SetTrigger("respawn"); // 触发玩家动画的复活动作
     }   
 }

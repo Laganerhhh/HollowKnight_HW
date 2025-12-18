@@ -11,6 +11,8 @@ TagManager:
   - Bramble
   - Trap
   - Arc
+  - IndoorRegion
+  - OutdoorRegion
   layers:
   - Default
   - TransparentFX

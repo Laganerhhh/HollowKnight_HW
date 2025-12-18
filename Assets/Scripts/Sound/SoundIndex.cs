@@ -27,4 +27,12 @@ public static class SoundIndex
 
     public const string first_game_BG = "SceneBgm/FirstGameBG";
     public const string colosseumLv1_BG = "SceneBgm/ColosseumLv1Bgm";
+
+    //苦痛之路音乐集合
+    public const string final_stage_bg_1 = "Final Stage/S59-55 Final Stage 1";
+    public const string final_stage_bg_2 = "Final Stage/S59-55 Final Stage 2";
+    public const string final_stage_bg_3 = "Final Stage/S59-55 Final Stage 3";
+    public const string final_stage_bg_4 = "Final Stage/S59-55 Final Stage 4";
+    public const string final_stage_bg_5 = "Final Stage/S59-55 Final Stage 5";
+
 }
