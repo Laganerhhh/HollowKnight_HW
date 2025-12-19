@@ -5,7 +5,7 @@ using UnityEngine;
 /// </summary>
 /// 
 
-enum AttackDirection
+public enum AttackDirection
 {
     None = 0,
     LeftRight = 1,
@@ -47,7 +47,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private GameObject fireBallPrefab;
     [SerializeField] private Transform fireBallSpawnPoint;
 
-    private bool canAttack = true;
+    [SerializeField] private bool canAttack = true;
     [SerializeField] private float attackCooldown = 0.5f;
 
     private float moveX;
@@ -58,6 +58,77 @@ public class PlayerController : MonoBehaviour
     private Rigidbody2D rb;
     private Animator anim;
     private PlayerSoulPower soulPower;
+    private PlayerHealth playerHealth;
+
+    void OnEnable()
+    {
+        //重设置动画状态
+        currentState = PlayerState.Movement;
+        moveChanged = 0;
+        anim.SetInteger("movement", moveChanged);
+    }
+
+    void OnDisable()
+    {
+        ResetAllParameters();
+        anim.SetInteger("movement", 0);
+    }
+
+    void Awake()
+    {
+        rb = GetComponent<Rigidbody2D>();
+        anim = GetComponent<Animator>();
+        soulPower = GetComponent<PlayerSoulPower>();
+        playerHealth = GetComponent<PlayerHealth>();
+    }
+
+    // 将安全点的 Y 固定为检测到的平台顶部（更安全），如果未检测到平台则使用当前坐标
+    void UpdateSafePositionToPlatformTop()
+    {
+        if (playerHealth == null) return;
+        int terrainLayer = LayerMask.NameToLayer("Terrian");
+        if (terrainLayer < 0)
+        {
+            // 若层不存在，直接使用当前位置
+            playerHealth.safePosition = transform.position;
+            return;
+        }
+
+        int layerMask = 1 << terrainLayer;
+        float rayDist = 1.0f;
+        //要忽略自己身上的碰撞体，可以使用Raycast的layerMask参数
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, rayDist, layerMask);
+        //debug用
+        Debug.DrawRay(transform.position, Vector2.down * rayDist, Color.red, 1.0f);
+        // 如果射线命中并且命中的地面属于可移动平台，则不记录安全点
+        if (hit.collider != null && hit.collider.GetComponentInParent<MoveableItem>() != null)
+        {
+            return;
+        }
+
+        if (hit.collider != null)
+        {
+            float offset = 0.1f; // 置于地面上方一点，避免卡住
+            playerHealth.safePosition = new Vector2(transform.position.x, transform.position.y + offset);
+        }
+    }
+
+    // 使用指定的地面 Collider 来设置安全点（忽略可移动平台）
+    void SetSafePositionFromCollider(Collider2D col)
+    {
+        if (playerHealth == null || col == null) return;
+
+        // 如果该地面属于可移动物体（父链上有 MoveableItem），不要把它作为安全点
+        if (col.GetComponentInParent<MoveableItem>() != null)
+            return;
+
+        float offset = 0.1f;
+        //需要检查一下，避免穿透地面
+        RaycastHit2D hit = Physics2D.Raycast(new Vector2(transform.position.x, transform.position.y + 1f), Vector2.down, 1.5f);
+        if (hit.collider != null && hit.collider == col)
+            playerHealth.safePosition = new Vector2(transform.position.x, transform.position.y + offset);
+    }
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -66,6 +137,11 @@ public class PlayerController : MonoBehaviour
     }
 
     private bool canCombo = false;
+    // 当前接触的地面碰撞体（用于更精确地设置安全点）
+    private Collider2D currentGroundCollider;
+    // 在地面持续多长时间后才自动更新安全点，避免第一帧就记录移动平台位置
+    [SerializeField] private float minGroundedTimeForSafe = 0.05f;
+    private float groundedTime = 0f;
 
     private void HandleMovementInput()
     {
@@ -77,7 +153,8 @@ public class PlayerController : MonoBehaviour
     private void HandleDashInput()
     {
         //处理冲刺输入逻辑
-        if (Input.GetKeyDown(KeyCode.L) && canDash)
+        bool dashInput = (InputManager.instance != null) ? InputManager.instance.GetButtonDown(InputManager.GameButton.Dash) : Input.GetKeyDown(KeyCode.L);
+        if (dashInput && canDash)
         {
             currentState = PlayerState.Dash;
         }
@@ -86,7 +163,8 @@ public class PlayerController : MonoBehaviour
     private void HandleAttackInput()
     {
         //处理攻击输入逻辑
-        if (Input.GetKeyDown(KeyCode.J) && canAttack)
+        bool attackInput = (InputManager.instance != null) ? InputManager.instance.GetButtonDown(InputManager.GameButton.Attack) : Input.GetKeyDown(KeyCode.J);
+        if (attackInput && canAttack)
         {
             currentState = PlayerState.Attack;
             //根据按键方向确定攻击方向
@@ -138,8 +216,9 @@ public class PlayerController : MonoBehaviour
 
     private void OnAttackStart()
     {
-        //播放攻击音效
-        SoundManager.instance.PlaySound(SoundIndex.player_sword);
+        //随机播放5个攻击音效
+        int soundIndex = Random.Range(1, 6);
+        SoundManager.instance.PlaySound(SoundIndex.player_sword + soundIndex);
     }
     public void OnAttackEnd()
     {
@@ -202,7 +281,7 @@ public class PlayerController : MonoBehaviour
     private void AttackMove()
     {
         //攻击移动逻辑
-        rb.velocity = new Vector2(moveX * speed, rb.velocity.y);
+        transform.position += new Vector3(moveX * speed * 0.5f * Time.deltaTime, 0, 0);
     }
 
     private void Movement()
@@ -223,6 +302,30 @@ public class PlayerController : MonoBehaviour
         }
 
         anim.SetInteger("movement", moveChanged);
+
+        // 在地面时根据当前 ground collider 延时记录安全点，避免在刚落地第一帧就记录
+        if (isOnGround)
+        {
+            if (currentGroundCollider != null)
+            {
+                groundedTime += Time.deltaTime;
+                if (groundedTime >= minGroundedTimeForSafe)
+                {
+                    SetSafePositionFromCollider(currentGroundCollider);
+                }
+            }
+            else
+            {
+                // fallback: try raycast-based update (keeps previous behavior)
+                groundedTime += Time.deltaTime;
+                if (groundedTime >= minGroundedTimeForSafe)
+                    UpdateSafePositionToPlatformTop();
+            }
+        }
+        else
+        {
+            groundedTime = 0f;
+        }
 
 
         //添加下落时间
@@ -260,7 +363,8 @@ public class PlayerController : MonoBehaviour
 
     private void HandleFireBallInput()
     {
-        if (Input.GetKeyDown(KeyCode.U) && canFireBall && anim.GetCurrentAnimatorStateInfo(0).IsName("idle"))
+        bool fireInput = (InputManager.instance != null) ? InputManager.instance.GetButtonDown(InputManager.GameButton.FireBall) : Input.GetKeyDown(KeyCode.U);
+        if (fireInput && canFireBall && anim.GetCurrentAnimatorStateInfo(0).IsName("idle"))
         {
             if (!soulPower.UseSoulPower(SoulPowerSkill.FireBall))
                 return;
@@ -350,10 +454,21 @@ public class PlayerController : MonoBehaviour
 
     private void Jump()
     {
-        if (Input.GetKeyDown(KeyCode.K))
+        bool jumpDown = (InputManager.instance != null) ? InputManager.instance.GetButtonDown(InputManager.GameButton.Jump) : Input.GetKeyDown(KeyCode.K);
+        if (jumpDown)
         {
             if (isOnGround)
             {
+                // 记录跳跃前的安全点为当前 ground collider 的平台顶部（优先），如果该平台是可移动的则不记录
+                if (currentGroundCollider != null)
+                {
+                    SetSafePositionFromCollider(currentGroundCollider);
+                }
+                else
+                {
+                    UpdateSafePositionToPlatformTop();
+                }
+
                 jumpPressTime = 0f;
                 canJumpTwice = true; //在地面时重置二段跳
                 isJumping = true;
@@ -371,7 +486,8 @@ public class PlayerController : MonoBehaviour
             }
         }
 
-        if (Input.GetKey(KeyCode.K) && isJumping)
+        bool jumpHeld = (InputManager.instance != null) ? InputManager.instance.GetButton(InputManager.GameButton.Jump) : Input.GetKey(KeyCode.K);
+        if (jumpHeld && isJumping)
         {
             jumpPressTime += Time.deltaTime;
             jumpPressTime = Mathf.Min(jumpPressTime, maxJumpPressTime);
@@ -379,7 +495,8 @@ public class PlayerController : MonoBehaviour
             rb.AddForce(new Vector2(0, jumpForce * jumpForceFactor * Time.deltaTime), ForceMode2D.Force);
         }
 
-        if (Input.GetKeyUp(KeyCode.K))
+        bool jumpUp = (InputManager.instance != null) ? InputManager.instance.GetButtonUp(InputManager.GameButton.Jump) : Input.GetKeyUp(KeyCode.K);
+        if (jumpUp)
         {
             jumpPressTime = 0f;
             isJumping = false;
@@ -419,6 +536,8 @@ public class PlayerController : MonoBehaviour
         {
             if (col.gameObject.layer == LayerMask.NameToLayer("Terrian"))
             {
+                // 离开当前地面
+                if (currentGroundCollider == col) currentGroundCollider = null;
                 isOnGround = false;
                 anim.SetBool("isOnGround", isOnGround);
             }
@@ -429,6 +548,9 @@ public class PlayerController : MonoBehaviour
             && !isOnGround)
             {
                 //在地面的一些处理
+                // 记录当前接触的地面碰撞体
+                currentGroundCollider = col;
+                groundedTime = 0f; // 重置计时
                 TransitionToGround();
             }
             else if (col.gameObject.layer == LayerMask.NameToLayer("Terrian")
@@ -447,6 +569,8 @@ public class PlayerController : MonoBehaviour
         isOnGround = true;
         JumpCancel();
         fall_time = 0f; //重置下落时间
+        // 更新玩家的最后安全点为平台顶部（更安全）
+        UpdateSafePositionToPlatformTop();
     }
 
     private void OnLand()
@@ -462,5 +586,53 @@ public class PlayerController : MonoBehaviour
     public bool IsOnGround()
     {
         return isOnGround;
+    }
+
+    public bool IsClimbing()
+    {
+        return currentState == PlayerState.Climb;
+    }
+
+    //PlayerClimb通知PlayerController开始攀爬
+    public void OnClimbStart()
+    {
+        canJumpTwice = true; //重置二段跳
+        currentState = PlayerState.Climb;
+    }
+
+    //PlayerClimb通知PlayerController攀爬结束，恢复移动状态
+    public void OnClimbEnd()
+    {
+        currentState = PlayerState.Movement;
+    }
+
+    //通知playerSuperDash可以超级冲刺
+    public bool CanSuperDash()
+    {
+        if ((currentState == PlayerState.Movement && moveChanged == 0 && isOnGround) || currentState == PlayerState.Climb)
+            return true;
+        else
+            return false;
+    }
+
+    /// <summary>
+    /// 给玩家一个反冲的力
+    /// </summary>
+    public void ApplyKnockback(float force, Vector2 direction)
+    {
+        rb.velocity = new Vector2(rb.velocity.x, 0);
+        rb.AddForce(direction * force, ForceMode2D.Impulse);
+        //反冲之后，会重置二段跳
+        canJumpTwice = true;
+    }
+
+    public void ResetAllParameters()
+    {
+        //重置所有参数
+        canAttack = true;
+        canDash = true;
+        canJumpTwice = true;
+        currentState = PlayerState.Movement;
+        moveChanged = 0;
     }
 }

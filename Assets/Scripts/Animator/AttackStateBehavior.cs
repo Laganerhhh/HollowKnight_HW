@@ -30,7 +30,7 @@ public class AttackStateBehavior : StateMachineBehaviour
         if (playerController != null)
         {
             //如果当前状态的动画还未结束，则调用OnAttackEnd方法
-            if (stateInfo.normalizedTime >= 0.9f)
+            if (stateInfo.normalizedTime >= 0f)
             {
                 playerController.OnAttackEnd();
             }

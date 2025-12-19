@@ -8,6 +8,8 @@ public class SoundManager : MonoBehaviour
 
     private AudioSource audioSource;
 
+    public string currentBGM = "";
+
     private void Awake()
     {
         if (instance == null)
@@ -46,11 +48,28 @@ public class SoundManager : MonoBehaviour
             audioSource.volume = volume;
             audioSource.loop = true;
             audioSource.Play();
+
+            currentBGM = bgmName;
         }
         else
         {
             Debug.LogWarning($"BGM {bgmName} not found!");
         }
+    }
+
+    public void SetBGMVolume(float volume)
+    {
+        audioSource.volume = volume;
+    }
+
+    public AudioClip GetAudioClip(string soundName)
+    {
+        AudioClip clip = Resources.Load<AudioClip>($"Audios/{soundName}");
+        if (clip == null)
+        {
+            Debug.LogWarning($"Sound {soundName} not found!");
+        }
+        return clip;
     }
 
     public void StopBGM()

@@ -7,7 +7,7 @@ using UnityEngine.XR;
 /// </summary>
 public class SuperDash : MonoBehaviour
 {
-    private enum DashState { Idle, Charging, Waiting, Dashing, Stopping };
+    public enum DashState { Idle, Charging, Waiting, Dashing, Stopping };
     private DashState currentState = DashState.Idle;
     [SerializeField] private float chargeTime = 1.0f;
     [SerializeField] private float maxChargeTime = 2.5f;
@@ -24,6 +24,11 @@ public class SuperDash : MonoBehaviour
 
     private AudioClip superDashSound; //冲刺音效
 
+    private bool isClimbingSuperDash = false;
+
+    [Header("超级冲刺特效")]
+    [SerializeField] private SuperDashEff superDashEff;
+
     private void Start()
     {
         animator = GetComponent<Animator>();
@@ -36,6 +41,11 @@ public class SuperDash : MonoBehaviour
         {
             Debug.LogError("冲刺音效未加载");
         }
+    }
+
+    public DashState GetDashState()
+    {
+        return currentState;
     }
 
     void Update()
@@ -64,6 +74,11 @@ public class SuperDash : MonoBehaviour
         }
     }
 
+    public bool IsSuperDashing()
+    {
+        return currentState == DashState.Dashing;
+    }
+
     private void ChangeState(DashState newState)
     {
         ExitState(currentState);
@@ -81,15 +96,24 @@ public class SuperDash : MonoBehaviour
 
             case DashState.Charging:
                 playerController.enabled = false;
+                rb.gravityScale = 0;
                 chargeTimer = 0.0f;
                 animator.SetTrigger("superDash");
                 SoundManager.instance.PlaySound(SoundIndex.player_superDash_charge);
                 break;
 
             case DashState.Waiting:
+                rb.gravityScale = 0;
                 break;
 
             case DashState.Dashing:
+                //如果是在墙壁上，则会朝远离墙壁的方向冲刺
+                if (isClimbingSuperDash)
+                {
+                    //改变角色朝向
+                    transform.localScale = new Vector3(-transform.localScale.x, 1, 1);
+                    isClimbingSuperDash = false;
+                }
                 dashTimer = 0.0f;
                 rb.gravityScale = 0;
                 animator.SetTrigger("superDash_sprint");
@@ -119,9 +143,12 @@ public class SuperDash : MonoBehaviour
             case DashState.Charging:
                 chargeTimer = 0.0f;
                 isPlayingReadySound = false;
+                rb.gravityScale = 1.5f;
                 break;
 
             case DashState.Waiting:
+                chargeTimer = 0.0f;
+                rb.gravityScale = 1.5f;
                 break;
 
             case DashState.Dashing:
@@ -129,6 +156,8 @@ public class SuperDash : MonoBehaviour
                 //停止播放冲刺音效
                 audioSource.Stop();
                 rb.gravityScale = 1.5f;
+
+                OnSuperDashEnd();
                 break;
 
             case DashState.Stopping:
@@ -138,8 +167,10 @@ public class SuperDash : MonoBehaviour
 
     private void HandleIdleState()
     {
-        //按下I开始蓄力前摇
-        if (Input.GetKeyDown(KeyCode.I))
+        bool CanSuperDash = playerController.CanSuperDash();
+        //按下 I（键盘） 或 Y（手柄） 开始蓄力前摇
+        bool superDashDown = (InputManager.instance != null) ? InputManager.instance.GetButtonDown(InputManager.GameButton.SuperDash) : Input.GetKeyDown(KeyCode.I);
+        if (CanSuperDash && superDashDown)
         {
             ChangeState(DashState.Charging);
         }
@@ -150,12 +181,17 @@ public class SuperDash : MonoBehaviour
     {
         //等待动画播放完毕后开始蓄力等待
         AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
-        if (stateInfo.IsName("superDash_charged") && stateInfo.normalizedTime >= 1.0f)
+        if ((stateInfo.IsName("superDash_charged") || stateInfo.IsName("climb_superdash_repeat")) && stateInfo.normalizedTime >= 1.0f)
         {
+            if (stateInfo.IsName("climb_superdash_repeat"))
+            {
+                isClimbingSuperDash = true;
+            }
             ChangeState(DashState.Waiting);
         }
-        //松开I键则返回Idle状态
-        if (Input.GetKeyUp(KeyCode.I))
+        //松开 I / Y 则返回 Idle
+        bool superDashUp = (InputManager.instance != null) ? InputManager.instance.GetButtonUp(InputManager.GameButton.SuperDash) : Input.GetKeyUp(KeyCode.I);
+        if (superDashUp)
         {
             animator.SetTrigger("superDash_cancel");
             ChangeState(DashState.Idle);
@@ -182,7 +218,8 @@ public class SuperDash : MonoBehaviour
         }
 
         //等待松开按键
-        if (Input.GetKeyUp(KeyCode.I))
+        bool waitingSuperUp = (InputManager.instance != null) ? InputManager.instance.GetButtonUp(InputManager.GameButton.SuperDash) : Input.GetKeyUp(KeyCode.I);
+        if (waitingSuperUp)
         {
             if (chargeTimer >= chargeTime)
                 ChangeState(DashState.Dashing);
@@ -206,7 +243,8 @@ public class SuperDash : MonoBehaviour
             ChangeState(DashState.Stopping);
         }
 
-        if (Input.GetKeyDown(KeyCode.K)) //按下跳跃键停止冲刺
+        bool jumpDown = (InputManager.instance != null) ? InputManager.instance.GetButtonDown(InputManager.GameButton.Jump) : Input.GetKeyDown(KeyCode.K);
+        if (jumpDown) //按下跳跃键停止冲刺
         {
             ChangeState(DashState.Stopping);
         }
@@ -216,7 +254,7 @@ public class SuperDash : MonoBehaviour
     {
         //等待动画播放完毕后返回Idle状态
         AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
-        if (stateInfo.IsName("idle"))
+        if (stateInfo.IsName("idle") || stateInfo.IsName("fall"))
         {
             //恢复玩家控制移动
             playerController.enabled = true;
@@ -230,5 +268,15 @@ public class SuperDash : MonoBehaviour
         audioSource.Stop();
         animator.ResetTrigger("superDash");
         EnterState(DashState.Idle);
+    }
+
+    private void OnSuperDashStart()
+    {
+        superDashEff.OnSuperDashStart();
+    }
+
+    private void OnSuperDashEnd()
+    {
+        superDashEff.OnSuperDashEnd();
     }
 }

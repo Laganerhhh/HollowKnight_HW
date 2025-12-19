@@ -1,10 +1,21 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Sword : MonoBehaviour
 {
     [SerializeField] private GameObject hitEffect;
+
+    [Header("反冲力")]
+    public float knockbackForce = 7f;
+
+    public AttackDirection attackDirection;
+
+    private PlayerController playerController;
+
+    void Start()
+    {
+        playerController = GameManager.instance.GetPlayerController();
+    }
 
     void OnTriggerEnter2D(Collider2D collision)
     {
@@ -14,5 +25,53 @@ public class Sword : MonoBehaviour
             Instantiate(hitEffect, collision.ClosestPoint(transform.position), Quaternion.identity);
             SoundManager.instance.PlaySound(SoundIndex.player_hitRecoil);
         }
+        else if (collision.tag == "Traps")
+        {
+            //剑气命中陷阱在击中点产生特效
+            //根据接触点法线方向产生特效（通过碰撞体中心到最近点向量近似法线）
+            Vector2 hitPoint = collision.ClosestPoint(transform.position);
+            Vector2 normal;
+            // 使用碰撞体包围盒中心到命中点的方向近似法线
+            Vector2 center = collision.bounds.center;
+            normal = (hitPoint - center).normalized;
+            if (normal.sqrMagnitude < 0.001f)
+            {
+                normal = Vector2.up;
+            }
+            Quaternion rot = Quaternion.FromToRotation(Vector3.up, normal);
+            Instantiate(hitEffect, hitPoint, rot);
+
+            SoundManager.instance.PlaySound(SoundIndex.player_hitRecoil);
+
+            Vector2 knockbackDirection = GetAttackDirection();
+            //给玩家一个反冲的力
+            playerController.ApplyKnockback(knockbackForce, knockbackDirection);
+        }
+    }
+
+
+    private Vector2 GetAttackDirection()
+    {
+        Vector2 knockbackDirection = Vector2.zero;
+        if (attackDirection == AttackDirection.LeftRight)
+        {
+            if (playerController.transform.localScale.x > 0)
+            {
+                knockbackDirection = Vector2.right;
+            }
+            else
+            {
+                knockbackDirection = Vector2.left;
+            }
+        }
+        else if (attackDirection == AttackDirection.Up)
+        {
+            knockbackDirection = Vector2.down;
+        }
+        else if (attackDirection == AttackDirection.Down)
+        {
+            knockbackDirection = Vector2.up;
+        }
+        return knockbackDirection;
     }
 }

@@ -6,6 +6,13 @@ TagManager:
   tags:
   - Ground
   - Enermy
+  - Sword
+  - Traps
+  - Bramble
+  - Trap
+  - Arc
+  - IndoorRegion
+  - OutdoorRegion
   layers:
   - Default
   - TransparentFX
@@ -15,7 +22,7 @@ TagManager:
   - UI
   - Terrian
   - Foreground
-  - 
+  - Wall
   - 
   - 
   - 
@@ -46,12 +53,12 @@ TagManager:
   - name: Background
     uniqueID: 3256955201
     locked: 0
-  - name: Player
+  - name: Temp
     uniqueID: 327253061
     locked: 0
   - name: Foreground
     uniqueID: 1859858967
     locked: 0
-  - name: New Layer 4
+  - name: Player
     uniqueID: 2201033793
     locked: 0
