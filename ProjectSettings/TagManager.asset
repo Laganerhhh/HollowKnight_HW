@@ -50,15 +50,18 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
-  - name: Background
+  - name: FarBackground
     uniqueID: 3256955201
     locked: 0
-  - name: Temp
+  - name: Background
     uniqueID: 327253061
     locked: 0
-  - name: Foreground
+  - name: Player
     uniqueID: 1859858967
     locked: 0
-  - name: Player
+  - name: Foreground
     uniqueID: 2201033793
+    locked: 0
+  - name: ForegrounBlack
+    uniqueID: 668063989
     locked: 0

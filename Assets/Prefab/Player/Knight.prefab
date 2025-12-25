@@ -219,7 +219,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 47bdba695e1469641b17fdba6cc3ac84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 5
+  speed: 6
   jumpForce: 1650
   jumpForceCurve:
     serializedVersion: 2
@@ -281,9 +281,9 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  dashForce: 8
+  dashForce: 12
   dashCooldown: 1
-  dashDuration: 0.4
+  dashDuration: 0.3
   fireBall_cooldown: 1.5
   fireBallPrefab: {fileID: 3312149520229250569, guid: 53edf60ef8339ad47a5def34c8402f4c, type: 3}
   fireBallSpawnPoint: {fileID: 6186355662608082752}
@@ -292,7 +292,7 @@ MonoBehaviour:
   minGroundedTimeForSafe: 1.5
   maxJumpPressTime: 0.4
   hardLandingThreshold: 1.5
-  doubleJumpForce: 6
+  doubleJumpForce: 7
 --- !u!95 &7344360049358926107
 Animator:
   serializedVersion: 5
@@ -552,8 +552,8 @@ GameObject:
   m_Component:
   - component: {fileID: 4211676128724079053}
   - component: {fileID: 4194978241571051028}
-  - component: {fileID: 3747758193292906572}
   - component: {fileID: 6992602272137488884}
+  - component: {fileID: 5286909193273597561}
   m_Layer: 3
   m_Name: sowrd_eff_down
   m_TagString: Sword
@@ -628,8 +628,23 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!61 &3747758193292906572
-BoxCollider2D:
+--- !u!114 &6992602272137488884
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2809861003531292320}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a465383b95ece64bb14957d71689018, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hitEffect: {fileID: 7978305935418545222, guid: a3d1d90d22539c049af13e61d886043a, type: 3}
+  knockbackForce: 7
+  attackDirection: 3
+--- !u!68 &5286909193273597561
+EdgeCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -660,34 +675,22 @@ BoxCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: -0.036904335}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1.66, y: 2.45}
-    newSize: {x: 1.66, y: 2.45}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  serializedVersion: 2
-  m_Size: {x: 1.66, y: 1.5089407}
+  m_Offset: {x: 0, y: 0}
   m_EdgeRadius: 0
---- !u!114 &6992602272137488884
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2809861003531292320}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5a465383b95ece64bb14957d71689018, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  hitEffect: {fileID: 7978305935418545222, guid: a3d1d90d22539c049af13e61d886043a, type: 3}
-  knockbackForce: 7
-  attackDirection: 3
+  m_Points:
+  - {x: -0.8530775, y: 0.5486088}
+  - {x: -0.5231018, y: -0.38401604}
+  - {x: -0.3063469, y: -0.6306286}
+  - {x: 0.09394455, y: -0.7579441}
+  - {x: 0.47856522, y: -0.5658741}
+  - {x: 0.67767334, y: -0.25042343}
+  - {x: 0.7342911, y: 0.23307419}
+  - {x: 0.76563215, y: 0.4679203}
+  - {x: 0.61010176, y: 1.1220169}
+  m_AdjacentStartPoint: {x: 0, y: 0}
+  m_AdjacentEndPoint: {x: 0, y: 0}
+  m_UseAdjacentStartPoint: 0
+  m_UseAdjacentEndPoint: 0
 --- !u!1 &4160665459296230854
 GameObject:
   m_ObjectHideFlags: 0
@@ -698,8 +701,8 @@ GameObject:
   m_Component:
   - component: {fileID: 5386917646475554495}
   - component: {fileID: 2640749470609920537}
-  - component: {fileID: 2553745888592476189}
   - component: {fileID: 8257908870278183309}
+  - component: {fileID: 7412590370657600038}
   m_Layer: 3
   m_Name: sword_eff_lr
   m_TagString: Sword
@@ -774,8 +777,23 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!61 &2553745888592476189
-BoxCollider2D:
+--- !u!114 &8257908870278183309
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4160665459296230854}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a465383b95ece64bb14957d71689018, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hitEffect: {fileID: 7978305935418545222, guid: a3d1d90d22539c049af13e61d886043a, type: 3}
+  knockbackForce: 7
+  attackDirection: 1
+--- !u!68 &7412590370657600038
+EdgeCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -806,34 +824,22 @@ BoxCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0.06995422}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1.6, y: 1.255}
-    newSize: {x: 1.6, y: 1.255}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  serializedVersion: 2
-  m_Size: {x: 1.6, y: 0.9985012}
+  m_Offset: {x: 0, y: 0}
   m_EdgeRadius: 0
---- !u!114 &8257908870278183309
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4160665459296230854}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5a465383b95ece64bb14957d71689018, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  hitEffect: {fileID: 7978305935418545222, guid: a3d1d90d22539c049af13e61d886043a, type: 3}
-  knockbackForce: 7
-  attackDirection: 1
+  m_Points:
+  - {x: 0.4062187, y: -0.35272598}
+  - {x: -0.05996704, y: -0.30444527}
+  - {x: -0.30003357, y: -0.28054428}
+  - {x: -0.48158264, y: -0.21372795}
+  - {x: -0.6866684, y: -0.008424759}
+  - {x: -0.49598694, y: 0.2691326}
+  - {x: -0.25608826, y: 0.3921566}
+  - {x: 0.19654465, y: 0.51291084}
+  - {x: 0.61285096, y: 0.5567608}
+  m_AdjacentStartPoint: {x: 0, y: 0}
+  m_AdjacentEndPoint: {x: 0, y: 0}
+  m_UseAdjacentStartPoint: 0
+  m_UseAdjacentEndPoint: 0
 --- !u!1 &6405571041243695065
 GameObject:
   m_ObjectHideFlags: 0
@@ -1074,8 +1080,8 @@ GameObject:
   m_Component:
   - component: {fileID: 6964949907445185377}
   - component: {fileID: 6301066511650465843}
-  - component: {fileID: 4524546056407084513}
   - component: {fileID: 6247798359699509716}
+  - component: {fileID: 8710779028327914583}
   m_Layer: 3
   m_Name: sword_eff_up
   m_TagString: Sword
@@ -1150,8 +1156,23 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!61 &4524546056407084513
-BoxCollider2D:
+--- !u!114 &6247798359699509716
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8631982604559831604}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a465383b95ece64bb14957d71689018, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hitEffect: {fileID: 7978305935418545222, guid: a3d1d90d22539c049af13e61d886043a, type: 3}
+  knockbackForce: 7
+  attackDirection: 2
+--- !u!68 &8710779028327914583
+EdgeCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -1182,34 +1203,20 @@ BoxCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0.1383909, y: -0.083034635}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1.96, y: 2.17}
-    newSize: {x: 1.96, y: 2.17}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  serializedVersion: 2
-  m_Size: {x: 1.6832182, y: 1.5057228}
+  m_Offset: {x: 0, y: 0}
   m_EdgeRadius: 0
---- !u!114 &6247798359699509716
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8631982604559831604}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5a465383b95ece64bb14957d71689018, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  hitEffect: {fileID: 7978305935418545222, guid: a3d1d90d22539c049af13e61d886043a, type: 3}
-  knockbackForce: 7
-  attackDirection: 2
+  m_Points:
+  - {x: -0.596581, y: -0.80574036}
+  - {x: -0.48876953, y: 0.09980202}
+  - {x: -0.3495407, y: 0.37270546}
+  - {x: 0.05561447, y: 0.5278988}
+  - {x: 0.45531082, y: 0.38329506}
+  - {x: 0.6730385, y: -0.08593559}
+  - {x: 0.6854863, y: -0.86686325}
+  m_AdjacentStartPoint: {x: 0, y: 0}
+  m_AdjacentEndPoint: {x: 0, y: 0}
+  m_UseAdjacentStartPoint: 0
+  m_UseAdjacentEndPoint: 0
 --- !u!1 &9121247445450908344
 GameObject:
   m_ObjectHideFlags: 0
