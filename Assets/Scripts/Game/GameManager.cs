@@ -27,6 +27,11 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
+        if (player == null)
+        {
+            player = GameObject.FindGameObjectWithTag("Player");
+        }
+
         playerAnimator = player.GetComponent<Animator>();
     }
 
@@ -36,6 +41,11 @@ public class GameManager : MonoBehaviour
     /// <returns></returns>
     public PlayerController GetPlayerController()
     {
+        if (player == null)
+        {
+            player = GameObject.FindGameObjectWithTag("Player");
+        }
+
         return player.GetComponent<PlayerController>();
     }
 
@@ -49,5 +59,12 @@ public class GameManager : MonoBehaviour
 
         player.transform.position = respawnPoint.position;
         playerAnimator.SetTrigger("respawn"); // 触发玩家动画的复活动作
-    }   
+    } 
+
+    public void EnterNextLevel()
+    {
+        //加载下一个关卡
+        int currentSceneIndex = UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex;
+        UnityEngine.SceneManagement.SceneManager.LoadScene(currentSceneIndex + 1);
+    }  
 }
