@@ -1,21 +1,28 @@
-// ShockwaveController.cs
 using UnityEngine;
 using System.Collections;
 
 public class ShockwaveController : MonoBehaviour
 {
-    // 冲击波的移动速度和生命周期由 FalseKnight 传入
     private float speed;
     private float lifetime;
-    private float direction; // 1 或 -1
+    private float direction;
+
+    [Header("生长设置")]
+    [SerializeField] private float growDuration = 0.2f; // 冲击波变到最大所需的时间
+    private Vector3 targetScale;
 
     public void Initialize(float shockwaveSpeed, float shockwaveLifetime, float moveDirection)
     {
         this.speed = shockwaveSpeed;
         this.lifetime = shockwaveLifetime;
         this.direction = moveDirection;
-        Debug.Log("冲击波初始化：速度=" + speed + ", 生命周期=" + lifetime + ", 方向=" + direction);
-        // 启动自身的移动协程
+
+        // 记录初始设定的缩放值（假设你在 Prefab 里调好了最终大小）
+        targetScale = transform.localScale;
+        
+        // 初始 X 缩放设为 0
+        transform.localScale = new Vector3(0, targetScale.y, targetScale.z);
+
         StartCoroutine(MoveAndDestroy());
     }
 
@@ -27,12 +34,28 @@ public class ShockwaveController : MonoBehaviour
 
         while (Time.time < endTime)
         {
-            // 在自身 Transform 上移动
-            transform.position += moveVector * Time.deltaTime; 
-            yield return null; 
+            // --- 1. 移动逻辑 ---
+            transform.position += moveVector * Time.deltaTime;
+
+            // --- 2. 缩放逻辑 (生长) ---
+            float elapsed = Time.time - startTime;
+            if (elapsed < growDuration)
+            {
+                // 计算当前的进度 (0 到 1)
+                float t = elapsed / growDuration;
+                // 只平滑改变 X 轴
+                float newX = Mathf.Lerp(0, targetScale.x, t);
+                transform.localScale = new Vector3(newX, targetScale.y, targetScale.z);
+            }
+            else
+            {
+                // 确保生长结束后保持在目标缩放
+                transform.localScale = targetScale;
+            }
+
+            yield return null;
         }
 
-        // 销毁自身
         Destroy(gameObject);
     }
 }

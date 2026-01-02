@@ -99,7 +99,7 @@ public class HuskDandy : MonoBehaviour
         transform.Translate(Vector3.right * direction * speed * Time.deltaTime);
 
         float x_distanceToPlayer = playerTransform != null ? Mathf.Abs(playerTransform.position.x - transform.position.x) : Mathf.Infinity;
-        if (x_distanceToPlayer <= chaseDistance)
+        if (x_distanceToPlayer <= chaseDistance && playerTransform.position.y <= transform.position.y + 3f)
         {
             currentState = State.Chasing;
             animator.SetBool("findplayer", true);
@@ -115,7 +115,7 @@ public class HuskDandy : MonoBehaviour
 
         float distanceToPlayer = Mathf.Abs(playerTransform.position.x - transform.position.x);
 
-        if (distanceToPlayer > chaseDistance)
+        if (distanceToPlayer > chaseDistance && playerTransform.position.y > transform.position.y + 3f)
         {
             // 玩家跑远，返回 Idle/Walking
             currentState = State.Idle;
@@ -182,24 +182,8 @@ public class HuskDandy : MonoBehaviour
 
         currentState = State.Idle;
         idleStartTime = Time.time;
-        // 检查玩家距离，决定下一个状态
-        // float distanceToPlayer = playerTransform != null ? Mathf.Abs(playerTransform.position.x - transform.position.x) : Mathf.Infinity;
-
-        // if (distanceToPlayer <= attackRange)
-        // {
-        //     currentState = State.Idle; // 玩家还在攻击范围，继续 Idle -> 攻击循环
-        //     idleStartTime = Time.time; // 重启 Idle 计时
-        // }
-        // else if (distanceToPlayer <= chaseDistance)
-        // {
-        //     currentState = State.Chasing; // 玩家在追逐范围，但不在攻击范围，继续追逐
-        // }
-        // else
-        // {
-        //     currentState = State.Walking; // 玩家跑远，返回巡逻
-        // }
     }
-    
+
     bool IsOutOfBounds()
     {
         float currentX = transform.position.x;
@@ -213,6 +197,17 @@ public class HuskDandy : MonoBehaviour
         else
         {
             return currentX <= leftBound;
+        }
+    }
+    public void TakeDamage(int damage)
+    {
+        if (currentState == State.Dead) return;
+        blood -= damage;
+        if (blood <= 0)
+        {
+            blood = 0;
+            currentState = State.Dead;
+            death();
         }
     }
     void FacePlayer()

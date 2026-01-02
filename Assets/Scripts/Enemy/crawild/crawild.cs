@@ -16,6 +16,7 @@ public class crawild : MonoBehaviour
     public string deathAnimation = "Die";
     [Header("Enemy Status")]
     public int blood = 5;
+    public string backgroundMusic = "Enemy/crawler";
 
     private Animator animator;
     private Vector3 startPosition;
@@ -28,8 +29,7 @@ public class crawild : MonoBehaviour
         animator = GetComponent<Animator>();
         startPosition = transform.position;
         originalScale = transform.localScale;
-
-
+        SoundManager.instance.PlayBGM(backgroundMusic);
     }
 
     void Update()
@@ -58,8 +58,7 @@ public class crawild : MonoBehaviour
         float direction = isMoveRight ? 1f : -1f;
         transform.Translate(Vector3.right * direction * speed * Time.deltaTime);
 
-        // �������߶���
-        animator.SetBool("IsWalking", true);
+
     }
 
     bool IsOutOfBounds()
@@ -74,8 +73,6 @@ public class crawild : MonoBehaviour
     {
         isTurning = true;
 
-        // ֹͣ�ƶ�������ת�򶯻�
-        //animator.SetBool("IsWalking", false);
         animator.SetBool("turn",true);
 
         // �ȴ�ת�򶯻����
@@ -127,6 +124,11 @@ public class crawild : MonoBehaviour
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(new Vector3(currentStart.x + x_min, currentStart.y, currentStart.z), 0.3f);
         Gizmos.DrawWireSphere(new Vector3(currentStart.x + x_max, currentStart.y, currentStart.z), 0.3f);
+    }
+    public void TakeDamage(int damage)
+    {
+        blood -= damage;
+        if (blood < 0) blood = 0;
     }
 
     void OnCollisionEnter2D(Collision2D collision)
