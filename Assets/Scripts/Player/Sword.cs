@@ -54,7 +54,20 @@ public class Sword : MonoBehaviour
         else if (collision.tag == "Enermy")
         {
             EnermyHealth enermyHealth = collision.GetComponent<EnermyHealth>();
-            enermyHealth.TakeDamage(1);
+            if (enermyHealth == null)
+            {
+                FalseKnight falseKnight = collision.GetComponent<FalseKnight>();
+                if (falseKnight != null)
+                {
+                    falseKnight.TakeDamage(1);
+                }
+            }
+            else
+            {
+                enermyHealth.TakeDamage(1);
+            }
+
+
             Instantiate(hit_Enermy_Effect, collision.transform);
 
             Vector2 knockbackDirection = GetAttackDirection();

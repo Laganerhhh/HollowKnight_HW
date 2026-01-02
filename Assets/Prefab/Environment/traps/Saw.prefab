@@ -218,6 +218,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   trapsType: 1
+  haveAnimator: 0
   movPath:
   - {fileID: 2838367593821101244}
   - {fileID: 6519236074836301668}

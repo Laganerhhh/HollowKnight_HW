@@ -13,7 +13,8 @@ public class Ball : MonoBehaviour
     [SerializeField] private int damage = 1;
     [SerializeField] private float lifeTime = 5f;
     [SerializeField] private float destroyDelay = 0.5f;
-    [SerializeField] private ParticleSystem sparkOnFallToGround;
+    [SerializeField] private GameObject tail_particle;
+    [SerializeField] private GameObject explode_particle;
 
     private Rigidbody2D _rb;
     private Collider2D _collider;
@@ -54,10 +55,10 @@ public class Ball : MonoBehaviour
         }
         else if (layerName == "Terrian")
         {
-            if (sparkOnFallToGround != null)
-            {
-                Instantiate(sparkOnFallToGround.gameObject, transform.position, Quaternion.identity);
-            }
+            tail_particle.SetActive(false);
+
+            GameObject explode_part = Instantiate(explode_particle, transform.position, Quaternion.identity);
+            explode_part.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
             Explode();
         }
     }

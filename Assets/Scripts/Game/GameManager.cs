@@ -11,6 +11,8 @@ public class GameManager : MonoBehaviour
 
     public GameObject player;
 
+    public bool isLastLevel = false;
+
     private Animator playerAnimator;
     private void Awake()
     {
@@ -85,7 +87,12 @@ public class GameManager : MonoBehaviour
     {
         //加载下一个关卡
         int currentSceneIndex = UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex;
+        if (currentSceneIndex + 2 == 6)
+        {
+            isLastLevel = true;
+        }
         UnityEngine.SceneManagement.SceneManager.LoadScene(currentSceneIndex + 1);
+        
     }  
 
     public void ResumeGame()

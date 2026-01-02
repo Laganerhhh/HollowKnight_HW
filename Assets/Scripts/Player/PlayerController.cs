@@ -139,7 +139,8 @@ public class PlayerController : MonoBehaviour
         soulPower = GetComponent<PlayerSoulPower>();
         playerHealth = GetComponent<PlayerHealth>();
 
-        this.transform.position = GameManager.instance.GetRespawnPoint();
+        if (!GameManager.instance.isLastLevel)
+            this.transform.position = GameManager.instance.GetRespawnPoint();
         anim.SetTrigger("respawn");
     }
 

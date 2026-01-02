@@ -139,7 +139,7 @@ public class HuskDandy : MonoBehaviour
 
         // 追逐移动
 
-        animator.SetBool("isWalking", true);
+        animator.SetBool("iswalking", true);
         transform.Translate((isMoveRight ? 1 : -1) * speed * Time.deltaTime, 0, 0);
 
     }
@@ -167,7 +167,7 @@ public class HuskDandy : MonoBehaviour
     {
         FacePlayer();
         currentState = State.Attacking;
-        animator.SetBool("isWalking", false);
+        animator.SetBool("iswalking", false);
         StartCoroutine(AttackCoroutine());
     }
     IEnumerator AttackCoroutine()
@@ -218,14 +218,14 @@ public class HuskDandy : MonoBehaviour
         if (playerTransform.position.x > transform.position.x)
         {
             isMoveRight = true;
-            // ✅ 修正：如果原始模型面向左，面朝右需要 **负** 的 X Scale
+            //如果原始模型面向左，面朝右需要 **负** 的 X Scale
             transform.localScale = new Vector3(-Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);
         }
         // 玩家在左边 (需要怪物面向左边)
         else
         {
             isMoveRight = false;
-            // ✅ 修正：如果原始模型面向左，面朝左需要 **正** 的 X Scale
+            //如果原始模型面向左，面朝左需要 **正** 的 X Scale
             transform.localScale = new Vector3(Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);
         }
     }

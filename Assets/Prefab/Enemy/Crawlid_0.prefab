@@ -129,6 +129,7 @@ MonoBehaviour:
   turnAnimation: Turn
   deathAnimation: Die
   blood: 5
+  backgroundMusic: Enemy/Crawler/crawler
   isMoveRight: 1
 --- !u!61 &1526342862445740168
 BoxCollider2D:

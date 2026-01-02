@@ -25,6 +25,11 @@ public class HitFlash : MonoBehaviour
         }
     }
 
+    void Start()
+    {
+        
+    }
+
     public void Flash()
     {
         if (_flashRoutine != null)

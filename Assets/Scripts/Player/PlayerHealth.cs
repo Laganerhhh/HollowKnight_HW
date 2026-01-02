@@ -55,6 +55,7 @@ public class PlayerHealth : MonoBehaviour
         isInvincible = true;
         yield return new WaitForSeconds(respawnInvincibleDuration);
         isInvincible = false;
+
     }
 
     void RespawnToSafePosition()

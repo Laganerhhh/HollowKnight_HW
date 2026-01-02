@@ -16,14 +16,29 @@ public class EnermyHealth : MonoBehaviour
     [SerializeField] private GameObject hit_particle_effect;
     [SerializeField] private GameObject death_effect;
 
+    [SerializeField] private bool isFalseknight = false;
+
+    private FalseKnight falseKnight = null;
+
     void Start()
     {
         current_health = max_health;
         animator = GetComponent<Animator>();
+
+        if (isFalseknight)
+        {
+            falseKnight = GetComponentInParent<FalseKnight>();
+        }
     }
 
     public void TakeDamage(int damage)
     {
+        if (isFalseknight)
+        {
+            FalseKnightTakeDamege(damage);
+            return;
+        }
+
         current_health -= damage;
         //创建受伤特效
         if (injury_effect != null)
@@ -41,6 +56,16 @@ public class EnermyHealth : MonoBehaviour
         }
     }
 
+    private void FalseKnightTakeDamege(int damage)
+    {
+        //创建受伤特效
+        if (injury_effect != null)
+        {
+            Instantiate(injury_effect, transform.position + transform.up * 0.5f, Quaternion.identity, transform);
+            Instantiate(hit_particle_effect, transform.position + transform.up * 0.5f, Quaternion.identity);
+        }
+        falseKnight.TakeDamage(damage);
+    }
 
     void Die()
     {

@@ -19,6 +19,9 @@ public class CameraManager : MonoBehaviour
     private Coroutine shakeCoroutine;
     private float originalNoiseAmplitude = 0f;
     private float originalOrthoSize = 5f;
+    // 记录抖动开始时的值，以便在外部 StopShake 时恢复
+    private Vector3 lastShakeFramingOffset = Vector3.zero;
+    private Vector3 backupOriginalCameraLocalPos = Vector3.zero;
     // 平移（左右查看）相关
     [SerializeField] private float panOffsetX = 3f; // 按键时相对于跟随目标的横向偏移（world units）
     [SerializeField] private float panOffsetY = 2f; // 按键时相对于跟随目标的纵向偏移（world units）
@@ -149,6 +152,8 @@ public class CameraManager : MonoBehaviour
                 virtualCamera = go.GetComponent<CinemachineVirtualCamera>() ?? virtualCamera;
                 noise = virtualCamera != null ? virtualCamera.GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>() : noise;
                 framingTransposer = virtualCamera != null ? virtualCamera.GetCinemachineComponent<CinemachineFramingTransposer>() : framingTransposer;
+                if (framingTransposer != null)
+                    lastShakeFramingOffset = framingTransposer.m_TrackedObjectOffset;
             }
         }
 
@@ -156,6 +161,8 @@ public class CameraManager : MonoBehaviour
         {
             // 后备方案：对主相机做简单位移抖动
             if (shakeCoroutine != null) StopCoroutine(shakeCoroutine);
+            if (mainCamera != null)
+                backupOriginalCameraLocalPos = mainCamera.transform.localPosition;
             shakeCoroutine = StartCoroutine(BackupShakeRoutine(duration, amplitude));
             return;
         }
@@ -183,6 +190,23 @@ public class CameraManager : MonoBehaviour
 
         if (noise != null)
             noise.m_AmplitudeGain = originalNoiseAmplitude;
+
+        // 如果使用了 FramingTransposer 的抖动，确保恢复其偏移
+        if (framingTransposer != null)
+        {
+            if (lastShakeFramingOffset != Vector3.zero)
+                framingTransposer.m_TrackedObjectOffset = lastShakeFramingOffset;
+            else
+                framingTransposer.m_TrackedObjectOffset = originalFramingOffset;
+            lastShakeFramingOffset = Vector3.zero;
+        }
+
+        // 如果使用了后备主相机抖动，恢复主相机的位置
+        if (mainCamera != null && backupOriginalCameraLocalPos != Vector3.zero)
+        {
+            mainCamera.transform.localPosition = backupOriginalCameraLocalPos;
+            backupOriginalCameraLocalPos = Vector3.zero;
+        }
 
         // 停止手柄震动
         if (rumbleCoroutine != null)

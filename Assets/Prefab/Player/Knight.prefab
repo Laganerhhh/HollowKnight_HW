@@ -543,7 +543,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 256
   ClimbJumpForce: {x: 5, y: 8}
-  wallSlideSpeed: 2
+  wallSlideSpeed: 4
 --- !u!1 &2809861003531292320
 GameObject:
   m_ObjectHideFlags: 0

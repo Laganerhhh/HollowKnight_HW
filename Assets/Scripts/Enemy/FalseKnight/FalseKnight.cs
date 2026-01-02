@@ -1,7 +1,5 @@
 using UnityEngine;
 using System.Collections;
-using Unity.VisualScripting;
-using Cinemachine;
 
 
 public class FalseKnight: MonoBehaviour
@@ -90,10 +88,13 @@ public class FalseKnight: MonoBehaviour
     public GameObject maggotObject; // 需要在编辑器中赋予带有 SpriteRenderer + Rigidbody2D 的预制件
     public Animator maggotAnimator;
 
+    private DamageOnContact damageOnContact;
+
     void Start()
     {
         animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
+        damageOnContact = GetComponent<DamageOnContact>();
 
         GameObject playerObj = GameObject.FindWithTag(playerTag);
         if (playerObj != null)
@@ -114,14 +115,6 @@ public class FalseKnight: MonoBehaviour
     void Update()
     {
         FlipCheck();
-        if (Input.GetKeyDown(KeyCode.O))
-        {
-            ChangeState(State.CrazyAttack);
-        }
-        if (Input.GetKeyDown(KeyCode.J))
-        {
-            TakeDamage(1);
-        }
         switch (currentState)
         {
             case State.Idle:
@@ -213,15 +206,15 @@ public class FalseKnight: MonoBehaviour
         }
         else
         {
-            if (Random.value < 0.3f)
+            if (Random.value < 0.2f)
             {
                 ChangeState(State.JumpAttack);
             }
-            else if (Random.value < 0.6f)
+            else if (Random.value < 0.4f)
             {
                 ChangeState(State.Attack);
             }
-            else if (Random.value < 0.8f)
+            else if (Random.value < 0.5f)
             {
                 ChangeState(State.Jump);
             }
@@ -323,6 +316,7 @@ public class FalseKnight: MonoBehaviour
         rb.velocity = Vector2.zero;
         isCoreExposed = true; // 允许玩家攻击本体（此时攻击会伤害内部血量）
 
+        damageOnContact.canMakeDamege = false;
 
         // 3. 等待眩晕时间
         yield return new WaitForSeconds(1.0f);
@@ -357,6 +351,9 @@ public class FalseKnight: MonoBehaviour
             externalHealth = externalMax;
             isCoreExposed = false; // 重新戴上头盔，外部可被伤害
             maggotObject.SetActive(false);
+
+            damageOnContact.canMakeDamege = true;
+
             // 恢复后回到 Idle，玩家需要重新攻击外部血量
             if (RollCount == 1)
                 ChangeState(State.CrazyAttack);
@@ -481,6 +478,7 @@ public class FalseKnight: MonoBehaviour
     {
         hitbox.enabled = true;
         audioSource.PlayOneShot(JumpLandSound);
+        CameraManager.instance.Shake(1, 2);
         if (currentState == State.Attack)
         {
             FireShockwave();
