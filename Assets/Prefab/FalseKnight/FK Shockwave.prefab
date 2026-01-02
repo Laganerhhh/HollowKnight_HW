@@ -11,7 +11,8 @@ GameObject:
   - component: {fileID: 697539681586094816}
   - component: {fileID: 6401260409603271101}
   - component: {fileID: 2683944982286517592}
-  - component: {fileID: -8064384105810014367}
+  - component: {fileID: -9041615483588577137}
+  - component: {fileID: -8437776124934623234}
   m_Layer: 9
   m_Name: FK Shockwave
   m_TagString: Untagged
@@ -139,7 +140,20 @@ PolygonCollider2D:
       - {x: -0.51838017, y: 1.1202639}
       - {x: -3.6255689, y: 0.06469834}
   m_UseDelaunayMesh: 0
---- !u!114 &-8064384105810014367
+--- !u!114 &-9041615483588577137
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 412785711172482780}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b553435bd10d0004ea966b381ed93236, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  damage: 1
+--- !u!114 &-8437776124934623234
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -151,3 +165,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7333ca1593ece9b45b3722bec349750c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  growDuration: 0.5

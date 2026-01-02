@@ -46,6 +46,10 @@ public class FalseKnight: MonoBehaviour
     private Rigidbody2D rb;
     private Transform player; // 玩家引用
 
+    // public Collider2D hitbox;
+    public hitbox hitbox;
+
+
     [Header("玩家和场景边界")]
     public string playerTag = "Player";
 
@@ -64,20 +68,47 @@ public class FalseKnight: MonoBehaviour
     public float fireballSpeed = 10f;
     public float fireballLifetime = 2f;
 
+    [Header("掉落石块设置")]
+    public GameObject fallingRockPrefab; // 需要在编辑器中赋予带有 SpriteRenderer + Rigidbody2D 的预制件
+    public float rockSpawnY = 4f; // 石块生成的高度（世界坐标 Y）
+
+    public float rockSpawnMinX = -6f; // 石块生成的最小 X 坐标（世界坐标）
+    public float rockSpawnMaxX = 13f; // 石块生成的最大 X 坐标（世界坐标）
+    public int rocksPerCrazy = 6; // 每次狂暴生成的石块数量
+    public float rockSpawnInterval = 0.25f; // 石块生成间隔
+    public float rockFallSpeed = 0f; // 若为 0 则使用物理重力，否则设置初始向下速度
+    public float rockLifetime = 10f; // 石块自动销毁时间
+    [Header("音效")]
+    [SerializeField] private AudioClip hitSound; // 受击音效
+    [SerializeField] private AudioClip hitSoundCore; // 受击本体音效
+    [SerializeField] private AudioClip JumpLandSound; // 跳跃落地音效
+    [SerializeField] private AudioClip JumpSound; // 跳跃音效
+    [SerializeField] private string backgroundMusic="Boss/FalseKnightAudio"; // 背景音乐
+    private AudioSource audioSource;
+    private HitFlash _hitFlash;
+    [Header("Maggot 设置")]
+    public GameObject maggotObject; // 需要在编辑器中赋予带有 SpriteRenderer + Rigidbody2D 的预制件
+    public Animator maggotAnimator;
+
     void Start()
     {
         animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
-        
+
         GameObject playerObj = GameObject.FindWithTag(playerTag);
         if (playerObj != null)
         {
             player = playerObj.transform;
         }
+        audioSource = GetComponent<AudioSource>();
+        _hitFlash = GetComponent<HitFlash>();
         // 初始化血量
         externalHealth = externalMax;
         internalHealth = internalMax;
         ChangeState(State.Idle);
+        SoundManager.instance.PlayBGM(backgroundMusic, 0.5f);
+        if(maggotObject!=null)
+            maggotObject.SetActive(false); 
     }
 
     void Update()
@@ -111,14 +142,19 @@ public class FalseKnight: MonoBehaviour
 
     private void ChangeState(State newState)
     {
-        if (currentState == State.Die) return; 
+        if (currentState == State.Die) return;
 
-        // 退出旧状态的清理工作
+
         if (currentState == State.Roll)
         {
-            isCoreExposed = false;
+            isCoreExposed = true;
         }
-        
+        else
+        {
+            isCoreExposed = false;
+            maggotObject.SetActive(false);
+        }
+
         currentState = newState;
         
         // 进入新状态的初始化
@@ -147,7 +183,10 @@ public class FalseKnight: MonoBehaviour
                 StopAllCoroutines();
                 StartCoroutine(JumpSequence());
                 break;
-
+            case State.Die:
+                StopAllCoroutines();
+                StartCoroutine(DieSequence());
+                break;
         }
     }
 
@@ -182,7 +221,7 @@ public class FalseKnight: MonoBehaviour
             {
                 ChangeState(State.Attack);
             }
-            else if (Random.value < 0.9f)
+            else if (Random.value < 0.8f)
             {
                 ChangeState(State.Jump);
             }
@@ -205,6 +244,7 @@ public class FalseKnight: MonoBehaviour
     
     IEnumerator JumpAttackSequence()
     {
+        audioSource.PlayOneShot(JumpSound);
         animator.SetTrigger("JumpAttack");
         float horizontalDir = (player.position.x > transform.position.x) ? 1f : -1f;
         rb.velocity = new Vector2(horizontalDir * moveSpeed * 1.5f, jumpForce * 2f);
@@ -218,20 +258,52 @@ public class FalseKnight: MonoBehaviour
     {
         animator.SetTrigger("StartAttack");
         yield return new WaitForSeconds(0.8f);
-        const int attackCount = 6;
+        int attackCount = 6;
+
+        // 同时开始掉落石块的协程，让石块在狂暴期间从天而降
+        if (fallingRockPrefab != null)
+        {
+            StartCoroutine(SpawnFallingRocks(rocksPerCrazy));
+        }
 
         for (int i = 0; i < attackCount; i++)
         {
             animator.SetTrigger("Attack");
-            Flip();  
+            Flip();
             yield return new WaitForSeconds(0.7f);
         }
         ChangeState(State.Idle);
     }
 
+    IEnumerator SpawnFallingRocks(int count)
+    {
+        for (int i = 0; i < count; i++)
+        {
+            float spawnX = Random.Range(rockSpawnMinX, rockSpawnMaxX);
+            Vector3 spawnPos = new Vector3(spawnX, rockSpawnY, transform.position.z);
+
+            GameObject rock = Instantiate(fallingRockPrefab, spawnPos, Quaternion.identity);
+
+            Rigidbody2D rockRb = rock.GetComponent<Rigidbody2D>();
+            if (rockRb != null)
+            {
+                if (rockFallSpeed != 0f)
+                {
+                    rockRb.velocity = new Vector2(0f, -Mathf.Abs(rockFallSpeed));
+                }
+                // 否则使用 Rigidbody2D 的 gravityScale
+            }
+
+            Destroy(rock, rockLifetime);
+
+            yield return new WaitForSeconds(rockSpawnInterval);
+        }
+    }
+
     IEnumerator JumpSequence()
     {
         animator.SetTrigger("Jump");
+        audioSource.PlayOneShot(JumpSound);
         float horizontalDir = (player.position.x > transform.position.x) ? 1f : -1f;
         rb.velocity = new Vector2(jumpdirection * moveSpeed * 1.5f, jumpForce * 2f);
         jumpdirection *= -1f; // 每次跳跃后改变方向
@@ -245,14 +317,29 @@ public class FalseKnight: MonoBehaviour
     IEnumerator StunnedRollSequence()
     {
         // 1. 触发眩晕动画（可能是 Roll 或 Recover）
-        animator.SetTrigger("Roll"); 
+        animator.SetTrigger("Roll");
         RollCount += 1;
         // 2. 停止一切移动
         rb.velocity = Vector2.zero;
         isCoreExposed = true; // 允许玩家攻击本体（此时攻击会伤害内部血量）
 
-        // 3. 持续眩晕时间
-        yield return new WaitForSeconds(stunDuration); 
+
+        // 3. 等待眩晕时间
+        yield return new WaitForSeconds(1.0f);
+
+        float duration = 0.5f;
+        float currentTime = 0f;
+        Vector2 targetScale = new Vector2(1.0f, 1.0f);
+        while (currentTime < duration)
+        {
+            maggotObject.SetActive(true);
+            maggotObject.transform.localScale = Vector2.Lerp(Vector2.zero, targetScale, currentTime / duration);
+            currentTime += Time.deltaTime;
+            yield return null;
+        }
+        maggotObject.transform.localScale = targetScale;
+
+        yield return new WaitForSeconds(stunDuration);
 
         // 4. 恢复动画（爬起来，重新戴上头盔）
         // 如果内部血量已经被击破，则直接死亡而不恢复
@@ -260,22 +347,38 @@ public class FalseKnight: MonoBehaviour
         {
             canRecover = false;
             ChangeState(State.Die);
-            animator.SetTrigger("Roll");
             yield break;
         }
 
         // 否则恢复外部血量并播放恢复动画
         if (canRecover)
         {
-            animator.SetTrigger("Recover"); 
+            animator.SetTrigger("Recover");
             externalHealth = externalMax;
             isCoreExposed = false; // 重新戴上头盔，外部可被伤害
+            maggotObject.SetActive(false);
             // 恢复后回到 Idle，玩家需要重新攻击外部血量
             if (RollCount == 1)
                 ChangeState(State.CrazyAttack);
-            else 
+            else
                 ChangeState(State.Idle);
         }
+    }
+
+    IEnumerator DieSequence()
+    {
+        //晃动摄像机、播放死亡粒子特效
+        animator.SetTrigger("Roll");
+        yield return new WaitForSeconds(0.5f);
+        rb.velocity = Vector2.zero;
+        rb.simulated = false;
+        BoxCollider2D boxCollider = GetComponent<BoxCollider2D>();
+        if (boxCollider != null)
+        {
+            boxCollider.enabled = false;
+        }
+        hitbox.enabled = false;
+        maggotObject.SetActive(false);
     }
     
     // --- 伤害接收逻辑 ---
@@ -286,12 +389,17 @@ public class FalseKnight: MonoBehaviour
     public void TakeDamage(int damage)
     {
         if (currentState == State.Die) return;
-
+        if (_hitFlash != null && currentState != State.Roll)
+        {
+            _hitFlash.Flash();
+        }
         if (isCoreExposed)
         {
             // 攻击本体（内部血量）
             internalHealth -= damage;
-            // 可选：播放本体受击特效
+            maggotAnimator.SetTrigger("Hit");
+            
+            StartCoroutine(HitFeedback());
             if (internalHealth <= 0)
             {
                 // 内部血量清零 -> 死亡（不再恢复）
@@ -316,16 +424,22 @@ public class FalseKnight: MonoBehaviour
     
     IEnumerator HitFeedback()
     {
-        // 简单的闪烁效果
-        // GetComponent<SpriteRenderer>().color = Color.red;
-        yield return new WaitForSeconds(0.1f);
-        // GetComponent<SpriteRenderer>().color = Color.white;
+        if (currentState == State.Die) yield break;
+        else if (currentState != State.Roll)
+        {
+            audioSource.PlayOneShot(hitSound);
+            yield return null;
+        }
+        else
+        {
+            audioSource.PlayOneShot(hitSoundCore);
+            yield return null;
+        }
     }
 
 
     private void FlipCheck()
     {
-        
         if (currentState!=State.Idle) return;
 
         if (player.position.x > transform.position.x && !isFacingRight)
@@ -340,7 +454,6 @@ public class FalseKnight: MonoBehaviour
 
     private void FireShockwave()
     {
-
         GameObject wave = Instantiate(
             shockwavePrefab,
             transform.position,
@@ -355,22 +468,28 @@ public class FalseKnight: MonoBehaviour
         if (controller != null)
         {
             controller.Initialize(shockwaveSpeed, shockwaveLifetime, direction);
-            Debug.Log("冲击波已启动。");
+            // Debug.Log("冲击波已启动。");
         }
         else
         {
-            Debug.LogError("冲击波 Prefab 上缺少 ShockwaveController 脚本！");
+            // Debug.LogError("冲击波 Prefab 上缺少 ShockwaveController 脚本！");
         }
     }
-    
+
 
     public void OnAttackStart()
     {
-        if (currentState == State.JumpAttack || currentState == State.Attack)
+        hitbox.enabled = true;
+        audioSource.PlayOneShot(JumpLandSound);
+        if (currentState == State.Attack)
         {
             FireShockwave();
-            Debug.Log("False Knight 发射冲击波！");
+            // Debug.Log("False Knight 发射冲击波！");
         }
+    }
+    public void OnAttackEnd()
+    {
+        hitbox.enabled = false;
     }
 
     private void Flip()

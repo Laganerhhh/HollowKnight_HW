@@ -148,7 +148,7 @@ public class GreateHusk : MonoBehaviour
         transform.Translate(Vector3.right * direction * speed * Time.deltaTime);
 
         float x_distanceToPlayer = playerTransform != null ? Mathf.Abs(playerTransform.position.x - transform.position.x) : Mathf.Infinity;
-        if (x_distanceToPlayer <= chaseDistance)
+        if (x_distanceToPlayer <= chaseDistance&& playerTransform.position.y <= transform.position.y + 3f)
         {
             currentState = State.Chasing;
             animator.SetBool("findplayer", true);
@@ -166,7 +166,7 @@ public class GreateHusk : MonoBehaviour
 
         float distanceToPlayer = Mathf.Abs(playerTransform.position.x - transform.position.x);
 
-        if (distanceToPlayer > chaseDistance)
+        if (distanceToPlayer > chaseDistance && playerTransform.position.y > transform.position.y + 3f)
         {
             // 玩家跑远，返回 Idle/Walking
             currentState = State.Idle;
@@ -321,7 +321,18 @@ public class GreateHusk : MonoBehaviour
         animator.SetTrigger("Death");
     }
 
+    public void TakeDamage(int damage)
+    {
+        if (currentState == State.Dead) return;
 
+        blood -= damage;
+        if (blood <= 0)
+        {
+            blood = 0;
+            currentState = State.Dead;
+            death();
+        }
+    }
     // 获取移动范围的中心点
     float GetCenterPosition()
     {
