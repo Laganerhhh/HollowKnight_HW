@@ -41,6 +41,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float dashCooldown = 1f;
     [SerializeField] private float dashDuration = 0.2f;
 
+    [Header("着陆特效")]
+    [SerializeField] private GameObject dust_effect;
+
     [Header("火球")]
     [SerializeField] private float fireBall_cooldown = 1.0f;
     private bool canFireBall = true;
@@ -134,6 +137,10 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
         soulPower = GetComponent<PlayerSoulPower>();
+        playerHealth = GetComponent<PlayerHealth>();
+
+        this.transform.position = GameManager.instance.GetRespawnPoint();
+        anim.SetTrigger("respawn");
     }
 
     private bool canCombo = false;
@@ -539,6 +546,11 @@ public class PlayerController : MonoBehaviour
                 // 离开当前地面
                 if (currentGroundCollider == col) currentGroundCollider = null;
                 isOnGround = false;
+
+                //离开地面创建特效
+                Vector3 effectPos = new Vector3(col.ClosestPoint(transform.position).x, col.ClosestPoint(transform.position).y - 0.1f, 0);
+                GameObject dust_eff = Instantiate(dust_effect, effectPos, Quaternion.identity);
+                dust_eff.transform.Rotate(new Vector3(-90, 0, -90));
                 anim.SetBool("isOnGround", isOnGround);
             }
         }
@@ -551,7 +563,18 @@ public class PlayerController : MonoBehaviour
                 // 记录当前接触的地面碰撞体
                 currentGroundCollider = col;
                 groundedTime = 0f; // 重置计时
-                TransitionToGround();
+
+                if (anim.GetCurrentAnimatorClipInfo(0).Length > 0 &&
+                    anim.GetCurrentAnimatorClipInfo(0)[0].clip.name == "fall")
+                {
+                    //创建着陆特效在地面表面
+                    col.ClosestPoint(transform.position);
+                    Vector3 effectPos = new Vector3(col.ClosestPoint(transform.position).x, col.ClosestPoint(transform.position).y - 0.1f, 0);
+                    GameObject dust_eff = Instantiate(dust_effect, effectPos, Quaternion.identity);
+                    dust_eff.transform.Rotate(new Vector3(-90, 0, -90));
+                    TransitionToGround();
+                }
+
             }
             else if (col.gameObject.layer == LayerMask.NameToLayer("Terrian")
             && !isOnGround)

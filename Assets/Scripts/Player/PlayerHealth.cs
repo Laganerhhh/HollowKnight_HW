@@ -5,6 +5,7 @@ using UnityEngine;
 public enum DamageType
 {
     NormalDamage,
+    CollideDamage,
     TrapDamage
 }
 
@@ -30,6 +31,8 @@ public class PlayerHealth : MonoBehaviour
 
     [Header("免伤率")]
     [SerializeField] private float damageReductionRate = 0.0f;
+
+    [SerializeField] private GameObject player_hit_particle;
 
     void Start()
     {
@@ -90,6 +93,8 @@ public class PlayerHealth : MonoBehaviour
         if (playerSoulPower.UseSoulPower(SoulPowerSkill.Recovery))
         {
             HealthUIMgr.Instance.GainHealth(current_health, 1, max_health);
+            //关闭提示
+            TutorialUI.instance.HideTutorial(TutorialUITyepe.Recover);
             current_health += 1;
         }
     }
@@ -101,16 +106,24 @@ public class PlayerHealth : MonoBehaviour
         damage = Mathf.RoundToInt(damage * (1.0f - damageReductionRate));
         damage = Mathf.Min(damage, current_health);
         current_health -= damage;
+
+        //生成受伤特效
+        Instantiate(player_hit_particle, transform.position, Quaternion.identity);
+
         if (current_health <= 0)
         {
             //死亡
             HealthUIMgr.Instance.LoseHealth(current_health, damage, max_health);
             playerController.enabled = false;
+            rb2d.velocity = Vector2.zero;
+            rb2d.simulated = false;
             animator.SetTrigger("death");
             SoundManager.instance.PlaySound(SoundIndex.player_death);
         }
         else
         {
+            //提示回血
+            TutorialUI.instance.ShowTutorial(TutorialUITyepe.Recover, 10f);
             //进入无敌状态
             isInvincible = true;
             StartCoroutine(InvincibleTimer());

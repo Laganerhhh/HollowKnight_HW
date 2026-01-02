@@ -47,18 +47,18 @@ public class crawild : MonoBehaviour
 
     void Move()
     {
-        // ¼ì²é±ß½ç
+        // ï¿½ï¿½ï¿½ß½ï¿½
         if (IsOutOfBounds())
         {
             StartCoroutine(TurnAround());
             return;
         }
 
-        // ÒÆ¶¯½ÇÉ«
+        // ï¿½Æ¶ï¿½ï¿½ï¿½É«
         float direction = isMoveRight ? 1f : -1f;
         transform.Translate(Vector3.right * direction * speed * Time.deltaTime);
 
-        // ÉèÖÃÐÐ×ß¶¯»­
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß¶ï¿½ï¿½ï¿½
         animator.SetBool("IsWalking", true);
     }
 
@@ -67,8 +67,6 @@ public class crawild : MonoBehaviour
         float currentX = transform.position.x;
         float leftBound = startPosition.x + x_min;
         float rightBound = startPosition.x + x_max;
-        Debug.Log("CurrentX: " + currentX + ", LeftBound: " + leftBound + ", RightBound: " + rightBound);
-        Debug.Log("CurrentX: " + currentX + ", LeftBound: " + leftBound + ", RightBound: " + rightBound);
         return currentX >= rightBound || currentX <= leftBound;
     }
 
@@ -76,18 +74,18 @@ public class crawild : MonoBehaviour
     {
         isTurning = true;
 
-        // Í£Ö¹ÒÆ¶¯²¢²¥·Å×ªÏò¶¯»­
+        // Í£Ö¹ï¿½Æ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ªï¿½ò¶¯»ï¿½
         //animator.SetBool("IsWalking", false);
         animator.SetBool("turn",true);
 
-        // µÈ´ý×ªÏò¶¯»­Íê³É
+        // ï¿½È´ï¿½×ªï¿½ò¶¯»ï¿½ï¿½ï¿½ï¿½
         yield return new WaitForSeconds(0.5f);
 
-        // ¸Ä±ä·½Ïò²¢·­×ª½ÇÉ«
+        // ï¿½Ä±ä·½ï¿½ò²¢·ï¿½×ªï¿½ï¿½É«
         isMoveRight = !isMoveRight;
         FlipCharacter();
 
-        // ÉÔÎ¢ÒÆ¶¯Ò»µã£¬±ÜÃâ¿¨ÔÚ±ß½ç
+        // ï¿½ï¿½Î¢ï¿½Æ¶ï¿½Ò»ï¿½ã£¬ï¿½ï¿½ï¿½â¿¨ï¿½Ú±ß½ï¿½
         float direction = isMoveRight ? 0.1f : -0.1f;
         transform.Translate(Vector3.right * direction);
 
@@ -107,27 +105,49 @@ public class crawild : MonoBehaviour
         }
     }
 
-    // ¸¨Öú·½·¨£º»ñÈ¡ÒÆ¶¯·¶Î§ÖÐÐÄµã
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡ï¿½Æ¶ï¿½ï¿½ï¿½Î§ï¿½ï¿½ï¿½Äµï¿½
     float GetCenterPosition()
     {
         return startPosition.x + (x_min + x_max) / 2f;
     }
 
-    // µ÷ÊÔÓÃ£ºÔÚSceneÊÓÍ¼ÖÐÏÔÊ¾ÒÆ¶¯·¶Î§
+    // ï¿½ï¿½ï¿½ï¿½ï¿½Ã£ï¿½ï¿½ï¿½Sceneï¿½ï¿½Í¼ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½Æ¶ï¿½ï¿½ï¿½Î§
     void OnDrawGizmosSelected()
     {
         Vector3 currentStart = Application.isPlaying ? startPosition : transform.position;
         Gizmos.color = Color.red;
 
-        // »æÖÆ±ß½çÏß
+        // ï¿½ï¿½ï¿½Æ±ß½ï¿½ï¿½ï¿½
         Gizmos.DrawLine(
             new Vector3(currentStart.x + x_min, currentStart.y - 0.5f, currentStart.z),
             new Vector3(currentStart.x + x_max, currentStart.y - 0.5f, currentStart.z)
         );
 
-        // »æÖÆ±ß½çµã
+        // ï¿½ï¿½ï¿½Æ±ß½ï¿½ï¿½
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(new Vector3(currentStart.x + x_min, currentStart.y, currentStart.z), 0.3f);
         Gizmos.DrawWireSphere(new Vector3(currentStart.x + x_max, currentStart.y, currentStart.z), 0.3f);
+    }
+
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.collider.tag == "Player")
+        {
+            PlayerHealth playerHealth = collision.gameObject.GetComponent<PlayerHealth>();
+            playerHealth.TakeDamage(1, DamageType.CollideDamage);
+            //å‡»é€€çŽ©å®¶
+            PlayerController playerController = collision.gameObject.GetComponent<PlayerController>();
+            float knockbackForce = 5f;
+            if (playerController.transform.position.x < transform.position.x)
+            {
+                // çŽ©å®¶åœ¨å·¦ä¾§ï¼Œå‘å·¦å‡»é€€
+                playerController.ApplyKnockback(knockbackForce, Vector2.left);
+            }
+            else
+            {
+                // çŽ©å®¶åœ¨å³ä¾§ï¼Œå‘å³å‡»é€€
+                playerController.ApplyKnockback(knockbackForce, Vector2.right);
+            }
+        }
     }
 }

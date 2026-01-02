@@ -64,6 +64,12 @@ public class PlayerSoulPower : MonoBehaviour
 
     public void AddSoulPower(float value)
     {
+        if (currentSoulPower + value > maxSoulPower)
+        {
+            currentSoulPower = maxSoulPower;
+            UpdateSoulPowerUI();
+            return;
+        }
         currentSoulPower += value;
         UpdateSoulPowerUI();
     }

@@ -23,6 +23,7 @@ public static class SoundIndex
     public const string player_wallslide= "Player/PlayerWallSlide";
     
 
+    public const string enermy_damage = "Others/enemy_damage";
 
 
     public const string first_game_BG = "SceneBgm/FirstGameBG";
@@ -34,5 +35,10 @@ public static class SoundIndex
     public const string final_stage_bg_3 = "Final Stage/S59-55 Final Stage 3";
     public const string final_stage_bg_4 = "Final Stage/S59-55 Final Stage 4";
     public const string final_stage_bg_5 = "Final Stage/S59-55 Final Stage 5";
+
+
+    //UI音效
+    public const string ui_button_confirm = "UI/UIButton_Confirm";
+    public const string ui_button_selected = "UI/UIButton_Selected";
 
 }

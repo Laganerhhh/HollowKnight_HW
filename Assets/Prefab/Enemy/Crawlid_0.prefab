@@ -12,6 +12,9 @@ GameObject:
   - component: {fileID: 3350490683339964013}
   - component: {fileID: 5725113434062656053}
   - component: {fileID: 871657451740749997}
+  - component: {fileID: 1526342862445740168}
+  - component: {fileID: 351531645961865732}
+  - component: {fileID: -973944714697352688}
   m_Layer: 0
   m_Name: Crawlid_0
   m_TagString: Enermy
@@ -72,9 +75,9 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingLayerID: 1859858967
+  m_SortingLayer: 3
+  m_SortingOrder: -5
   m_Sprite: {fileID: 2034781076, guid: 0df1efd57ed1b5f40975c29516d01dbf, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 1
@@ -127,3 +130,93 @@ MonoBehaviour:
   deathAnimation: Die
   blood: 5
   isMoveRight: 1
+--- !u!61 &1526342862445740168
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8032016189335586619}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0.03, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 1.15, y: 0.85}
+    newSize: {x: 1.15, y: 0.85}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  serializedVersion: 2
+  m_Size: {x: 1.15, y: 0.85}
+  m_EdgeRadius: 0
+--- !u!114 &351531645961865732
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8032016189335586619}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c9491d065d6de704b9d80fdfb74489ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  current_health: 2
+  max_health: 2
+  dieAnimParam: Die
+  injury_effect: {fileID: 50210957048737146, guid: e6589a56175eea34e8bc75dfe132339b, type: 3}
+  hit_particle_effect: {fileID: 8571911006177876624, guid: a0633caa664507340a3bc6862d11abd1, type: 3}
+  death_effect: {fileID: 1648848660361343018, guid: dc32dd5a1ef39c546935f16ea547c76d, type: 3}
+--- !u!50 &-973944714697352688
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8032016189335586619}
+  m_BodyType: 0
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1000
+  m_LinearDrag: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 0
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 1
+  m_Constraints: 6

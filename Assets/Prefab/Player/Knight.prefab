@@ -121,8 +121,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: -2093933503
-  m_SortingLayer: 4
+  m_SortingLayerID: 1859858967
+  m_SortingLayer: 3
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: 543fbb9704b9ef64a9432846cac21d0f, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -284,11 +284,12 @@ MonoBehaviour:
   dashForce: 12
   dashCooldown: 1
   dashDuration: 0.3
+  dust_effect: {fileID: 6721041919948290835, guid: fccca15e6151c924299734f3b9da20b3, type: 3}
   fireBall_cooldown: 1.5
   fireBallPrefab: {fileID: 3312149520229250569, guid: 53edf60ef8339ad47a5def34c8402f4c, type: 3}
   fireBallSpawnPoint: {fileID: 6186355662608082752}
   canAttack: 1
-  attackCooldown: 0.1
+  attackCooldown: 0.3
   minGroundedTimeForSafe: 1.5
   maxJumpPressTime: 0.4
   hardLandingThreshold: 1.5
@@ -459,8 +460,9 @@ MonoBehaviour:
   fallDeathY: -20
   respawnInvincibleDuration: 0.5
   isInvincible: 0
-  invincibleDuration: 1
-  damageReductionRate: 1
+  invincibleDuration: 0.5
+  damageReductionRate: 0
+  player_hit_particle: {fileID: 8571911006177876624, guid: fb430b27a379ce7449eae52e4a86ece5, type: 3}
 --- !u!114 &3401916078352661727
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -536,7 +538,7 @@ MonoBehaviour:
   currentClimbState: 0
   leftWallCheck: {fileID: 3067388240327494515}
   rightWallCheck: {fileID: 6802475372730667555}
-  wallCheckDistance: 0.05
+  wallCheckDistance: 0.1
   wallLayer:
     serializedVersion: 2
     m_Bits: 256
@@ -641,6 +643,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hitEffect: {fileID: 7978305935418545222, guid: a3d1d90d22539c049af13e61d886043a, type: 3}
+  hit_Enermy_Effect: {fileID: 5570049075142170883, guid: cc543ab9f872ef94eb9408013da4b4b9, type: 3}
   knockbackForce: 7
   attackDirection: 3
 --- !u!68 &5286909193273597561
@@ -790,6 +793,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hitEffect: {fileID: 7978305935418545222, guid: a3d1d90d22539c049af13e61d886043a, type: 3}
+  hit_Enermy_Effect: {fileID: 5570049075142170883, guid: cc543ab9f872ef94eb9408013da4b4b9, type: 3}
   knockbackForce: 7
   attackDirection: 1
 --- !u!68 &7412590370657600038
@@ -971,7 +975,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &8637228689966569920
 Transform:
   m_ObjectHideFlags: 0
@@ -982,7 +986,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 3.485, y: -3.485, z: -3.485}
+  m_LocalScale: {x: 2, y: -2, z: -2}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 6760559849741997760}
@@ -1025,8 +1029,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: 1859858967
+  m_SortingLayer: 3
   m_SortingOrder: -5
   m_Sprite: {fileID: 21300000, guid: afceafb43583c0d4da6e4e18d1e7d320, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -1169,6 +1173,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hitEffect: {fileID: 7978305935418545222, guid: a3d1d90d22539c049af13e61d886043a, type: 3}
+  hit_Enermy_Effect: {fileID: 5570049075142170883, guid: cc543ab9f872ef94eb9408013da4b4b9, type: 3}
   knockbackForce: 7
   attackDirection: 2
 --- !u!68 &8710779028327914583

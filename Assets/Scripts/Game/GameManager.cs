@@ -7,7 +7,7 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
 
-    public Transform respawnPoint;
+    public Vector3 respawnPoint;
 
     public GameObject player;
 
@@ -33,6 +33,23 @@ public class GameManager : MonoBehaviour
         }
 
         playerAnimator = player.GetComponent<Animator>();
+
+        UIManager.Instance.HideCursor();
+    }
+
+    public void SetIsPlaying(bool playing)
+    {
+        isPlaying = playing;
+    }
+
+    private bool isPlaying = true;
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape) && isPlaying)
+        {
+            PauseGame();
+            isPlaying = false;
+        }
     }
 
     /// <summary>
@@ -56,10 +73,13 @@ public class GameManager : MonoBehaviour
 
         //重新加载当前关卡
         UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
-
-        player.transform.position = respawnPoint.position;
-        playerAnimator.SetTrigger("respawn"); // 触发玩家动画的复活动作
     } 
+
+    public void PauseGame()
+    {
+        Time.timeScale = 0f; //暂停游戏
+        UIManager.Instance.TogglePauseUI();
+    }
 
     public void EnterNextLevel()
     {
@@ -67,4 +87,21 @@ public class GameManager : MonoBehaviour
         int currentSceneIndex = UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex;
         UnityEngine.SceneManagement.SceneManager.LoadScene(currentSceneIndex + 1);
     }  
+
+    public void ResumeGame()
+    {
+        Time.timeScale = 1f; //恢复游戏
+        UIManager.Instance.TogglePauseUI();
+        isPlaying = true;
+    }
+
+    public void SetRespawnPoint(Vector3 newRespawnPoint)
+    {
+        respawnPoint = newRespawnPoint;
+    }
+
+    public Vector3 GetRespawnPoint()
+    {
+        return respawnPoint;
+    }
 }

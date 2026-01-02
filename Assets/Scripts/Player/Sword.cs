@@ -4,6 +4,7 @@ using UnityEngine;
 public class Sword : MonoBehaviour
 {
     [SerializeField] private GameObject hitEffect;
+    [SerializeField] private GameObject hit_Enermy_Effect;
 
     [Header("反冲力")]
     public float knockbackForce = 7f;
@@ -11,10 +12,12 @@ public class Sword : MonoBehaviour
     public AttackDirection attackDirection;
 
     private PlayerController playerController;
+    private PlayerSoulPower playerSoulPower;
 
     void Start()
     {
         playerController = GameManager.instance.GetPlayerController();
+        playerSoulPower = playerController.GetComponent<PlayerSoulPower>();
     }
 
     void OnTriggerEnter2D(Collider2D collision)
@@ -40,6 +43,26 @@ public class Sword : MonoBehaviour
             Vector2 knockbackDirection = GetAttackDirection();
             //给玩家一个反冲的力
             playerController.ApplyKnockback(knockbackForce, knockbackDirection);
+
+            //恢复5点能量
+            playerSoulPower.AddSoulPower(5);
+
+            //销毁剑气
+            this.enabled = false;
+        }
+
+        else if (collision.tag == "Enermy")
+        {
+            EnermyHealth enermyHealth = collision.GetComponent<EnermyHealth>();
+            enermyHealth.TakeDamage(1);
+            Instantiate(hit_Enermy_Effect, collision.transform);
+
+            Vector2 knockbackDirection = GetAttackDirection();
+            //给玩家一个反冲的力
+            playerController.ApplyKnockback(knockbackForce * 0.6f, knockbackDirection);
+
+            //恢复20点能量
+            playerSoulPower.AddSoulPower(20);
 
             //销毁剑气
             this.enabled = false;

@@ -234,5 +234,28 @@ public class HuskDandy : MonoBehaviour
             transform.localScale = new Vector3(Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);
         }
     }
+
+
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.collider.tag == "Player")
+        {
+            PlayerHealth playerHealth = collision.gameObject.GetComponent<PlayerHealth>();
+            playerHealth.TakeDamage(1, DamageType.CollideDamage);
+            //击退玩家
+            PlayerController playerController = collision.gameObject.GetComponent<PlayerController>();
+            float knockbackForce = 5f;
+            if (playerTransform.position.x < transform.position.x)
+            {
+                // 玩家在左侧，向左击退
+                playerController.ApplyKnockback(knockbackForce, Vector2.left);
+            }
+            else
+            {
+                // 玩家在右侧，向右击退
+                playerController.ApplyKnockback(knockbackForce, Vector2.right);
+            }
+        }
+    }
 }
 
