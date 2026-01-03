@@ -89,11 +89,13 @@ public class FalseKnight: MonoBehaviour
     [Header("Maggot 设置")]
     public GameObject maggotObject; // 需要在编辑器中赋予带有 SpriteRenderer + Rigidbody2D 的预制件
     public Animator maggotAnimator;
-
+    private DamageOnContact damageOnContact;
     void Start()
     {
         animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
+
+        damageOnContact = GetComponent<DamageOnContact>();
 
         GameObject playerObj = GameObject.FindWithTag(playerTag);
         if (playerObj != null)
@@ -319,6 +321,7 @@ public class FalseKnight: MonoBehaviour
         // 1. 触发眩晕动画（可能是 Roll 或 Recover）
         animator.SetTrigger("Roll");
         RollCount += 1;
+        damageOnContact.enabled = false; // 关闭碰撞伤害
         // 2. 停止一切移动
         rb.velocity = Vector2.zero;
         isCoreExposed = true; // 允许玩家攻击本体（此时攻击会伤害内部血量）
