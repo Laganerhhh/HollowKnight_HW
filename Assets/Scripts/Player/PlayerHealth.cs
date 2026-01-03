@@ -62,6 +62,9 @@ public class PlayerHealth : MonoBehaviour
     {
         // 将玩家移动到安全点并重置速度与状态
         transform.position = safePosition;
+
+        playerController.SetIsOnGround(true);
+
         if (rb2d != null)
         {
             rb2d.velocity = Vector2.zero;

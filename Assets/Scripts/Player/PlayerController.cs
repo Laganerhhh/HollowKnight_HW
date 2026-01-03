@@ -483,6 +483,7 @@ public class PlayerController : MonoBehaviour
                 hardLand = false; //重置硬着陆状态
                 anim.SetBool("hard_land", hardLand);
                 anim.SetTrigger("jump");
+                anim.ResetTrigger("jumpTwo");
                 SoundManager.instance.PlaySound(SoundIndex.player_jump);
             }
             else if (canJumpTwice)
@@ -585,6 +586,11 @@ public class PlayerController : MonoBehaviour
             }
         }
         anim.SetBool("isOnGround", isOnGround);
+    }
+
+    public void SetIsOnGround(bool isOnGd)
+    {
+        isOnGround = isOnGd;
     }
 
     private void TransitionToGround()

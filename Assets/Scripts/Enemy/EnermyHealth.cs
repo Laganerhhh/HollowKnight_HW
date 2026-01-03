@@ -16,7 +16,11 @@ public class EnermyHealth : MonoBehaviour
     [SerializeField] private GameObject hit_particle_effect;
     [SerializeField] private GameObject death_effect;
 
+    [SerializeField] private GameObject defense_particle;
+
     [SerializeField] private bool isFalseknight = false;
+
+    public bool isDefensing = false;
 
     private FalseKnight falseKnight = null;
 
@@ -39,6 +43,12 @@ public class EnermyHealth : MonoBehaviour
             return;
         }
 
+        if (isDefensing)
+        {
+            DefenseDamege();
+            return;
+        }
+
         current_health -= damage;
         //创建受伤特效
         if (injury_effect != null)
@@ -54,6 +64,12 @@ public class EnermyHealth : MonoBehaviour
             Die();
             return;
         }
+    }
+
+    private void DefenseDamege()
+    {
+        SoundManager.instance.PlaySound(SoundIndex.player_hitRecoil);
+        Instantiate(defense_particle, transform.position + new Vector3(0.5f, 0, 0), Quaternion.identity, transform);
     }
 
     private void FalseKnightTakeDamege(int damage)
