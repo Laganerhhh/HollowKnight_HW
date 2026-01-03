@@ -29,7 +29,6 @@ public class crawild : MonoBehaviour
         animator = GetComponent<Animator>();
         startPosition = transform.position;
         originalScale = transform.localScale;
-        SoundManager.instance.PlayBGM(backgroundMusic);
     }
 
     void Update()

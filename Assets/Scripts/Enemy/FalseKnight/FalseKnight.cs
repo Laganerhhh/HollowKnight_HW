@@ -90,11 +90,15 @@ public class FalseKnight: MonoBehaviour
 
     private DamageOnContact damageOnContact;
 
+    private hitbox hb;
+
     void Start()
     {
         animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
         damageOnContact = GetComponent<DamageOnContact>();
+
+        hb = GetComponentInChildren<hitbox>();
 
         GameObject playerObj = GameObject.FindWithTag(playerTag);
         if (playerObj != null)
@@ -309,6 +313,9 @@ public class FalseKnight: MonoBehaviour
     /// </summary>
     IEnumerator StunnedRollSequence()
     {
+
+        hb.canMakeDamege = false;
+
         // 1. 触发眩晕动画（可能是 Roll 或 Recover）
         animator.SetTrigger("Roll");
         RollCount += 1;
@@ -359,6 +366,8 @@ public class FalseKnight: MonoBehaviour
                 ChangeState(State.CrazyAttack);
             else
                 ChangeState(State.Idle);
+
+            hb.canMakeDamege = true;
         }
     }
 

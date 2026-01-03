@@ -4206,7 +4206,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &696789886
 Transform:
   m_ObjectHideFlags: 0
@@ -4281,6 +4281,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   damage: 1
   effect: {fileID: 328394828140311215, guid: e79a21ec0b74d0949be67fbeec045e08, type: 3}
+  canMakeDamege: 1
 --- !u!1001 &698524444
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6791,7 +6792,9 @@ MonoBehaviour:
   injury_effect: {fileID: 50210957048737146, guid: e6589a56175eea34e8bc75dfe132339b, type: 3}
   hit_particle_effect: {fileID: 8571911006177876624, guid: a0633caa664507340a3bc6862d11abd1, type: 3}
   death_effect: {fileID: 1648848660361343018, guid: dc32dd5a1ef39c546935f16ea547c76d, type: 3}
+  defense_particle: {fileID: 0}
   isFalseknight: 1
+  isDefensing: 0
 --- !u!1001 &1070476380
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -11498,7 +11501,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8641074372048122860, guid: f5fff55a9483a714da75bf546c21b083, type: 3}
       propertyPath: damageReductionRate
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

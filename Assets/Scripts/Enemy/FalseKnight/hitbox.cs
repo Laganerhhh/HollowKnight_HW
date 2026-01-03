@@ -29,6 +29,8 @@ public class hitbox : MonoBehaviour
     [Header("特效设置")]
     [SerializeField] private GameObject effect; // 在 Inspector 中将粒子系统拖到这里
 
+    public bool canMakeDamege = true;
+
     // 当主程序设置 hitbox.enabled = true 时，该方法会自动触发
     private void OnEnable()
     {
@@ -43,6 +45,8 @@ public class hitbox : MonoBehaviour
     {
         // 检查碰撞到的物体是不是玩家
         if (LayerMask.LayerToName(collision.gameObject.layer) != "Player") return;
+        if (!canMakeDamege) return;
+        
         PlayerHealth playerHealth = collision.GetComponent<PlayerHealth>();
         if (playerHealth != null)
         {

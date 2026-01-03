@@ -38,7 +38,7 @@ public class GreateHusk : MonoBehaviour
 
     public bool isMoveRight = true;
     
-    public float idleBeforeAttackDuration = 1.0f; // 【新增】进入攻击范围后，等待 idle 的时间
+    public float idleBeforeAttackDuration = 1.5f; 
     private float idleStartTime = 0f;
 
     public float chaseDistance = 4f;
@@ -48,12 +48,14 @@ public class GreateHusk : MonoBehaviour
     private float nextAttackTime = 0f; // 下一次可以攻击的时间点
     private bool isAttacking = false;  // 标志，用于防止在动画播放期间重复触发
     private Transform playerTransform;
+    private EnermyHealth EnermyHealth;
 
     void Start()
     {
         animator = GetComponent<Animator>();
         startPosition = transform.position;
         originalScale = transform.localScale;
+        EnermyHealth = GetComponent<EnermyHealth>();
         currentState = State.Idle;
         idleStartTime = Time.time;
         GameObject player = GameObject.FindGameObjectWithTag("Player");
@@ -77,7 +79,6 @@ public class GreateHusk : MonoBehaviour
                 TurnAround();
                 break;
             case State.Dead:
-                death();
                 break;
             case State.Attacking:
                 TryAttack();
@@ -100,8 +101,8 @@ public class GreateHusk : MonoBehaviour
     void Idle()
     {
         animator.SetBool("isWalking", false);
-        // 如果需要播放特定的 Idle 动画过渡，可以在这里触发
-        animator.SetTrigger("c_to_idle"); 
+        // // 如果需要播放特定的 Idle 动画过渡，可以在这里触发
+        // animator.SetTrigger("c_to_idle"); 
 
         // 检查玩家距离 (用于 Idle 结束后的判断)
         float distanceToPlayer = playerTransform != null ? Mathf.Abs(playerTransform.position.x - transform.position.x) : Mathf.Infinity;
@@ -132,12 +133,6 @@ public class GreateHusk : MonoBehaviour
 
         void Move()
     {
-        if (!movementEnabled)
-        {
-            animator.SetBool("isWalking", false);
-            return;
-        }
-
         animator.SetBool("isWalking", true);
         if (IsOutOfBounds())
         {
@@ -148,10 +143,14 @@ public class GreateHusk : MonoBehaviour
         transform.Translate(Vector3.right * direction * speed * Time.deltaTime);
 
         float x_distanceToPlayer = playerTransform != null ? Mathf.Abs(playerTransform.position.x - transform.position.x) : Mathf.Infinity;
-        if (x_distanceToPlayer <= chaseDistance&& playerTransform.position.y <= transform.position.y + 3f)
+        if (x_distanceToPlayer <= chaseDistance && playerTransform.position.y <= transform.position.y + 3f)
         {
             currentState = State.Chasing;
             animator.SetBool("findplayer", true);
+        }
+        else
+        {
+            animator.SetBool("findplayer", false);
         }
     }
     
@@ -222,29 +221,30 @@ public class GreateHusk : MonoBehaviour
         isAttacking = true;
         animator.SetTrigger("fight"); // 攻击（FBack）动画
 
-        float animationDuration = 0.5f; 
+        animator.SetBool("isWalking", false);
+
+        float animationDuration = 1.5f; 
         yield return new WaitForSeconds(animationDuration);
         
         isAttacking = false;
         nextAttackTime = Time.time + attackCooldown;
         movementEnabled = true;
-        
+
         // 检查玩家距离，决定下一个状态
         float distanceToPlayer = playerTransform != null ? Mathf.Abs(playerTransform.position.x - transform.position.x) : Mathf.Infinity;
 
-        if (distanceToPlayer <= attackRange)
-        {
-            currentState = State.Idle; // 玩家还在攻击范围，继续 Idle -> 攻击循环
-            idleStartTime = Time.time; // 重启 Idle 计时
-        }
-        else if (distanceToPlayer <= chaseDistance)
-        {
-            currentState = State.Chasing; // 玩家在追逐范围，但不在攻击范围，继续追逐
-        }
-        else
-        {
-            currentState = State.Walking; // 玩家跑远，返回巡逻
-        }
+        // if (distanceToPlayer <= attackRange)
+        // {
+        //     currentState = State.Idle; // 玩家还在攻击范围，继续 Idle -> 攻击循环
+        //     idleStartTime = Time.time; // 重启 Idle 计时
+        // }
+        // else if (distanceToPlayer <= chaseDistance)
+        // {
+        //     currentState = State.Chasing; // 玩家在追逐范围，但不在攻击范围，继续追逐
+        // }
+        currentState = State.Idle; // 统一回到 Idle 状态，由 Idle 逻辑决定下一步
+        idleStartTime = Time.time; // 重启 Idle 计时
+        animator.SetTrigger("c_to_idle"); // 触发 Idle 过渡动画
     }
     
 
@@ -255,7 +255,7 @@ public class GreateHusk : MonoBehaviour
         movementEnabled = false;
         isAttacking = false; 
         animator.SetBool("isWalking", false);
-        
+        EnermyHealth.isDefensing= true;
         FacePlayer(); // 确保防御时面向玩家
         attackLockPosition = transform.position; // 锁定防御位置
 
@@ -264,6 +264,7 @@ public class GreateHusk : MonoBehaviour
 
         // 等待防御动画播放完毕
         yield return new WaitForSeconds(defenseDuration);
+        EnermyHealth.isDefensing= false;
 
         // 3. Defense 结束，直接攻击 FBack (反击)
         
@@ -316,23 +317,7 @@ public class GreateHusk : MonoBehaviour
         currentState = State.Walking;
     }
     
-    void death()
-    {
-        animator.SetTrigger("Death");
-    }
 
-    public void TakeDamage(int damage)
-    {
-        if (currentState == State.Dead) return;
-
-        blood -= damage;
-        if (blood <= 0)
-        {
-            blood = 0;
-            currentState = State.Dead;
-            death();
-        }
-    }
     // 获取移动范围的中心点
     float GetCenterPosition()
     {
@@ -353,5 +338,28 @@ public class GreateHusk : MonoBehaviour
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(new Vector3(currentStart.x + x_min, currentStart.y, currentStart.z), 0.3f);
         Gizmos.DrawWireSphere(new Vector3(currentStart.x + x_max, currentStart.y, currentStart.z), 0.3f);
+    }
+
+
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.collider.tag == "Player")
+        {
+            PlayerHealth playerHealth = collision.gameObject.GetComponent<PlayerHealth>();
+            playerHealth.TakeDamage(1, DamageType.CollideDamage);
+            //击退玩家
+            PlayerController playerController = collision.gameObject.GetComponent<PlayerController>();
+            float knockbackForce = 5f;
+            if (playerController.transform.position.x < transform.position.x)
+            {
+                // 玩家在左侧，向左击退
+                playerController.ApplyKnockback(knockbackForce, Vector2.left);
+            }
+            else
+            {
+                // 玩家在右侧，向右击退
+                playerController.ApplyKnockback(knockbackForce, Vector2.right);
+            }
+        }
     }
 }
