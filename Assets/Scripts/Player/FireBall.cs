@@ -33,8 +33,14 @@ public class FireBall : MonoBehaviour
         transform.Translate(speed * Time.deltaTime * dir, 0, 0, Space.Self);
     }
 
-    void OnTriggerEnter(Collider other)
+    void OnTriggerEnter2D(Collider2D collision)
     {
-        //TODO
+        if (collision.tag == "Enermy")
+        {
+            EnermyHealth enermyHealth = collision.GetComponent<EnermyHealth>();
+            enermyHealth.TakeDamage(damage);
+
+            Destroy(gameObject);
+        }
     }
 }
