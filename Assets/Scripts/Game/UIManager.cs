@@ -25,7 +25,7 @@ public class UIManager : MonoBehaviour
         currentUI.SetActive(true);
 
         //设置自定义光标
-        cursorSprite = ResourceManager.Instance.LoadSprite("UI/Pointers/Cursor");
+        cursorSprite = Resources.Load<Sprite>("Sprites/UI/Pointers/Cursor");
         //光标的热点设置在图片左上角
         Vector2 hotspot = new Vector2(0, 0);
         Cursor.SetCursor(cursorSprite.texture, hotspot, CursorMode.Auto);

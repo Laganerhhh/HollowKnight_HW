@@ -34,8 +34,6 @@ public class PlayerHealth : MonoBehaviour
 
     [SerializeField] private GameObject player_hit_particle;
 
-    private bool gmInvincible = false;
-
     void Start()
     {
         current_health = max_health;
@@ -46,12 +44,6 @@ public class PlayerHealth : MonoBehaviour
 
         // 初始化安全点为当前出生点
         safePosition = transform.position;
-
-        GMService gmService = GMService.Instance;
-        if (gmService != null)
-        {
-            gmService.ApplyCurrentStateToPlayer();
-        }
     }
 
     IEnumerator RespawnAndInvincible()
@@ -77,11 +69,9 @@ public class PlayerHealth : MonoBehaviour
         {
             rb2d.velocity = Vector2.zero;
             rb2d.angularVelocity = 0f;
-            rb2d.simulated = true;
         }
         if (playerController != null)
         {
-            playerController.ResetAllParameters();
             playerController.enabled = true;
         }
     }
@@ -115,7 +105,7 @@ public class PlayerHealth : MonoBehaviour
 
     public void TakeDamage(int damage, DamageType damageType = DamageType.NormalDamage)
     {
-        if (IsInvincible())
+        if (isInvincible)
             return;
         damage = Mathf.RoundToInt(damage * (1.0f - damageReductionRate));
         damage = Mathf.Min(damage, current_health);
@@ -165,36 +155,6 @@ public class PlayerHealth : MonoBehaviour
         isInvincible = false;
     }
 
-    public bool IsInvincible()
-    {
-        return isInvincible || gmInvincible;
-    }
-
-    public void SetGMInvincible(bool enabled)
-    {
-        gmInvincible = enabled;
-    }
-
-    public void FillHealthToMax()
-    {
-        int amount = max_health - current_health;
-        if (amount <= 0)
-        {
-            return;
-        }
-
-        HealthUIMgr healthUIMgr = HealthUIMgr.Instance;
-        if (healthUIMgr != null)
-        {
-            healthUIMgr.GainHealth(current_health, amount, max_health);
-        }
-        current_health = max_health;
-    }
-
-    public void TeleportToSafePosition()
-    {
-        RespawnToSafePosition();
-    }
 
     private void OnHitAnimEnd()
     {

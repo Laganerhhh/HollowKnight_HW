@@ -44,11 +44,13 @@ public class PlayerController : MonoBehaviour
     [Header("着陆特效")]
     [SerializeField] private GameObject dust_effect;
 
+    private const string FireBallPrefabPath = "Effect/shadow_fireball.prefab";
+
     [Header("火球")]
     [SerializeField] private float fireBall_cooldown = 1.0f;
     private bool canFireBall = true;
-    [SerializeField] private GameObject fireBallPrefab;
     [SerializeField] private Transform fireBallSpawnPoint;
+    private GameObject fireBallPrefabAsset;
 
     [SerializeField] private bool canAttack = true;
     [SerializeField] private float attackCooldown = 0.5f;
@@ -83,6 +85,11 @@ public class PlayerController : MonoBehaviour
         anim = GetComponent<Animator>();
         soulPower = GetComponent<PlayerSoulPower>();
         playerHealth = GetComponent<PlayerHealth>();
+        fireBallPrefabAsset = ResourceManager.EnsureInstance().LoadPrefab(FireBallPrefabPath);
+        if (fireBallPrefabAsset == null)
+        {
+            Debug.LogWarning($"火球预制体预加载失败: {FireBallPrefabPath}");
+        }
     }
 
     // 将安全点的 Y 固定为检测到的平台顶部（更安全），如果未检测到平台则使用当前坐标
@@ -396,8 +403,26 @@ public class PlayerController : MonoBehaviour
     private void OnFireBall()
     {
         //发射火球逻辑
-        GameObject fireBallObj = Instantiate(fireBallPrefab, fireBallSpawnPoint.position, fireBallSpawnPoint.rotation);
+        if (fireBallSpawnPoint == null)
+        {
+            Debug.LogWarning("火球发射点未设置");
+            return;
+        }
+
+        if (fireBallPrefabAsset == null)
+        {
+            Debug.LogWarning($"火球预制体未预加载: {FireBallPrefabPath}");
+            return;
+        }
+
+        GameObject fireBallObj = Instantiate(fireBallPrefabAsset, fireBallSpawnPoint.position, fireBallSpawnPoint.rotation);
         FireBall fireBall = fireBallObj.GetComponent<FireBall>();
+        if (fireBall == null)
+        {
+            Debug.LogWarning("火球预制体缺少 FireBall 组件");
+            return;
+        }
+
         fireBall.Initialize(transform.localScale.x > 0 ? false : true);
     }
 
@@ -664,5 +689,14 @@ public class PlayerController : MonoBehaviour
         canJumpTwice = true;
         currentState = PlayerState.Movement;
         moveChanged = 0;
+    }
+
+    private void OnDestroy()
+    {
+        if (fireBallPrefabAsset != null)
+        {
+            ResourceManager.EnsureInstance().Release(fireBallPrefabAsset);
+            fireBallPrefabAsset = null;
+        }
     }
 }

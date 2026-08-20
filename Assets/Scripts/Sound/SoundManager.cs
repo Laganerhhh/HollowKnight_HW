@@ -28,7 +28,7 @@ public class SoundManager : MonoBehaviour
 
     public void PlaySound(string soundName, float volume = 1.0f)
     {
-        AudioClip clip = ResourceManager.Instance.LoadAudioClip(soundName);
+        AudioClip clip = Resources.Load<AudioClip>($"Audios/{soundName}");
         if (clip != null)
         {
             audioSource.PlayOneShot(clip, volume);
@@ -50,7 +50,7 @@ public class SoundManager : MonoBehaviour
 
     public void PlayBGM(string bgmName, float volume = 1.0f)
     {
-        AudioClip clip = ResourceManager.Instance.LoadAudioClip(bgmName);
+        AudioClip clip = Resources.Load<AudioClip>($"Audios/{bgmName}");
         if (clip != null)
         {
             audioSource.Stop();
@@ -74,7 +74,7 @@ public class SoundManager : MonoBehaviour
 
     public AudioClip GetAudioClip(string soundName)
     {
-        AudioClip clip = ResourceManager.Instance.LoadAudioClip(soundName);
+        AudioClip clip = Resources.Load<AudioClip>($"Audios/{soundName}");
         if (clip == null)
         {
             Debug.LogWarning($"Sound {soundName} not found!");

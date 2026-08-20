@@ -55,6 +55,11 @@ public class ResourceManager : MonoBehaviour
         BundleManager.EnsureInstance().Release(asset);
     }
 
+    public void ReleaseInstance(GameObject instance)
+    {
+        BundleManager.EnsureInstance().ReleaseInstance(instance);
+    }
+
     public void UnloadUnusedAssets()
     {
         BundleManager.EnsureInstance().UnloadUnusedAssets();
@@ -90,6 +95,31 @@ public class ResourceManager : MonoBehaviour
         LoadAsync(BuildPrefabPath(path), callback);
     }
 
+    public GameObject InstantiatePrefab(string path, Transform parent = null)
+    {
+        return BundleManager.EnsureInstance().Instantiate(BuildPrefabPath(path), parent);
+    }
+
+    public GameObject InstantiatePrefab(string path, Vector3 position, Quaternion rotation, Transform parent = null)
+    {
+        return BundleManager.EnsureInstance().Instantiate(BuildPrefabPath(path), position, rotation, parent);
+    }
+
+    public void InstantiatePrefabAsync(string path, Action<GameObject> callback)
+    {
+        BundleManager.EnsureInstance().InstantiateAsync(BuildPrefabPath(path), null, callback);
+    }
+
+    public void InstantiatePrefabAsync(string path, Transform parent, Action<GameObject> callback)
+    {
+        BundleManager.EnsureInstance().InstantiateAsync(BuildPrefabPath(path), parent, callback);
+    }
+
+    public void InstantiatePrefabAsync(string path, Vector3 position, Quaternion rotation, Transform parent, Action<GameObject> callback)
+    {
+        BundleManager.EnsureInstance().InstantiateAsync(BuildPrefabPath(path), position, rotation, parent, callback);
+    }
+
     public TextAsset LoadTextAsset(string path)
     {
         return Load<TextAsset>(path);
@@ -113,7 +143,12 @@ public class ResourceManager : MonoBehaviour
 
     private string BuildPrefabPath(string path)
     {
-        return BuildPath("Prefabs", path);
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return string.Empty;
+        }
+
+        return path.Replace('\\', '/').Trim();
     }
 
     private string BuildPath(string root, string path)
