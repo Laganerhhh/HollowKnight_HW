@@ -35,7 +35,7 @@ public class SuperDash : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         playerController = GetComponent<PlayerController>();
         audioSource = GetComponent<AudioSource>();
-        superDashSound = Resources.Load<AudioClip>("Audios/" + SoundIndex.player_superDash_loop);
+        superDashSound = ResourceManager.Instance.LoadAudioClip(SoundIndex.player_superDash_loop);
 
         if (superDashSound == null)
         {

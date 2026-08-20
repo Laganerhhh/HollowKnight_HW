@@ -26,4 +26,5 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/FalseKnight.unity
     guid: 0415b55af518eca45be489d6529252d1
-  m_configObjects: {}
+  m_configObjects:
+    com.unity.addressableassets: {fileID: 11400000, guid: c028c97ae5b11ee4bb0fce9b18940259, type: 2}
