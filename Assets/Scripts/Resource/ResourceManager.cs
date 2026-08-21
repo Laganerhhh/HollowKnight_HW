@@ -1,5 +1,18 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
+
+public class ResourceDownloadStatus
+{
+    public string StatusMessage;
+    public string CurrentLabel;
+    public long DownloadedBytes;
+    public long TotalBytes;
+    public float Progress;
+    public float DownloadBytesPerSecond;
+    public bool HasCatalogUpdate;
+    public bool IsDone;
+}
 
 public class ResourceManager : MonoBehaviour
 {
@@ -63,6 +76,21 @@ public class ResourceManager : MonoBehaviour
     public void UnloadUnusedAssets()
     {
         BundleManager.EnsureInstance().UnloadUnusedAssets();
+    }
+
+    public bool IsRemoteUpdateInProgress()
+    {
+        return BundleManager.EnsureInstance().IsRemoteUpdateInProgress;
+    }
+
+    public bool IsDependencyDownloaded(string label)
+    {
+        return BundleManager.EnsureInstance().IsDependencyDownloaded(label);
+    }
+
+    public void CheckAndDownloadDependencies(IList<string> labels, Action<ResourceDownloadStatus> onProgress, Action onCompleted, Action<string> onError)
+    {
+        BundleManager.EnsureInstance().CheckAndDownloadDependencies(labels, onProgress, onCompleted, onError);
     }
 
     public Sprite LoadSprite(string path)

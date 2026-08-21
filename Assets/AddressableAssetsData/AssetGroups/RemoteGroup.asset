@@ -20,7 +20,8 @@ MonoBehaviour:
   - m_GUID: 3b7bc794475e5b94c888eb2984c3bd47
     m_Address: Assets/Textures/HollowKnightIcon.jpg
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - Require
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 4ebfcd819b192ce4388f6434a6a7ec9a, type: 2}
