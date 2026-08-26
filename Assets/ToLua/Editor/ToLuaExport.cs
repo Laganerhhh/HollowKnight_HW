@@ -156,6 +156,45 @@ public static class ToLuaExport
         "Texture.imageContentsHash",
         "QualitySettings.streamingMipmapsMaxLevelReduction",
         "QualitySettings.streamingMipmapsRenderersPerFrame",		
+        // Project Unity 2022.3 compatibility: skip newer or unstable members that generated invalid wrappers in this project
+        "MeshRenderer.additionalVertexStreams",
+        "MeshRenderer.enlightenVertexStream",
+        "MeshRenderer.subMeshStartIndex",
+        "MeshRenderer.scaleInLightmap",
+        "MeshRenderer.receiveGI",
+        "MeshRenderer.stitchLightmapSeams",
+        "QualitySettings.ForEach",
+        "QualitySettings.SetLODSettings",
+        "QualitySettings.SetTextureMipmapLimitSettings",
+        "QualitySettings.GetTextureMipmapLimitSettings",
+        "QualitySettings.GetRenderPipelineAssetAt",
+        "QualitySettings.GetQualitySettings",
+        "QualitySettings.IsPlatformIncluded",
+        "QualitySettings.TryIncludePlatformAt",
+        "QualitySettings.TryExcludePlatformAt",
+        "QualitySettings.GetActiveQualityLevelsForPlatform",
+        "QualitySettings.GetActiveQualityLevelsForPlatformCount",
+        "QualitySettings.GetAllRenderPipelineAssetsForPlatform",
+        "QualitySettings.terrainQualityOverrides",
+        "QualitySettings.renderPipeline",
+        "QualitySettings.activeQualityLevelChanged",
+        "Material.HasBuffer",
+        "Material.HasConstantBuffer",
+        "Material.IsChildOf",
+        "Material.RevertAllPropertyOverrides",
+        "Material.IsPropertyOverriden",
+        "Material.IsPropertyLocked",
+        "Material.IsPropertyLockedByAncestor",
+        "Material.SetPropertyLock",
+        "Material.ApplyPropertyOverride",
+        "Material.RevertPropertyOverride",
+        "Material.SetBuffer",
+        "Material.SetConstantBuffer",
+        "Material.GetBuffer",
+        "Material.GetConstantBuffer",
+        "Material.enabledKeywords",
+        "Material.parent",
+        "Material.isVariant",
         //NGUI
         "UIInput.ProcessEvent",
         "UIWidget.showHandlesWithMoveTool",
@@ -174,7 +213,8 @@ public static class ToLuaExport
         "Transform.InverseTransformVectors",
         "Transform.TransformPoints",
         "Transform.InverseTransformPoints",
-        "Application.memoryUsageChanged"
+        "Application.memoryUsageChanged",
+        "Resources.InstanceIDsToValidArray"
     };
 
     class _MethodBase
@@ -301,15 +341,15 @@ public static class ToLuaExport
                     continue;
                 }
 
-                if (args[i].Attributes != ParameterAttributes.Out)
-                {
-                    list.Add(GetGenericBaseType(method, args[i].ParameterType));
-                }
-                else
+                if (args[i].ParameterType.IsByRef && args[i].IsOut)
                 {
                     Type genericClass = typeof(LuaOut<>);
                     Type t = genericClass.MakeGenericType(args[i].ParameterType.GetElementType());
                     list.Add(t);
+                }
+                else
+                {
+                    list.Add(GetGenericBaseType(method, args[i].ParameterType));
                 }
             }
 
@@ -473,7 +513,7 @@ public static class ToLuaExport
             {
                 ParameterInfo param = paramInfos[j];
                 string arg = "arg" + j;
-                bool beOutArg = param.Attributes == ParameterAttributes.Out;
+                bool beOutArg = param.ParameterType.IsByRef && param.IsOut;
                 bool beParams = IsParams(param);
                 Type t = GetGenericBaseType(method, param.ParameterType);
                 ProcessArg(t, head, arg, offset + j, j >= checkTypePos, beParams, beOutArg);
@@ -489,7 +529,7 @@ public static class ToLuaExport
                 }
                 else
                 {
-                    if (param.Attributes == ParameterAttributes.Out)
+                    if (param.IsOut)
                     {
                         sbArgs.Append("out arg");
                     }
@@ -3055,15 +3095,15 @@ public static class ToLuaExport
                 continue;
             }
 
-            if (p[i].Attributes != ParameterAttributes.Out)
+            if (p[i].ParameterType.IsByRef && p[i].IsOut)
             {
-                list.Add(GetGenericBaseType(mb, p[i].ParameterType));
+                Type genericClass = typeof(LuaOut<>);
+                Type t = genericClass.MakeGenericType(p[i].ParameterType.GetElementType());
+                list.Add(t);
             }
             else
             {
-                Type genericClass = typeof(LuaOut<>);
-                Type t = genericClass.MakeGenericType(p[i].ParameterType);
-                list.Add(t);
+                list.Add(GetGenericBaseType(mb, p[i].ParameterType));
             }
         }
 
@@ -3573,7 +3613,7 @@ public static class ToLuaExport
                 {
                     sb.AppendFormat("{2}\tfunc.PushByteBuffer(param{1});\r\n", push, i, head);
                 }
-                else if (pi[i].Attributes != ParameterAttributes.Out)
+                else if (!(pi[i].ParameterType.IsByRef && pi[i].IsOut))
                 {
                     sb.AppendFormat("{2}\tfunc.{0}(param{1});\r\n", push, i, head);
                 }
@@ -3946,9 +3986,13 @@ public static class ToLuaExport
 
             if (infos[i].ParameterType.IsByRef)
             {
-                if (infos[i].Attributes == ParameterAttributes.Out)
+                if (infos[i].IsOut)
                 {
                     s2 = "out " + s2;
+                }
+                else if (infos[i].IsIn)
+                {
+                    s2 = "in " + s2;
                 }
                 else
                 {
@@ -3997,7 +4041,7 @@ public static class ToLuaExport
 
         for (int i = 0; i < pis.Length; i++)
         {
-            if (pis[i].Attributes == ParameterAttributes.Out)
+            if (pis[i].IsOut)
             {
                 str += string.Format("\t\t\t\tparam{0} = {1};\r\n", i, GetReturnValue(pis[i].ParameterType.GetElementType()));
                 flag = true;

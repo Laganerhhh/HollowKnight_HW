@@ -89,8 +89,6 @@ public class UnityEngine_ScreenWrap
 		}
 	}
 
-
-
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
 	static int get_width(IntPtr L)
 	{

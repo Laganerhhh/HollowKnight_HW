@@ -50,7 +50,6 @@ public class UnityEngine_ApplicationWrap
 		L.RegVar("exitCancellationToken", get_exitCancellationToken, null);
 		L.RegVar("isEditor", get_isEditor, null);
 		L.RegVar("lowMemory", get_lowMemory, set_lowMemory);
-		L.RegVar("memoryUsageChanged", get_memoryUsageChanged, set_memoryUsageChanged);
 		L.RegVar("logMessageReceived", get_logMessageReceived, set_logMessageReceived);
 		L.RegVar("logMessageReceivedThreaded", get_logMessageReceivedThreaded, set_logMessageReceivedThreaded);
 		L.RegVar("onBeforeRender", get_onBeforeRender, set_onBeforeRender);
@@ -61,7 +60,6 @@ public class UnityEngine_ApplicationWrap
 		L.RegVar("unloading", get_unloading, set_unloading);
 		L.RegFunction("AdvertisingIdentifierCallback", UnityEngine_Application_AdvertisingIdentifierCallback);
 		L.RegFunction("LogCallback", UnityEngine_Application_LogCallback);
-		L.RegFunction("MemoryUsageChangedCallback", UnityEngine_Application_MemoryUsageChangedCallback);
 		L.RegFunction("LowMemoryCallback", UnityEngine_Application_LowMemoryCallback);
 		L.EndStaticLibs();
 	}
@@ -718,13 +716,6 @@ public class UnityEngine_ApplicationWrap
 	}
 
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static int get_memoryUsageChanged(IntPtr L)
-	{
-		ToLua.Push(L, new EventObject(typeof(UnityEngine.Application.MemoryUsageChangedCallback)));
-		return 1;
-	}
-
-	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
 	static int get_logMessageReceived(IntPtr L)
 	{
 		ToLua.Push(L, new EventObject(typeof(UnityEngine.Application.LogCallback)));
@@ -850,41 +841,6 @@ public class UnityEngine_ApplicationWrap
 			{
 				UnityEngine.Application.LowMemoryCallback ev = (UnityEngine.Application.LowMemoryCallback)arg0.func;
 				UnityEngine.Application.lowMemory -= ev;
-			}
-
-			return 0;
-		}
-		catch (Exception e)
-		{
-			return LuaDLL.toluaL_exception(L, e);
-		}
-	}
-
-	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static int set_memoryUsageChanged(IntPtr L)
-	{
-		try
-		{
-			EventObject arg0 = null;
-
-			if (LuaDLL.lua_isuserdata(L, 2) != 0)
-			{
-				arg0 = (EventObject)ToLua.ToObject(L, 2);
-			}
-			else
-			{
-				return LuaDLL.luaL_throw(L, "The event 'UnityEngine.Application.memoryUsageChanged' can only appear on the left hand side of += or -= when used outside of the type 'UnityEngine.Application'");
-			}
-
-			if (arg0.op == EventOp.Add)
-			{
-				UnityEngine.Application.MemoryUsageChangedCallback ev = (UnityEngine.Application.MemoryUsageChangedCallback)arg0.func;
-				UnityEngine.Application.memoryUsageChanged += ev;
-			}
-			else if (arg0.op == EventOp.Sub)
-			{
-				UnityEngine.Application.MemoryUsageChangedCallback ev = (UnityEngine.Application.MemoryUsageChangedCallback)arg0.func;
-				UnityEngine.Application.memoryUsageChanged -= ev;
 			}
 
 			return 0;
@@ -1219,33 +1175,6 @@ public class UnityEngine_ApplicationWrap
 			{
 				LuaTable self = ToLua.CheckLuaTable(L, 2);
 				Delegate arg1 = DelegateTraits<UnityEngine.Application.LogCallback>.Create(func, self);
-				ToLua.Push(L, arg1);
-			}
-			return 1;
-		}
-		catch(Exception e)
-		{
-			return LuaDLL.toluaL_exception(L, e);
-		}
-	}
-
-	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static int UnityEngine_Application_MemoryUsageChangedCallback(IntPtr L)
-	{
-		try
-		{
-			int count = LuaDLL.lua_gettop(L);
-			LuaFunction func = ToLua.CheckLuaFunction(L, 1);
-
-			if (count == 1)
-			{
-				Delegate arg1 = DelegateTraits<UnityEngine.Application.MemoryUsageChangedCallback>.Create(func);
-				ToLua.Push(L, arg1);
-			}
-			else
-			{
-				LuaTable self = ToLua.CheckLuaTable(L, 2);
-				Delegate arg1 = DelegateTraits<UnityEngine.Application.MemoryUsageChangedCallback>.Create(func, self);
 				ToLua.Push(L, arg1);
 			}
 			return 1;

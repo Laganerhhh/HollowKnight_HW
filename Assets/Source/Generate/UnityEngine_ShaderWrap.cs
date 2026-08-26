@@ -92,18 +92,10 @@ public class UnityEngine_ShaderWrap
 	{
 		try
 		{
-			int count = LuaDLL.lua_gettop(L);
-
-			if (count == 1 && TypeChecker.CheckTypes<string>(L, 1))
-			{
-				string arg0 = ToLua.ToString(L, 1);
-				UnityEngine.Shader.EnableKeyword(arg0);
-				return 0;
-			}
-			else
-			{
-				return LuaDLL.luaL_throw(L, "invalid arguments to method: UnityEngine.Shader.EnableKeyword");
-			}
+			ToLua.CheckArgsCount(L, 1);
+			string arg0 = ToLua.CheckString(L, 1);
+			UnityEngine.Shader.EnableKeyword(arg0);
+			return 0;
 		}
 		catch (Exception e)
 		{
@@ -116,18 +108,10 @@ public class UnityEngine_ShaderWrap
 	{
 		try
 		{
-			int count = LuaDLL.lua_gettop(L);
-
-			if (count == 1 && TypeChecker.CheckTypes<string>(L, 1))
-			{
-				string arg0 = ToLua.ToString(L, 1);
-				UnityEngine.Shader.DisableKeyword(arg0);
-				return 0;
-			}
-			else
-			{
-				return LuaDLL.luaL_throw(L, "invalid arguments to method: UnityEngine.Shader.DisableKeyword");
-			}
+			ToLua.CheckArgsCount(L, 1);
+			string arg0 = ToLua.CheckString(L, 1);
+			UnityEngine.Shader.DisableKeyword(arg0);
+			return 0;
 		}
 		catch (Exception e)
 		{
@@ -140,27 +124,17 @@ public class UnityEngine_ShaderWrap
 	{
 		try
 		{
-			int count = LuaDLL.lua_gettop(L);
-
-			if (count == 1 && TypeChecker.CheckTypes<string>(L, 1))
-			{
-				string arg0 = ToLua.ToString(L, 1);
-				bool o = UnityEngine.Shader.IsKeywordEnabled(arg0);
-				LuaDLL.lua_pushboolean(L, o);
-				return 1;
-			}
-			else
-			{
-				return LuaDLL.luaL_throw(L, "invalid arguments to method: UnityEngine.Shader.IsKeywordEnabled");
-			}
+			ToLua.CheckArgsCount(L, 1);
+			string arg0 = ToLua.CheckString(L, 1);
+			bool o = UnityEngine.Shader.IsKeywordEnabled(arg0);
+			LuaDLL.lua_pushboolean(L, o);
+			return 1;
 		}
 		catch (Exception e)
 		{
 			return LuaDLL.toluaL_exception(L, e);
 		}
 	}
-
-
 
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
 	static int WarmupAllShaders(IntPtr L)

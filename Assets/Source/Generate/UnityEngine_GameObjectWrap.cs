@@ -491,19 +491,11 @@ public class UnityEngine_GameObjectWrap
 	{
 		try
 		{
-			int count = LuaDLL.lua_gettop(L);
-
-			if (count == 2 && TypeChecker.CheckTypes<Unity.Collections.NativeArray<int>, bool>(L, 1))
-			{
-				Unity.Collections.NativeArray<int> arg0 = StackTraits<Unity.Collections.NativeArray<int>>.To(L, 1);
-				bool arg1 = LuaDLL.lua_toboolean(L, 2);
-				UnityEngine.GameObject.SetGameObjectsActive(arg0, arg1);
-				return 0;
-			}
-			else
-			{
-				return LuaDLL.luaL_throw(L, "invalid arguments to method: UnityEngine.GameObject.SetGameObjectsActive");
-			}
+			ToLua.CheckArgsCount(L, 2);
+			Unity.Collections.NativeArray<int> arg0 = StackTraits<Unity.Collections.NativeArray<int>>.Check(L, 1);
+			bool arg1 = LuaDLL.luaL_checkboolean(L, 2);
+			UnityEngine.GameObject.SetGameObjectsActive(arg0, arg1);
+			return 0;
 		}
 		catch (Exception e)
 		{
