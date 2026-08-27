@@ -161,7 +161,18 @@ public class ResourceManager : MonoBehaviour
 
     private string BuildSpritePath(string path)
     {
-        return BuildPath("Sprites", path);
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return string.Empty;
+        }
+
+        string normalizedPath = path.Replace('\\', '/').Trim();
+        if (normalizedPath.StartsWith("Assets/", StringComparison.OrdinalIgnoreCase))
+        {
+            return normalizedPath;
+        }
+
+        return BuildPath("Sprites", normalizedPath);
     }
 
     private string BuildAudioPath(string path)

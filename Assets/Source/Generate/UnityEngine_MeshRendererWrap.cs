@@ -55,3 +55,4 @@ public class UnityEngine_MeshRendererWrap
 		}
 	}
 }
+

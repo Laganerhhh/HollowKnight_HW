@@ -823,7 +823,8 @@ public class BundleManager : MonoBehaviour
 
     private bool IsAddressableAsset<T>() where T : UnityEngine.Object
     {
-        return typeof(T) == typeof(GameObject);
+        Type assetType = typeof(T);
+        return assetType == typeof(GameObject) || assetType == typeof(Sprite);
     }
 
     private string NormalizePath<T>(string path) where T : UnityEngine.Object

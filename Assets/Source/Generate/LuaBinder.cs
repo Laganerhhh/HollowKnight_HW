@@ -68,7 +68,155 @@ public static class LuaBinder
 		UnityEngine_TextAssetWrap.Register(L);
 		UnityEngine_AudioBehaviourWrap.Register(L);
 		L.BeginModule("Events");
+		UnityEngine_Events_UnityEventWrap.Register(L);
+		UnityEngine_Events_UnityEvent_boolWrap.Register(L);
+		UnityEngine_Events_UnityEvent_intWrap.Register(L);
+		UnityEngine_Events_UnityEvent_floatWrap.Register(L);
+		UnityEngine_Events_UnityEvent_stringWrap.Register(L);
+		UnityEngine_Events_UnityEvent_UnityEngine_Vector2Wrap.Register(L);
+		UnityEngine_Events_UnityEventBaseWrap.Register(L);
+		UnityEngine_Events_UnityEvent_string_int_intWrap.Register(L);
+		UnityEngine_Events_UnityEvent_UnityEngine_TouchScreenKeyboard_StatusWrap.Register(L);
 		L.RegFunction("UnityAction", UnityEngine_Events_UnityAction);
+		L.RegFunction("UnityAction_bool", UnityEngine_Events_UnityAction_bool);
+		L.RegFunction("UnityAction_int", UnityEngine_Events_UnityAction_int);
+		L.RegFunction("UnityAction_float", UnityEngine_Events_UnityAction_float);
+		L.RegFunction("UnityAction_string", UnityEngine_Events_UnityAction_string);
+		L.RegFunction("UnityAction_UnityEngine_Vector2", UnityEngine_Events_UnityAction_UnityEngine_Vector2);
+		L.RegFunction("UnityAction_string_int_int", UnityEngine_Events_UnityAction_string_int_int);
+		L.RegFunction("UnityAction_UnityEngine_TouchScreenKeyboard_Status", UnityEngine_Events_UnityAction_UnityEngine_TouchScreenKeyboard_Status);
+		L.EndModule();
+		L.BeginModule("EventSystems");
+		UnityEngine_EventSystems_EventSystemWrap.Register(L);
+		UnityEngine_EventSystems_BaseEventDataWrap.Register(L);
+		UnityEngine_EventSystems_AxisEventDataWrap.Register(L);
+		UnityEngine_EventSystems_PointerEventDataWrap.Register(L);
+		UnityEngine_EventSystems_UIBehaviourWrap.Register(L);
+		UnityEngine_EventSystems_RaycastResultWrap.Register(L);
+		UnityEngine_EventSystems_MoveDirectionWrap.Register(L);
+		UnityEngine_EventSystems_AbstractEventDataWrap.Register(L);
+		UnityEngine_EventSystems_BaseRaycasterWrap.Register(L);
+		L.BeginModule("PointerEventData");
+		UnityEngine_EventSystems_PointerEventData_InputButtonWrap.Register(L);
+		UnityEngine_EventSystems_PointerEventData_FramePressStateWrap.Register(L);
+		L.EndModule();
+		L.EndModule();
+		L.BeginModule("UI");
+		UnityEngine_UI_AnimationTriggersWrap.Register(L);
+		UnityEngine_UI_AspectRatioFitterWrap.Register(L);
+		UnityEngine_UI_ButtonWrap.Register(L);
+		UnityEngine_UI_CanvasScalerWrap.Register(L);
+		UnityEngine_UI_ColorBlockWrap.Register(L);
+		UnityEngine_UI_ContentSizeFitterWrap.Register(L);
+		UnityEngine_UI_DefaultControlsWrap.Register(L);
+		UnityEngine_UI_DropdownWrap.Register(L);
+		UnityEngine_UI_FontDataWrap.Register(L);
+		UnityEngine_UI_FontUpdateTrackerWrap.Register(L);
+		UnityEngine_UI_GraphicWrap.Register(L);
+		UnityEngine_UI_GraphicRaycasterWrap.Register(L);
+		UnityEngine_UI_GraphicRegistryWrap.Register(L);
+		UnityEngine_UI_GridLayoutGroupWrap.Register(L);
+		UnityEngine_UI_HorizontalLayoutGroupWrap.Register(L);
+		UnityEngine_UI_HorizontalOrVerticalLayoutGroupWrap.Register(L);
+		UnityEngine_UI_ImageWrap.Register(L);
+		UnityEngine_UI_InputFieldWrap.Register(L);
+		UnityEngine_UI_LayoutElementWrap.Register(L);
+		UnityEngine_UI_LayoutGroupWrap.Register(L);
+		UnityEngine_UI_LayoutRebuilderWrap.Register(L);
+		UnityEngine_UI_LayoutUtilityWrap.Register(L);
+		UnityEngine_UI_MaskWrap.Register(L);
+		UnityEngine_UI_MaskableGraphicWrap.Register(L);
+		UnityEngine_UI_MaskUtilitiesWrap.Register(L);
+		UnityEngine_UI_NavigationWrap.Register(L);
+		UnityEngine_UI_OutlineWrap.Register(L);
+		UnityEngine_UI_PositionAsUV1Wrap.Register(L);
+		UnityEngine_UI_RawImageWrap.Register(L);
+		UnityEngine_UI_RectMask2DWrap.Register(L);
+		UnityEngine_UI_ScrollbarWrap.Register(L);
+		UnityEngine_UI_ScrollRectWrap.Register(L);
+		UnityEngine_UI_SelectableWrap.Register(L);
+		UnityEngine_UI_ShadowWrap.Register(L);
+		UnityEngine_UI_SliderWrap.Register(L);
+		UnityEngine_UI_SpriteStateWrap.Register(L);
+		UnityEngine_UI_StencilMaterialWrap.Register(L);
+		UnityEngine_UI_TextWrap.Register(L);
+		UnityEngine_UI_ToggleWrap.Register(L);
+		UnityEngine_UI_ToggleGroupWrap.Register(L);
+		UnityEngine_UI_VertexHelperWrap.Register(L);
+		UnityEngine_UI_VerticalLayoutGroupWrap.Register(L);
+		UnityEngine_UI_BaseMeshEffectWrap.Register(L);
+		L.BeginModule("AspectRatioFitter");
+		UnityEngine_UI_AspectRatioFitter_AspectModeWrap.Register(L);
+		L.EndModule();
+		L.BeginModule("Button");
+		UnityEngine_UI_Button_ButtonClickedEventWrap.Register(L);
+		L.EndModule();
+		L.BeginModule("CanvasScaler");
+		UnityEngine_UI_CanvasScaler_ScaleModeWrap.Register(L);
+		UnityEngine_UI_CanvasScaler_ScreenMatchModeWrap.Register(L);
+		UnityEngine_UI_CanvasScaler_UnitWrap.Register(L);
+		L.EndModule();
+		L.BeginModule("ContentSizeFitter");
+		UnityEngine_UI_ContentSizeFitter_FitModeWrap.Register(L);
+		L.EndModule();
+		L.BeginModule("DefaultControls");
+		UnityEngine_UI_DefaultControls_ResourcesWrap.Register(L);
+		L.EndModule();
+		L.BeginModule("Dropdown");
+		UnityEngine_UI_Dropdown_DropdownEventWrap.Register(L);
+		UnityEngine_UI_Dropdown_OptionDataWrap.Register(L);
+		UnityEngine_UI_Dropdown_OptionDataListWrap.Register(L);
+		L.EndModule();
+		L.BeginModule("GraphicRaycaster");
+		UnityEngine_UI_GraphicRaycaster_BlockingObjectsWrap.Register(L);
+		L.EndModule();
+		L.BeginModule("GridLayoutGroup");
+		UnityEngine_UI_GridLayoutGroup_AxisWrap.Register(L);
+		UnityEngine_UI_GridLayoutGroup_ConstraintWrap.Register(L);
+		UnityEngine_UI_GridLayoutGroup_CornerWrap.Register(L);
+		L.EndModule();
+		L.BeginModule("Image");
+		UnityEngine_UI_Image_FillMethodWrap.Register(L);
+		UnityEngine_UI_Image_Origin180Wrap.Register(L);
+		UnityEngine_UI_Image_Origin360Wrap.Register(L);
+		UnityEngine_UI_Image_Origin90Wrap.Register(L);
+		UnityEngine_UI_Image_OriginHorizontalWrap.Register(L);
+		UnityEngine_UI_Image_OriginVerticalWrap.Register(L);
+		UnityEngine_UI_Image_TypeWrap.Register(L);
+		L.EndModule();
+		L.BeginModule("InputField");
+		UnityEngine_UI_InputField_CharacterValidationWrap.Register(L);
+		UnityEngine_UI_InputField_ContentTypeWrap.Register(L);
+		UnityEngine_UI_InputField_EndEditEventWrap.Register(L);
+		UnityEngine_UI_InputField_InputTypeWrap.Register(L);
+		UnityEngine_UI_InputField_LineTypeWrap.Register(L);
+		UnityEngine_UI_InputField_OnChangeEventWrap.Register(L);
+		UnityEngine_UI_InputField_SubmitEventWrap.Register(L);
+		L.RegFunction("OnValidateInput", UnityEngine_UI_InputField_OnValidateInput);
+		L.EndModule();
+		L.BeginModule("Navigation");
+		UnityEngine_UI_Navigation_ModeWrap.Register(L);
+		L.EndModule();
+		L.BeginModule("Scrollbar");
+		UnityEngine_UI_Scrollbar_DirectionWrap.Register(L);
+		UnityEngine_UI_Scrollbar_ScrollEventWrap.Register(L);
+		L.EndModule();
+		L.BeginModule("ScrollRect");
+		UnityEngine_UI_ScrollRect_MovementTypeWrap.Register(L);
+		UnityEngine_UI_ScrollRect_ScrollbarVisibilityWrap.Register(L);
+		UnityEngine_UI_ScrollRect_ScrollRectEventWrap.Register(L);
+		L.EndModule();
+		L.BeginModule("Selectable");
+		UnityEngine_UI_Selectable_TransitionWrap.Register(L);
+		L.EndModule();
+		L.BeginModule("Slider");
+		UnityEngine_UI_Slider_DirectionWrap.Register(L);
+		UnityEngine_UI_Slider_SliderEventWrap.Register(L);
+		L.EndModule();
+		L.BeginModule("Toggle");
+		UnityEngine_UI_Toggle_ToggleEventWrap.Register(L);
+		UnityEngine_UI_Toggle_ToggleTransitionWrap.Register(L);
+		L.EndModule();
 		L.EndModule();
 		L.BeginModule("Camera");
 		L.RegFunction("CameraCallback", UnityEngine_Camera_CameraCallback);
@@ -85,6 +233,29 @@ public static class LuaBinder
 		L.BeginModule("AudioClip");
 		L.RegFunction("PCMReaderCallback", UnityEngine_AudioClip_PCMReaderCallback);
 		L.RegFunction("PCMSetPositionCallback", UnityEngine_AudioClip_PCMSetPositionCallback);
+		L.EndModule();
+		L.EndModule();
+		L.BeginModule("TMPro");
+		TMPro_TMP_DropdownWrap.Register(L);
+		TMPro_TMP_InputFieldWrap.Register(L);
+		TMPro_TMP_TextWrap.Register(L);
+		TMPro_TextMeshProUGUIWrap.Register(L);
+		L.BeginModule("TMP_Dropdown");
+		TMPro_TMP_Dropdown_DropdownEventWrap.Register(L);
+		TMPro_TMP_Dropdown_OptionDataWrap.Register(L);
+		TMPro_TMP_Dropdown_OptionDataListWrap.Register(L);
+		L.EndModule();
+		L.BeginModule("TMP_InputField");
+		TMPro_TMP_InputField_CharacterValidationWrap.Register(L);
+		TMPro_TMP_InputField_ContentTypeWrap.Register(L);
+		TMPro_TMP_InputField_InputTypeWrap.Register(L);
+		TMPro_TMP_InputField_LineTypeWrap.Register(L);
+		TMPro_TMP_InputField_OnChangeEventWrap.Register(L);
+		TMPro_TMP_InputField_SelectionEventWrap.Register(L);
+		TMPro_TMP_InputField_SubmitEventWrap.Register(L);
+		TMPro_TMP_InputField_TextSelectionEventWrap.Register(L);
+		TMPro_TMP_InputField_TouchScreenKeyboardEventWrap.Register(L);
+		L.RegFunction("OnValidateInput", TMPro_TMP_InputField_OnValidateInput);
 		L.EndModule();
 		L.EndModule();
 		L.BeginModule("InputManager");
@@ -111,6 +282,10 @@ public static class LuaBinder
 		L.RegFunction("Action_UnityEngine_AsyncOperation", System_Action_UnityEngine_AsyncOperation);
 		L.RegFunction("Action_int_int", System_Action_int_int);
 		L.RegFunction("Action_int_string", System_Action_int_string);
+		L.RegFunction("Func_UnityEngine_UI_ILayoutElement_float", System_Func_UnityEngine_UI_ILayoutElement_float);
+		L.RegFunction("Func_int_string_TMPro_TMP_FontAsset", System_Func_int_string_TMPro_TMP_FontAsset);
+		L.RegFunction("Func_int_string_TMPro_TMP_SpriteAsset", System_Func_int_string_TMPro_TMP_SpriteAsset);
+		L.RegFunction("Action_TMPro_TMP_TextInfo", System_Action_TMPro_TMP_TextInfo);
 		L.RegFunction("Action_ResourceDownloadStatus", System_Action_ResourceDownloadStatus);
 		L.RegFunction("Action_UnityEngine_Sprite", System_Action_UnityEngine_Sprite);
 		L.RegFunction("Action_UnityEngine_AudioClip", System_Action_UnityEngine_AudioClip);
@@ -150,6 +325,222 @@ public static class LuaBinder
 			{
 				LuaTable self = ToLua.CheckLuaTable(L, 2);
 				Delegate arg1 = DelegateTraits<UnityEngine.Events.UnityAction>.Create(func, self);
+				ToLua.Push(L, arg1);
+			}
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int UnityEngine_Events_UnityAction_bool(IntPtr L)
+	{
+		try
+		{
+			int count = LuaDLL.lua_gettop(L);
+			LuaFunction func = ToLua.CheckLuaFunction(L, 1);
+
+			if (count == 1)
+			{
+				Delegate arg1 = DelegateTraits<UnityEngine.Events.UnityAction<bool>>.Create(func);
+				ToLua.Push(L, arg1);
+			}
+			else
+			{
+				LuaTable self = ToLua.CheckLuaTable(L, 2);
+				Delegate arg1 = DelegateTraits<UnityEngine.Events.UnityAction<bool>>.Create(func, self);
+				ToLua.Push(L, arg1);
+			}
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int UnityEngine_Events_UnityAction_int(IntPtr L)
+	{
+		try
+		{
+			int count = LuaDLL.lua_gettop(L);
+			LuaFunction func = ToLua.CheckLuaFunction(L, 1);
+
+			if (count == 1)
+			{
+				Delegate arg1 = DelegateTraits<UnityEngine.Events.UnityAction<int>>.Create(func);
+				ToLua.Push(L, arg1);
+			}
+			else
+			{
+				LuaTable self = ToLua.CheckLuaTable(L, 2);
+				Delegate arg1 = DelegateTraits<UnityEngine.Events.UnityAction<int>>.Create(func, self);
+				ToLua.Push(L, arg1);
+			}
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int UnityEngine_Events_UnityAction_float(IntPtr L)
+	{
+		try
+		{
+			int count = LuaDLL.lua_gettop(L);
+			LuaFunction func = ToLua.CheckLuaFunction(L, 1);
+
+			if (count == 1)
+			{
+				Delegate arg1 = DelegateTraits<UnityEngine.Events.UnityAction<float>>.Create(func);
+				ToLua.Push(L, arg1);
+			}
+			else
+			{
+				LuaTable self = ToLua.CheckLuaTable(L, 2);
+				Delegate arg1 = DelegateTraits<UnityEngine.Events.UnityAction<float>>.Create(func, self);
+				ToLua.Push(L, arg1);
+			}
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int UnityEngine_Events_UnityAction_string(IntPtr L)
+	{
+		try
+		{
+			int count = LuaDLL.lua_gettop(L);
+			LuaFunction func = ToLua.CheckLuaFunction(L, 1);
+
+			if (count == 1)
+			{
+				Delegate arg1 = DelegateTraits<UnityEngine.Events.UnityAction<string>>.Create(func);
+				ToLua.Push(L, arg1);
+			}
+			else
+			{
+				LuaTable self = ToLua.CheckLuaTable(L, 2);
+				Delegate arg1 = DelegateTraits<UnityEngine.Events.UnityAction<string>>.Create(func, self);
+				ToLua.Push(L, arg1);
+			}
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int UnityEngine_Events_UnityAction_UnityEngine_Vector2(IntPtr L)
+	{
+		try
+		{
+			int count = LuaDLL.lua_gettop(L);
+			LuaFunction func = ToLua.CheckLuaFunction(L, 1);
+
+			if (count == 1)
+			{
+				Delegate arg1 = DelegateTraits<UnityEngine.Events.UnityAction<UnityEngine.Vector2>>.Create(func);
+				ToLua.Push(L, arg1);
+			}
+			else
+			{
+				LuaTable self = ToLua.CheckLuaTable(L, 2);
+				Delegate arg1 = DelegateTraits<UnityEngine.Events.UnityAction<UnityEngine.Vector2>>.Create(func, self);
+				ToLua.Push(L, arg1);
+			}
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int UnityEngine_Events_UnityAction_string_int_int(IntPtr L)
+	{
+		try
+		{
+			int count = LuaDLL.lua_gettop(L);
+			LuaFunction func = ToLua.CheckLuaFunction(L, 1);
+
+			if (count == 1)
+			{
+				Delegate arg1 = DelegateTraits<UnityEngine.Events.UnityAction<string,int,int>>.Create(func);
+				ToLua.Push(L, arg1);
+			}
+			else
+			{
+				LuaTable self = ToLua.CheckLuaTable(L, 2);
+				Delegate arg1 = DelegateTraits<UnityEngine.Events.UnityAction<string,int,int>>.Create(func, self);
+				ToLua.Push(L, arg1);
+			}
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int UnityEngine_Events_UnityAction_UnityEngine_TouchScreenKeyboard_Status(IntPtr L)
+	{
+		try
+		{
+			int count = LuaDLL.lua_gettop(L);
+			LuaFunction func = ToLua.CheckLuaFunction(L, 1);
+
+			if (count == 1)
+			{
+				Delegate arg1 = DelegateTraits<UnityEngine.Events.UnityAction<UnityEngine.TouchScreenKeyboard.Status>>.Create(func);
+				ToLua.Push(L, arg1);
+			}
+			else
+			{
+				LuaTable self = ToLua.CheckLuaTable(L, 2);
+				Delegate arg1 = DelegateTraits<UnityEngine.Events.UnityAction<UnityEngine.TouchScreenKeyboard.Status>>.Create(func, self);
+				ToLua.Push(L, arg1);
+			}
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int UnityEngine_UI_InputField_OnValidateInput(IntPtr L)
+	{
+		try
+		{
+			int count = LuaDLL.lua_gettop(L);
+			LuaFunction func = ToLua.CheckLuaFunction(L, 1);
+
+			if (count == 1)
+			{
+				Delegate arg1 = DelegateTraits<UnityEngine.UI.InputField.OnValidateInput>.Create(func);
+				ToLua.Push(L, arg1);
+			}
+			else
+			{
+				LuaTable self = ToLua.CheckLuaTable(L, 2);
+				Delegate arg1 = DelegateTraits<UnityEngine.UI.InputField.OnValidateInput>.Create(func, self);
 				ToLua.Push(L, arg1);
 			}
 			return 1;
@@ -366,6 +757,33 @@ public static class LuaBinder
 			{
 				LuaTable self = ToLua.CheckLuaTable(L, 2);
 				Delegate arg1 = DelegateTraits<UnityEngine.AudioClip.PCMSetPositionCallback>.Create(func, self);
+				ToLua.Push(L, arg1);
+			}
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int TMPro_TMP_InputField_OnValidateInput(IntPtr L)
+	{
+		try
+		{
+			int count = LuaDLL.lua_gettop(L);
+			LuaFunction func = ToLua.CheckLuaFunction(L, 1);
+
+			if (count == 1)
+			{
+				Delegate arg1 = DelegateTraits<TMPro.TMP_InputField.OnValidateInput>.Create(func);
+				ToLua.Push(L, arg1);
+			}
+			else
+			{
+				LuaTable self = ToLua.CheckLuaTable(L, 2);
+				Delegate arg1 = DelegateTraits<TMPro.TMP_InputField.OnValidateInput>.Create(func, self);
 				ToLua.Push(L, arg1);
 			}
 			return 1;
@@ -744,6 +1162,114 @@ public static class LuaBinder
 			{
 				LuaTable self = ToLua.CheckLuaTable(L, 2);
 				Delegate arg1 = DelegateTraits<System.Action<int,string>>.Create(func, self);
+				ToLua.Push(L, arg1);
+			}
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int System_Func_UnityEngine_UI_ILayoutElement_float(IntPtr L)
+	{
+		try
+		{
+			int count = LuaDLL.lua_gettop(L);
+			LuaFunction func = ToLua.CheckLuaFunction(L, 1);
+
+			if (count == 1)
+			{
+				Delegate arg1 = DelegateTraits<System.Func<UnityEngine.UI.ILayoutElement,float>>.Create(func);
+				ToLua.Push(L, arg1);
+			}
+			else
+			{
+				LuaTable self = ToLua.CheckLuaTable(L, 2);
+				Delegate arg1 = DelegateTraits<System.Func<UnityEngine.UI.ILayoutElement,float>>.Create(func, self);
+				ToLua.Push(L, arg1);
+			}
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int System_Func_int_string_TMPro_TMP_FontAsset(IntPtr L)
+	{
+		try
+		{
+			int count = LuaDLL.lua_gettop(L);
+			LuaFunction func = ToLua.CheckLuaFunction(L, 1);
+
+			if (count == 1)
+			{
+				Delegate arg1 = DelegateTraits<System.Func<int,string,TMPro.TMP_FontAsset>>.Create(func);
+				ToLua.Push(L, arg1);
+			}
+			else
+			{
+				LuaTable self = ToLua.CheckLuaTable(L, 2);
+				Delegate arg1 = DelegateTraits<System.Func<int,string,TMPro.TMP_FontAsset>>.Create(func, self);
+				ToLua.Push(L, arg1);
+			}
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int System_Func_int_string_TMPro_TMP_SpriteAsset(IntPtr L)
+	{
+		try
+		{
+			int count = LuaDLL.lua_gettop(L);
+			LuaFunction func = ToLua.CheckLuaFunction(L, 1);
+
+			if (count == 1)
+			{
+				Delegate arg1 = DelegateTraits<System.Func<int,string,TMPro.TMP_SpriteAsset>>.Create(func);
+				ToLua.Push(L, arg1);
+			}
+			else
+			{
+				LuaTable self = ToLua.CheckLuaTable(L, 2);
+				Delegate arg1 = DelegateTraits<System.Func<int,string,TMPro.TMP_SpriteAsset>>.Create(func, self);
+				ToLua.Push(L, arg1);
+			}
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int System_Action_TMPro_TMP_TextInfo(IntPtr L)
+	{
+		try
+		{
+			int count = LuaDLL.lua_gettop(L);
+			LuaFunction func = ToLua.CheckLuaFunction(L, 1);
+
+			if (count == 1)
+			{
+				Delegate arg1 = DelegateTraits<System.Action<TMPro.TMP_TextInfo>>.Create(func);
+				ToLua.Push(L, arg1);
+			}
+			else
+			{
+				LuaTable self = ToLua.CheckLuaTable(L, 2);
+				Delegate arg1 = DelegateTraits<System.Action<TMPro.TMP_TextInfo>>.Create(func, self);
 				ToLua.Push(L, arg1);
 			}
 			return 1;

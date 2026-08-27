@@ -11,7 +11,7 @@ end
 
 function TestPanel:Ctor()
 	self.panelName = "TestPanel"
-	self.prefabPath = "UI/TestPanel"
+	self.prefabPath = "UI/TestPanel.prefab"
 	self.gameObject = nil
 	self.transform = nil
 	self.resourceManager = nil
@@ -31,12 +31,12 @@ function TestPanel:InitUIAndMetaData()
 
 	self.meta.prefabPath = self.prefabPath
 
-	uiContainer.img = self.ui.root:Find("image"):GetComponent(typeof(UnityEngine.UI.Image))
-	uiContainer.txt = self.ui.root:Find("text"):GetComponent(typeof(CS.TMPro.TextMeshProUGUI))
-	uiContainer.button = self.ui.root:Find("btn"):GetComponent(typeof(UnityEngine.UI.Button))
+	uiContainer.img = self.ui.root:Find("Image"):GetComponent("UnityEngine.UI.Image")
+	uiContainer.txt = self.ui.root:Find("text"):GetComponent("TMPro.TextMeshProUGUI")
+	uiContainer.button = self.ui.root:Find("btn"):GetComponent("UnityEngine.UI.Button")
 
-	uiContainer.img.sprite = self.resourceManager:LoadAsset("Assets/Textures/HollowKnightIcon.jpg", typeof(UnityEngine.Sprite))
-	uiContainer.txt.text = "测试文本"
+	uiContainer.img.sprite = self.resourceManager:LoadSprite("Assets/Textures/HollowKnightIcon.jpg")
+	uiContainer.txt.text = "this is Test from Lua!"
 
 	print("初始化数据")
 end
