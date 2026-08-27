@@ -7,11 +7,16 @@ public class UIManagerWrap
 	public static void Register(LuaState L)
 	{
 		L.BeginClass(typeof(UIManager), typeof(UnityEngine.MonoBehaviour));
+		L.RegFunction("GetLayerRoot", GetLayerRoot);
+		L.RegFunction("OpenPanel", OpenPanel);
+		L.RegFunction("ClosePanel", ClosePanel);
+		L.RegFunction("DestroyPanel", DestroyPanel);
+		L.RegFunction("BackPanel", BackPanel);
 		L.RegFunction("EnterNextScene", EnterNextScene);
+		L.RegFunction("LoadScene", LoadScene);
 		L.RegFunction("ExitGame", ExitGame);
-		L.RegFunction("SwitchUI", SwitchUI);
-		L.RegFunction("BackToLastUI", BackToLastUI);
-		L.RegFunction("TogglePauseUI", TogglePauseUI);
+		L.RegFunction("SetGamePaused", SetGamePaused);
+		L.RegFunction("PauseGame", PauseGame);
 		L.RegFunction("ResumeGame", ResumeGame);
 		L.RegFunction("ReturnToMainMenu", ReturnToMainMenu);
 		L.RegFunction("HideCursor", HideCursor);
@@ -20,7 +25,97 @@ public class UIManagerWrap
 		L.RegFunction("__tostring", ToLua.op_ToString);
 		L.RegVar("Instance", get_Instance, set_Instance);
 		L.RegVar("pauseUI", get_pauseUI, set_pauseUI);
+		L.RegVar("NormalRoot", get_NormalRoot, null);
+		L.RegVar("PopupRoot", get_PopupRoot, null);
+		L.RegVar("TopRoot", get_TopRoot, null);
+		L.RegVar("ToastRoot", get_ToastRoot, null);
+		L.RegVar("IsPaused", get_IsPaused, null);
 		L.EndClass();
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int GetLayerRoot(IntPtr L)
+	{
+		try
+		{
+			ToLua.CheckArgsCount(L, 2);
+			UIManager obj = (UIManager)ToLua.CheckObject<UIManager>(L, 1);
+			string arg0 = ToLua.CheckString(L, 2);
+			UnityEngine.Transform o = obj.GetLayerRoot(arg0);
+			ToLua.Push(L, o);
+			return 1;
+		}
+		catch (Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int OpenPanel(IntPtr L)
+	{
+		try
+		{
+			ToLua.CheckArgsCount(L, 2);
+			UIManager obj = (UIManager)ToLua.CheckObject<UIManager>(L, 1);
+			string arg0 = ToLua.CheckString(L, 2);
+			obj.OpenPanel(arg0);
+			return 0;
+		}
+		catch (Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int ClosePanel(IntPtr L)
+	{
+		try
+		{
+			ToLua.CheckArgsCount(L, 2);
+			UIManager obj = (UIManager)ToLua.CheckObject<UIManager>(L, 1);
+			string arg0 = ToLua.CheckString(L, 2);
+			obj.ClosePanel(arg0);
+			return 0;
+		}
+		catch (Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int DestroyPanel(IntPtr L)
+	{
+		try
+		{
+			ToLua.CheckArgsCount(L, 2);
+			UIManager obj = (UIManager)ToLua.CheckObject<UIManager>(L, 1);
+			string arg0 = ToLua.CheckString(L, 2);
+			obj.DestroyPanel(arg0);
+			return 0;
+		}
+		catch (Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int BackPanel(IntPtr L)
+	{
+		try
+		{
+			ToLua.CheckArgsCount(L, 1);
+			UIManager obj = (UIManager)ToLua.CheckObject<UIManager>(L, 1);
+			obj.BackPanel();
+			return 0;
+		}
+		catch (Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
 	}
 
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
@@ -55,6 +150,23 @@ public class UIManagerWrap
 	}
 
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int LoadScene(IntPtr L)
+	{
+		try
+		{
+			ToLua.CheckArgsCount(L, 2);
+			UIManager obj = (UIManager)ToLua.CheckObject<UIManager>(L, 1);
+			int arg0 = (int)LuaDLL.luaL_checknumber(L, 2);
+			obj.LoadScene(arg0);
+			return 0;
+		}
+		catch (Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
 	static int ExitGame(IntPtr L)
 	{
 		try
@@ -71,14 +183,14 @@ public class UIManagerWrap
 	}
 
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static int SwitchUI(IntPtr L)
+	static int SetGamePaused(IntPtr L)
 	{
 		try
 		{
 			ToLua.CheckArgsCount(L, 2);
 			UIManager obj = (UIManager)ToLua.CheckObject<UIManager>(L, 1);
-			UnityEngine.GameObject arg0 = (UnityEngine.GameObject)ToLua.CheckObject(L, 2, typeof(UnityEngine.GameObject));
-			obj.SwitchUI(arg0);
+			bool arg0 = LuaDLL.luaL_checkboolean(L, 2);
+			obj.SetGamePaused(arg0);
 			return 0;
 		}
 		catch (Exception e)
@@ -88,29 +200,13 @@ public class UIManagerWrap
 	}
 
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static int BackToLastUI(IntPtr L)
+	static int PauseGame(IntPtr L)
 	{
 		try
 		{
 			ToLua.CheckArgsCount(L, 1);
 			UIManager obj = (UIManager)ToLua.CheckObject<UIManager>(L, 1);
-			obj.BackToLastUI();
-			return 0;
-		}
-		catch (Exception e)
-		{
-			return LuaDLL.toluaL_exception(L, e);
-		}
-	}
-
-	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static int TogglePauseUI(IntPtr L)
-	{
-		try
-		{
-			ToLua.CheckArgsCount(L, 1);
-			UIManager obj = (UIManager)ToLua.CheckObject<UIManager>(L, 1);
-			obj.TogglePauseUI();
+			obj.PauseGame();
 			return 0;
 		}
 		catch (Exception e)
@@ -231,6 +327,101 @@ public class UIManagerWrap
 		catch(Exception e)
 		{
 			return LuaDLL.toluaL_exception(L, e, o, "attempt to index pauseUI on a nil value");
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int get_NormalRoot(IntPtr L)
+	{
+		object o = null;
+
+		try
+		{
+			o = ToLua.ToObject(L, 1);
+			UIManager obj = (UIManager)o;
+			UnityEngine.Transform ret = obj.NormalRoot;
+			ToLua.Push(L, ret);
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e, o, "attempt to index NormalRoot on a nil value");
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int get_PopupRoot(IntPtr L)
+	{
+		object o = null;
+
+		try
+		{
+			o = ToLua.ToObject(L, 1);
+			UIManager obj = (UIManager)o;
+			UnityEngine.Transform ret = obj.PopupRoot;
+			ToLua.Push(L, ret);
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e, o, "attempt to index PopupRoot on a nil value");
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int get_TopRoot(IntPtr L)
+	{
+		object o = null;
+
+		try
+		{
+			o = ToLua.ToObject(L, 1);
+			UIManager obj = (UIManager)o;
+			UnityEngine.Transform ret = obj.TopRoot;
+			ToLua.Push(L, ret);
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e, o, "attempt to index TopRoot on a nil value");
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int get_ToastRoot(IntPtr L)
+	{
+		object o = null;
+
+		try
+		{
+			o = ToLua.ToObject(L, 1);
+			UIManager obj = (UIManager)o;
+			UnityEngine.Transform ret = obj.ToastRoot;
+			ToLua.Push(L, ret);
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e, o, "attempt to index ToastRoot on a nil value");
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int get_IsPaused(IntPtr L)
+	{
+		object o = null;
+
+		try
+		{
+			o = ToLua.ToObject(L, 1);
+			UIManager obj = (UIManager)o;
+			bool ret = obj.IsPaused;
+			LuaDLL.lua_pushboolean(L, ret);
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e, o, "attempt to index IsPaused on a nil value");
 		}
 	}
 

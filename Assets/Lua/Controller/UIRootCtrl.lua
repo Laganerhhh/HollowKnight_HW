@@ -24,10 +24,15 @@ function UIRootCtrl:Start()
 	print("[Lua] GameManager ready:", self.gameManager ~= nil)
 	print("[Lua] ResourceManager ready:", self.resourceManager ~= nil)
 
+	UIPanelManager.Init({
+		uiManager = self.uiManager,
+		resourceManager = self.resourceManager,
+	})
+
 	PanelRegistry.RegisterAll()
 
-	if UIPanelManager.Get("TestPanel") then
-		UIPanelManager.Open("TestPanel", { message = "Lua MVC startup success" })
+	if UIPanelManager.GetDefinition("StartPanel") then
+		UIPanelManager.Open("StartPanel", { message = "Lua UI startup success" })
 	end
 end
 
@@ -35,6 +40,11 @@ function UIRootCtrl:RefreshManagers()
 	self.uiManager = ManagerRegistry.Refresh("ui")
 	self.gameManager = ManagerRegistry.Refresh("game")
 	self.resourceManager = ManagerRegistry.Refresh("resource")
+
+	UIPanelManager.Init({
+		uiManager = self.uiManager,
+		resourceManager = self.resourceManager,
+	})
 end
 
 function UIRootCtrl:OnSceneLoaded(level)

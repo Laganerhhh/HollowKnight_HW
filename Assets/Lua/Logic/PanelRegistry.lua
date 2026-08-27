@@ -1,17 +1,30 @@
 local UIPanelManager = require "Logic.UIPanelManager"
 
 local definitions = {
-	{ name = "TestPanel", module = require "View.TestPanel" },
+	{
+		name = "StartPanel",
+		modulePath = "View.StartPanel",
+		prefabPath = "UI/StartPanel",
+		layer = "Normal",
+		cache = true,
+		isPopup = false,
+	},
+	{
+		name = "TestPanel",
+		modulePath = "View.TestPanel",
+		prefabPath = "UI/TestPanel",
+		layer = "Normal",
+		cache = true,
+		isPopup = false,
+	},
 }
 
-PanelRegistry = PanelRegistry or {};
+PanelRegistry = PanelRegistry or {}
 
 function PanelRegistry.RegisterAll()
 	for _, definition in ipairs(definitions) do
-		if UIPanelManager.Get(definition.name) == nil and definition.module and definition.module.New then
-			UIPanelManager.Register(definition.name, definition.module.New())
-			print("[Lua] PanelRegistry.Register:", definition.name)
-		end
+		UIPanelManager.Register(definition)
+		print("[Lua] PanelRegistry.Register:", definition.name)
 	end
 end
 

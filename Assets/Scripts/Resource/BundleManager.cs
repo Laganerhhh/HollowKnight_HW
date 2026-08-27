@@ -7,6 +7,9 @@ using UnityEngine.AddressableAssets.ResourceLocators;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceLocations;
 using UnityEngine.ResourceManagement.ResourceProviders;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 public class BundleManager : MonoBehaviour
 {
     private class CacheEntry
@@ -15,6 +18,9 @@ public class BundleManager : MonoBehaviour
         public AsyncOperationHandle Handle;
         public int RefCount;
         public bool IsAddressable;
+#if UNITY_EDITOR
+        public bool IsEditorAsset;
+#endif
     }
 
     private class RemoteDownloadTarget
@@ -72,6 +78,20 @@ public class BundleManager : MonoBehaviour
             return cacheEntry.Asset as T;
         }
 
+#if UNITY_EDITOR
+        if (TryLoadEditorAsset(normalizedPath, out T editorAsset))
+        {
+            loadedAssets[normalizedPath] = new CacheEntry
+            {
+                Asset = editorAsset,
+                RefCount = 1,
+                IsAddressable = false,
+                IsEditorAsset = true
+            };
+            return editorAsset;
+        }
+#endif
+
         if (IsAddressableAsset<T>())
         {
             return LoadAddressableAsset<T>(normalizedPath);
@@ -107,6 +127,14 @@ public class BundleManager : MonoBehaviour
             asset => callback?.Invoke(asset as T)
         };
 
+#if UNITY_EDITOR
+        if (TryLoadEditorAsset(normalizedPath, out T editorAsset))
+        {
+            CompleteEditorLoad(normalizedPath, editorAsset);
+            return;
+        }
+#endif
+
         if (IsAddressableAsset<T>())
         {
             AsyncOperationHandle<T> handle = Addressables.LoadAssetAsync<T>(normalizedPath);
@@ -125,6 +153,16 @@ public class BundleManager : MonoBehaviour
         {
             return null;
         }
+
+#if UNITY_EDITOR
+        GameObject editorPrefab = LoadEditorAsset<GameObject>(normalizedPath);
+        if (editorPrefab != null)
+        {
+            GameObject editorInstance = Instantiate(editorPrefab, parent, false);
+            editorInstance.name = editorPrefab.name;
+            return editorInstance;
+        }
+#endif
 
         AsyncOperationHandle<GameObject> handle = Addressables.InstantiateAsync(normalizedPath, parent, false);
         GameObject instance = handle.WaitForCompletion();
@@ -150,6 +188,16 @@ public class BundleManager : MonoBehaviour
             return null;
         }
 
+#if UNITY_EDITOR
+        GameObject editorPrefab = LoadEditorAsset<GameObject>(normalizedPath);
+        if (editorPrefab != null)
+        {
+            GameObject editorInstance = Instantiate(editorPrefab, position, rotation, parent);
+            editorInstance.name = editorPrefab.name;
+            return editorInstance;
+        }
+#endif
+
         AsyncOperationHandle<GameObject> handle = Addressables.InstantiateAsync(normalizedPath, position, rotation, parent);
         GameObject instance = handle.WaitForCompletion();
         if (handle.Status != AsyncOperationStatus.Succeeded || instance == null)
@@ -174,6 +222,17 @@ public class BundleManager : MonoBehaviour
             callback?.Invoke(null);
             return;
         }
+
+#if UNITY_EDITOR
+        GameObject editorPrefab = LoadEditorAsset<GameObject>(normalizedPath);
+        if (editorPrefab != null)
+        {
+            GameObject editorInstance = Instantiate(editorPrefab, parent, false);
+            editorInstance.name = editorPrefab.name;
+            callback?.Invoke(editorInstance);
+            return;
+        }
+#endif
 
         AsyncOperationHandle<GameObject> handle = Addressables.InstantiateAsync(normalizedPath, parent, false);
         handle.Completed += operation =>
@@ -205,6 +264,17 @@ public class BundleManager : MonoBehaviour
             return;
         }
 
+#if UNITY_EDITOR
+        GameObject editorPrefab = LoadEditorAsset<GameObject>(normalizedPath);
+        if (editorPrefab != null)
+        {
+            GameObject editorInstance = Instantiate(editorPrefab, position, rotation, parent);
+            editorInstance.name = editorPrefab.name;
+            callback?.Invoke(editorInstance);
+            return;
+        }
+#endif
+
         AsyncOperationHandle<GameObject> handle = Addressables.InstantiateAsync(normalizedPath, position, rotation, parent);
         handle.Completed += operation =>
         {
@@ -235,6 +305,13 @@ public class BundleManager : MonoBehaviour
             {
                 return true;
             }
+
+#if UNITY_EDITOR
+            if (EditorAssetExists<GameObject>(prefabPath))
+            {
+                return true;
+            }
+#endif
 
             AsyncOperationHandle<IList<IResourceLocation>> handle = Addressables.LoadResourceLocationsAsync(prefabPath, typeof(GameObject));
             IList<IResourceLocation> locations = handle.WaitForCompletion();
@@ -801,6 +878,13 @@ public class BundleManager : MonoBehaviour
             return;
         }
 
+#if UNITY_EDITOR
+        if (cacheEntry.IsEditorAsset)
+        {
+            return;
+        }
+#endif
+
         Resources.UnloadAsset(cacheEntry.Asset);
     }
 
@@ -1192,6 +1276,140 @@ public class BundleManager : MonoBehaviour
         }
 
         return normalizedPath;
+    }
+
+#if UNITY_EDITOR
+    private bool TryLoadEditorAsset<T>(string normalizedPath, out T asset) where T : UnityEngine.Object
+    {
+        asset = LoadEditorAsset<T>(normalizedPath);
+        return asset != null;
+    }
+
+    private T LoadEditorAsset<T>(string normalizedPath) where T : UnityEngine.Object
+    {
+        if (string.IsNullOrWhiteSpace(normalizedPath))
+        {
+            return null;
+        }
+
+        string[] candidatePaths = BuildEditorAssetCandidatePaths<T>(normalizedPath);
+        for (int i = 0; i < candidatePaths.Length; i++)
+        {
+            string candidatePath = candidatePaths[i];
+            T asset = AssetDatabase.LoadAssetAtPath<T>(candidatePath);
+            if (asset != null)
+            {
+                return asset;
+            }
+        }
+
+        return null;
+    }
+
+    private bool EditorAssetExists<T>(string normalizedPath) where T : UnityEngine.Object
+    {
+        return LoadEditorAsset<T>(normalizedPath) != null;
+    }
+
+    private string[] BuildEditorAssetCandidatePaths<T>(string normalizedPath) where T : UnityEngine.Object
+    {
+        string pathWithoutExtension = RemoveExtension(normalizedPath.Replace('\\', '/').Trim());
+        string extension = GetEditorAssetExtension<T>();
+
+        if (normalizedPath.StartsWith("Assets/", StringComparison.OrdinalIgnoreCase))
+        {
+            return new[]
+            {
+                normalizedPath,
+                pathWithoutExtension + extension
+            };
+        }
+
+        if (typeof(T) == typeof(GameObject))
+        {
+            return new[]
+            {
+                "Assets/Prefab/" + pathWithoutExtension + extension,
+                "Assets/Prefabs/" + pathWithoutExtension + extension,
+                "Assets/Resources/" + pathWithoutExtension + extension,
+                "Assets/" + pathWithoutExtension + extension
+            };
+        }
+
+        return new[]
+        {
+            "Assets/Resources/" + pathWithoutExtension + extension,
+            "Assets/" + pathWithoutExtension + extension
+        };
+    }
+
+    private string GetEditorAssetExtension<T>() where T : UnityEngine.Object
+    {
+        Type assetType = typeof(T);
+        if (assetType == typeof(GameObject))
+        {
+            return ".prefab";
+        }
+
+        if (assetType == typeof(Sprite) || assetType == typeof(Texture2D))
+        {
+            return ".png";
+        }
+
+        if (assetType == typeof(AudioClip))
+        {
+            return ".wav";
+        }
+
+        if (assetType == typeof(TextAsset))
+        {
+            return ".txt";
+        }
+
+        return string.Empty;
+    }
+
+    private void CompleteEditorLoad(string normalizedPath, UnityEngine.Object asset)
+    {
+        List<Action<UnityEngine.Object>> callbacks = null;
+        int refCount = 0;
+        if (loadingCallbacks.TryGetValue(normalizedPath, out callbacks))
+        {
+            refCount = callbacks.Count;
+        }
+
+        if (asset != null)
+        {
+            loadedAssets[normalizedPath] = new CacheEntry
+            {
+                Asset = asset,
+                RefCount = Mathf.Max(refCount, 1),
+                IsAddressable = false,
+                IsEditorAsset = true
+            };
+        }
+
+        if (callbacks != null)
+        {
+            for (int i = 0; i < callbacks.Count; i++)
+            {
+                callbacks[i]?.Invoke(asset);
+            }
+        }
+
+        loadingCallbacks.Remove(normalizedPath);
+    }
+#endif
+
+    private string RemoveExtension(string path)
+    {
+        int extensionIndex = path.LastIndexOf('.');
+        if (extensionIndex > path.LastIndexOf('/'))
+        {
+            return path.Substring(0, extensionIndex);
+        }
+
+        return path;
     }
 
     private void OnDestroy()
