@@ -2,6 +2,38 @@ local UIPanelManager = require "Logic.UIPanelManager"
 
 local definitions = {
 	{
+		name = "DownloadPanel",
+		modulePath = "View.DownloadPanel",
+		prefabPath = "UI/DownloadPanel",
+		layer = "Normal",
+		cache = false,
+		isPopup = false,
+	},
+	{
+		name = "ExitPanel",
+		modulePath = "View.ExitPanel",
+		prefabPath = "UI/ExitPanel",
+		layer = "Normal",
+		cache = true,
+		isPopup = true,
+	},
+	{
+		name = "KeyboardPanel",
+		modulePath = "View.KeyboardPanel",
+		prefabPath = "UI/KeyboardPanel",
+		layer = "Normal",
+		cache = true,
+		isPopup = false,
+	},
+	{
+		name = "OptionPanel",
+		modulePath = "View.OptionPanel",
+		prefabPath = "UI/OptionPanel",
+		layer = "Normal",
+		cache = true,
+		isPopup = false,
+	},
+	{
 		name = "StartPanel",
 		modulePath = "View.StartPanel",
 		prefabPath = "UI/StartPanel",

@@ -24,6 +24,10 @@ function ManagerRegistry.Init()
 		return ResourceManager.EnsureInstance()
 	end)
 
+	register("resourceUpdate", function()
+		return ResourceUpdateBridge.EnsureInstance()
+	end)
+
 	register("bundle", function()
 		return BundleManager.EnsureInstance()
 	end)
@@ -87,6 +91,10 @@ end
 
 function ManagerRegistry.Resource()
 	return ManagerRegistry.Get("resource")
+end
+
+function ManagerRegistry.ResourceUpdate()
+	return ManagerRegistry.Get("resourceUpdate")
 end
 
 function ManagerRegistry.Input()

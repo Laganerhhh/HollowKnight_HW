@@ -36,6 +36,13 @@ function AppFacade.OnSceneLoaded(level)
 		CtrlManager.OnSceneLoaded(level)
 	end
 end
+
+function AppFacade.Update(deltaTime)
+	if CtrlManager.Update then
+		CtrlManager.Update(deltaTime)
+	end
+end
+
 function AppFacade.OnApplicationQuit()
 	print("[Lua] AppFacade.OnApplicationQuit")
 

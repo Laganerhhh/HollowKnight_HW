@@ -31,7 +31,9 @@ function UIRootCtrl:Start()
 
 	PanelRegistry.RegisterAll()
 
-	if UIPanelManager.GetDefinition("StartPanel") then
+	if UIPanelManager.GetDefinition("DownloadPanel") then
+		UIPanelManager.Open("DownloadPanel", { message = "Lua UI startup success" })
+	elseif UIPanelManager.GetDefinition("StartPanel") then
 		UIPanelManager.Open("StartPanel", { message = "Lua UI startup success" })
 	end
 end
@@ -52,6 +54,10 @@ function UIRootCtrl:OnSceneLoaded(level)
 	print("[Lua] UIRootCtrl.OnSceneLoaded:", level)
 	print("[Lua] UIManager ready after scene load:", self.uiManager ~= nil)
 	print("[Lua] GameManager ready after scene load:", self.gameManager ~= nil)
+end
+
+function UIRootCtrl:Update(deltaTime)
+	UIPanelManager.Update(deltaTime)
 end
 
 function UIRootCtrl:Dispose()

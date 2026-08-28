@@ -23,7 +23,6 @@ public static class PanelLuaGenerator
 
         string panelName = Path.GetFileNameWithoutExtension(prefabAssetPath);
         string luaFilePath = $"{LuaViewDirectory}/{panelName}.lua";
-        string prefabLoadPath = BuildPrefabLoadPath(prefabAssetPath);
 
         Directory.CreateDirectory(LuaViewDirectory);
         Directory.CreateDirectory(LuaLogicDirectory);
@@ -45,7 +44,7 @@ public static class PanelLuaGenerator
             }
         }
 
-        File.WriteAllText(luaFilePath, BuildPanelLuaContent(panelName, prefabLoadPath), new UTF8Encoding(false));
+        File.WriteAllText(luaFilePath, BuildPanelLuaContent(panelName), new UTF8Encoding(false));
         RebuildPanelRegistry();
         AssetDatabase.Refresh();
 
@@ -107,11 +106,10 @@ public static class PanelLuaGenerator
         return Path.GetFileNameWithoutExtension(prefabAssetPath);
     }
 
-    private static string BuildPanelLuaContent(string panelName, string prefabLoadPath)
+    private static string BuildPanelLuaContent(string panelName)
     {
         StringBuilder builder = new StringBuilder();
         builder.AppendLine("local BasePanel = require \"View.BasePanel\"");
-        builder.AppendLine("local ManagerRegistry = require \"Logic.ManagerRegistry\"");
         builder.AppendLine();
         builder.AppendLine($"local {panelName} = BasePanel.New()");
         builder.AppendLine();
@@ -120,26 +118,11 @@ public static class PanelLuaGenerator
         builder.AppendLine("end");
         builder.AppendLine();
         builder.AppendLine($"function {panelName}:Ctor()");
-        builder.AppendLine($"\tself.panelName = \"{panelName}\"");
-        builder.AppendLine($"\tself.prefabPath = \"{prefabLoadPath}\"");
-        builder.AppendLine("\tself.gameObject = nil");
-        builder.AppendLine("\tself.transform = nil");
-        builder.AppendLine("\tself.resourceManager = nil");
         builder.AppendLine("end");
         builder.AppendLine();
         builder.AppendLine($"function {panelName}:InitUIAndMetaData()");
-        builder.AppendLine("\tself.resourceManager = self.resourceManager or ManagerRegistry.Resource()");
-        builder.AppendLine();
-        builder.AppendLine("\tif self.gameObject == nil and self.resourceManager ~= nil then");
-        builder.AppendLine("\t\tself.gameObject = self.resourceManager:InstantiatePrefab(self.prefabPath)");
-        builder.AppendLine("\tend");
-        builder.AppendLine();
-        builder.AppendLine("\tif self.gameObject ~= nil then");
-        builder.AppendLine("\t\tself.transform = self.gameObject.transform");
-        builder.AppendLine("\t\tself.ui.root = self.transform");
-        builder.AppendLine("\tend");
-        builder.AppendLine();
-        builder.AppendLine("\tself.meta.prefabPath = self.prefabPath");
+        builder.AppendLine("\t-- 在这里查找并缓存 UI 节点。");
+        builder.AppendLine("\t-- 示例：self.ui.confirmButton = self.ui.root:Find(\"Buttons/ConfirmBt\"):GetComponent(\"UnityEngine.UI.Button\")");
         builder.AppendLine("end");
         builder.AppendLine();
         builder.AppendLine($"function {panelName}:InitUIEvent()");
@@ -151,31 +134,53 @@ public static class PanelLuaGenerator
         builder.AppendLine("end");
         builder.AppendLine();
         builder.AppendLine($"function {panelName}:RefreshView(data)");
-        builder.AppendLine("\tif self.gameObject ~= nil then");
-        builder.AppendLine("\t\tself.gameObject:SetActive(true)");
-        builder.AppendLine("\tend");
-        builder.AppendLine();
         builder.AppendLine("\t-- 在这里根据 data 或 self.state 刷新文本、图片、列表和显隐状态。");
         builder.AppendLine("end");
         builder.AppendLine();
         builder.AppendLine($"function {panelName}:OnHide()");
-        builder.AppendLine("\tif self.gameObject ~= nil then");
-        builder.AppendLine("\t\tself.gameObject:SetActive(false)");
-        builder.AppendLine("\tend");
         builder.AppendLine("end");
         builder.AppendLine();
         builder.AppendLine($"function {panelName}:OnDispose()");
-        builder.AppendLine("\tif self.gameObject ~= nil and self.resourceManager ~= nil then");
-        builder.AppendLine("\t\tself.resourceManager:ReleaseInstance(self.gameObject)");
-        builder.AppendLine("\t\tself.gameObject = nil");
-        builder.AppendLine("\tend");
-        builder.AppendLine();
-        builder.AppendLine("\tself.transform = nil");
-        builder.AppendLine("\tself.resourceManager = nil");
         builder.AppendLine("end");
         builder.AppendLine();
         builder.AppendLine($"return {panelName}");
         return builder.ToString();
+    }
+
+    private static string ResolvePrefabLoadPath(string panelName)
+    {
+        string[] guids = AssetDatabase.FindAssets($"{panelName} t:Prefab");
+        string prefabAssetPath = guids
+            .Select(AssetDatabase.GUIDToAssetPath)
+            .Where(path => string.Equals(Path.GetFileNameWithoutExtension(path), panelName, StringComparison.OrdinalIgnoreCase))
+            .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
+            .FirstOrDefault();
+
+        if (!string.IsNullOrEmpty(prefabAssetPath))
+        {
+            return BuildPrefabLoadPath(prefabAssetPath);
+        }
+
+        return $"UI/{panelName}";
+    }
+
+    private static string InferLayer(string panelName)
+    {
+        if (panelName.IndexOf("Popup", StringComparison.OrdinalIgnoreCase) >= 0 ||
+            panelName.IndexOf("Dialog", StringComparison.OrdinalIgnoreCase) >= 0 ||
+            panelName.IndexOf("Confirm", StringComparison.OrdinalIgnoreCase) >= 0 ||
+            panelName.IndexOf("Alert", StringComparison.OrdinalIgnoreCase) >= 0 ||
+            string.Equals(panelName, "ExitPanel", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Popup";
+        }
+
+        return "Normal";
+    }
+
+    private static bool IsPopupLayer(string layer)
+    {
+        return string.Equals(layer, "Popup", StringComparison.OrdinalIgnoreCase);
     }
 
     private static void RebuildPanelRegistry()
@@ -197,19 +202,28 @@ public static class PanelLuaGenerator
         foreach (string panelFile in panelFiles)
         {
             string panelName = Path.GetFileNameWithoutExtension(panelFile);
-            builder.AppendLine($"\t{{ name = \"{panelName}\", module = require \"View.{panelName}\" }},");
+            string prefabLoadPath = ResolvePrefabLoadPath(panelName);
+            string layer = InferLayer(panelName);
+            string isPopup = IsPopupLayer(layer) ? "true" : "false";
+
+            builder.AppendLine("\t{");
+            builder.AppendLine($"\t\tname = \"{panelName}\",");
+            builder.AppendLine($"\t\tmodulePath = \"View.{panelName}\",");
+            builder.AppendLine($"\t\tprefabPath = \"{prefabLoadPath}\",");
+            builder.AppendLine($"\t\tlayer = \"{layer}\",");
+            builder.AppendLine("\t\tcache = true,");
+            builder.AppendLine($"\t\tisPopup = {isPopup},");
+            builder.AppendLine("\t},");
         }
 
         builder.AppendLine("}");
         builder.AppendLine();
-        builder.AppendLine("PanelRegistry = PanelRegistry or {};");
+        builder.AppendLine("PanelRegistry = PanelRegistry or {}");
         builder.AppendLine();
         builder.AppendLine("function PanelRegistry.RegisterAll()");
         builder.AppendLine("\tfor _, definition in ipairs(definitions) do");
-        builder.AppendLine("\t\tif UIPanelManager.Get(definition.name) == nil and definition.module and definition.module.New then");
-        builder.AppendLine("\t\t\tUIPanelManager.Register(definition.name, definition.module.New())");
-        builder.AppendLine("\t\t\tprint(\"[Lua] PanelRegistry.Register:\", definition.name)");
-        builder.AppendLine("\t\tend");
+        builder.AppendLine("\t\tUIPanelManager.Register(definition)");
+        builder.AppendLine("\t\tprint(\"[Lua] PanelRegistry.Register:\", definition.name)");
         builder.AppendLine("\tend");
         builder.AppendLine("end");
         builder.AppendLine();

@@ -8,11 +8,60 @@ local layerRoots = {}
 
 local DefaultLayer = "Normal"
 
+local function getPanelLayer(name)
+	local panel = panelInstances[name]
+	if panel ~= nil and panel.layer ~= nil then
+		return panel.layer
+	end
+
+	local definition = panelDefs[name]
+	if definition ~= nil and definition.layer ~= nil then
+		return definition.layer
+	end
+
+	return DefaultLayer
+end
+
 local function removeFromStack(name)
 	for index = #panelStack, 1, -1 do
 		if panelStack[index] == name then
 			table.remove(panelStack, index)
 		end
+	end
+end
+
+local function findTopPanelNameInLayer(layer, ignoredName)
+	for index = #panelStack, 1, -1 do
+		local name = panelStack[index]
+		if name ~= ignoredName and getPanelLayer(name) == layer then
+			return name
+		end
+	end
+
+	return nil
+end
+
+local function hideCurrentTopInLayer(layer, ignoredName)
+	local topName = findTopPanelNameInLayer(layer, ignoredName)
+	if topName == nil then
+		return
+	end
+
+	local topPanel = panelInstances[topName]
+	if topPanel ~= nil and topPanel.visible == true and topPanel.Hide ~= nil then
+		topPanel:Hide()
+	end
+end
+
+local function restoreTopInLayer(layer)
+	local topName = findTopPanelNameInLayer(layer, nil)
+	if topName == nil then
+		return
+	end
+
+	local topPanel = panelInstances[topName]
+	if topPanel ~= nil and topPanel.visible ~= true and topPanel.Show ~= nil then
+		topPanel:Show(topPanel.data)
 	end
 end
 
@@ -154,6 +203,7 @@ function UIPanelManager.Open(name, data)
 		panelInstances[name] = panel
 	end
 
+	hideCurrentTopInLayer(panel.layer or definition.layer or DefaultLayer, name)
 	panel:Show(data)
 	removeFromStack(name)
 	table.insert(panelStack, name)
@@ -166,17 +216,26 @@ function UIPanelManager.Close(name)
 		return
 	end
 
+	local layer = panel.layer or getPanelLayer(name)
+	local wasVisible = panel.visible == true
 	removeFromStack(name)
 
 	local definition = panelDefs[name]
 	if definition ~= nil and definition.cache == false then
 		panel:Dispose()
 		panelInstances[name] = nil
+		if wasVisible then
+			restoreTopInLayer(layer)
+		end
 		return
 	end
 
 	if panel.Hide then
 		panel:Hide()
+	end
+
+	if wasVisible then
+		restoreTopInLayer(layer)
 	end
 end
 
@@ -192,12 +251,26 @@ end
 
 function UIPanelManager.Destroy(name)
 	local panel = panelInstances[name]
+	local layer = getPanelLayer(name)
+	local wasVisible = panel ~= nil and panel.visible == true
 	if panel ~= nil and panel.Dispose ~= nil then
 		panel:Dispose()
 	end
 
 	removeFromStack(name)
 	panelInstances[name] = nil
+
+	if wasVisible then
+		restoreTopInLayer(layer)
+	end
+end
+
+function UIPanelManager.Update(deltaTime)
+	for _, panel in pairs(panelInstances) do
+		if panel.visible == true and panel.OnUpdate ~= nil then
+			panel:OnUpdate(deltaTime)
+		end
+	end
 end
 
 function UIPanelManager.DisposeAll()

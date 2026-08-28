@@ -13,6 +13,7 @@ public static class LuaBinder
 		LuaProfilerWrap.Register(L);
 		ResourceDownloadStatusWrap.Register(L);
 		ResourceManagerWrap.Register(L);
+		ResourceUpdateBridgeWrap.Register(L);
 		BundleManagerWrap.Register(L);
 		GameManagerWrap.Register(L);
 		UIManagerWrap.Register(L);

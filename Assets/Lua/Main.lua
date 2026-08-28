@@ -1,8 +1,17 @@
 require "Logic.AppFacade"
 
+local appUpdateListener = nil
+
 --主入口函数。从这里开始Lua业务逻辑
 function Main()
 	print("logic start")
+
+	if appUpdateListener == nil and UpdateBeat ~= nil then
+		appUpdateListener = UpdateBeat:CreateListener(function()
+			AppFacade.Update(Time.unscaledDeltaTime)
+		end)
+		UpdateBeat:AddListener(appUpdateListener)
+	end
 
 	coroutine.start(function()
 		coroutine.step(1)
@@ -18,5 +27,10 @@ function OnLevelWasLoaded(level)
 end
 
 function OnApplicationQuit()
+	if appUpdateListener ~= nil and UpdateBeat ~= nil then
+		UpdateBeat:RemoveListener(appUpdateListener)
+		appUpdateListener = nil
+	end
+
 	AppFacade.OnApplicationQuit()
 end

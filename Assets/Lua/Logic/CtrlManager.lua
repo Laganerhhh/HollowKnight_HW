@@ -31,6 +31,14 @@ function CtrlManager.OnSceneLoaded(level)
 	end
 end
 
+function CtrlManager.Update(deltaTime)
+	for _, ctrl in pairs(ctrls) do
+		if ctrl.Update then
+			ctrl:Update(deltaTime)
+		end
+	end
+end
+
 function CtrlManager.Shutdown()
 	for _, ctrl in pairs(ctrls) do
 		if ctrl.Dispose then

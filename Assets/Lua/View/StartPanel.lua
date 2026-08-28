@@ -62,13 +62,7 @@ end
 function StartPanel:OnClickExit()
 	print("[Lua] StartPanel.OnClickExit")
 
-	local uiManager = self.context and self.context.uiManager or nil
-	if uiManager ~= nil then
-		uiManager:ExitGame()
-		return
-	end
-
-	print("[Lua] StartPanel.OnClickExit failed, UIManager is nil")
+	UIPanelManager.Open("ExitPanel")
 end
 
 function StartPanel:OnOpen(data)

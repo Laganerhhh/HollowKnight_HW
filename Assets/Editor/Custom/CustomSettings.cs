@@ -275,6 +275,7 @@ public static class CustomSettings
         //------------------------项目管理器导出--------------------------------
         _GT(typeof(ResourceDownloadStatus)),
         _GT(typeof(ResourceManager)),
+        _GT(typeof(ResourceUpdateBridge)),
         _GT(typeof(BundleManager)),
         _GT(typeof(GameManager)),
         _GT(typeof(UIManager)),
