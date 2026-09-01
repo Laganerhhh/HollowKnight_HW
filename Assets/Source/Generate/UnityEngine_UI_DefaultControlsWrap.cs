@@ -18,7 +18,7 @@ public class UnityEngine_UI_DefaultControlsWrap
 		L.RegFunction("CreateInputField", CreateInputField);
 		L.RegFunction("CreateDropdown", CreateDropdown);
 		L.RegFunction("CreateScrollView", CreateScrollView);
-		L.RegVar("factory", get_factory, set_factory);
+		L.RegVar("factory", get_factory, null);
 		L.EndStaticLibs();
 	}
 
@@ -223,19 +223,6 @@ public class UnityEngine_UI_DefaultControlsWrap
 		}
 	}
 
-	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static int set_factory(IntPtr L)
-	{
-		try
-		{
-			UnityEngine.UI.DefaultControls.IFactoryControls arg0 = (UnityEngine.UI.DefaultControls.IFactoryControls)ToLua.CheckObject<UnityEngine.UI.DefaultControls.IFactoryControls>(L, 2);
-			UnityEngine.UI.DefaultControls.factory = arg0;
-			return 0;
-		}
-		catch (Exception e)
-		{
-			return LuaDLL.toluaL_exception(L, e);
-		}
-	}
+
 }
 

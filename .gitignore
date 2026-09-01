@@ -8,6 +8,7 @@
 [Mm]emoryCaptures/
 [Rr]eference/
 [Ss]erverData/
+[Ll]uaHotUpdate/
 .vscode/
 *.csproj
 *.sln

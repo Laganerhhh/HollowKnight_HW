@@ -23,6 +23,12 @@ MonoBehaviour:
     m_SerializedLabels:
     - UI
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 544dfaf3ae7bff740a1bf8071839dc6c
+    m_Address: UI/LuaUpdateUI
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - UI
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 23e0422ffbba94d43a6b271ef91b4c00
     m_Address: Environment
     m_ReadOnly: 0

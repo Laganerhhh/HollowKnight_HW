@@ -169,11 +169,65 @@ public class LuaClient : MonoBehaviour
     protected void Awake()
     {
         Instance = this;
+        StartCoroutine(StartLuaWithHotUpdate());
+    }
+
+    private IEnumerator StartLuaWithHotUpdate()
+    {
+        yield return RunLuaHotUpdateBeforeStartup();
+
+        if (this == null)
+        {
+            yield break;
+        }
+
         Init();
 
 #if UNITY_5_4_OR_NEWER
         SceneManager.sceneLoaded += OnSceneLoaded;
 #endif        
+    }
+
+    private IEnumerator RunLuaHotUpdateBeforeStartup()
+    {
+        Type hotUpdateType = FindType("LuaHotUpdateManager");
+        if (hotUpdateType == null)
+        {
+            yield break;
+        }
+
+        System.Reflection.MethodInfo method = hotUpdateType.GetMethod("RunBeforeLuaStartup", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+        if (method == null)
+        {
+            yield break;
+        }
+
+        IEnumerator routine = method.Invoke(null, null) as IEnumerator;
+        if (routine != null)
+        {
+            yield return routine;
+        }
+    }
+
+    private Type FindType(string typeName)
+    {
+        Type type = Type.GetType(typeName);
+        if (type != null)
+        {
+            return type;
+        }
+
+        System.Reflection.Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+        for (int i = 0; i < assemblies.Length; i++)
+        {
+            type = assemblies[i].GetType(typeName);
+            if (type != null)
+            {
+                return type;
+            }
+        }
+
+        return null;
     }
 
     protected virtual void OnLoadFinished()

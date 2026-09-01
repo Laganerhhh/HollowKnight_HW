@@ -1,5 +1,7 @@
 require "Logic.AppFacade"
 
+VERSION = "0.0.1" -- 版本号
+
 local appUpdateListener = nil
 
 --主入口函数。从这里开始Lua业务逻辑

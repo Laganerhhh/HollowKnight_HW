@@ -17,11 +17,107 @@ MonoBehaviour:
     m_SerializedData: []
   m_GUID: 62ec47dc1475c1047a7fd761b8193a80
   m_SerializeEntries:
+  - m_GUID: 072e7e1f9b176204ca82d02780fd2945
+    m_Address: Lua/Logic/CtrlManager.lua
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - lua
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 23491198ac0ce0d4bb35155c3d27bd18
+    m_Address: Lua/Controller/UIRootCtrl.lua
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - lua
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2607682b98fef714bbaef73a816831b8
+    m_Address: Lua/Logic/AppFacade.lua
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - lua
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 295ea0224df56ae4ba39f49cf55194d9
+    m_Address: Lua/Logic/PanelRegistry.lua
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - lua
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 3b7bc794475e5b94c888eb2984c3bd47
     m_Address: Assets/Textures/HollowKnightIcon.jpg
     m_ReadOnly: 0
     m_SerializedLabels:
     - Require
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 525e92c46c22e8e4e9940deaca8a6482
+    m_Address: Lua/View/BasePanel.lua
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - lua
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7a795ed8d802b304f95192a0e6809b0e
+    m_Address: Lua/LuaManifest.json
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - lua
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7f981a8670566d74eab82fc864ba1c2d
+    m_Address: Lua/View/OptionPanel.lua
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - lua
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 85b886019b555ed4a891ce652ee8e024
+    m_Address: Lua/Logic/UIPanelManager.lua
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - lua
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a47557d2a36ef1d49baf86e7dedb704b
+    m_Address: Lua/View/StartPanel.lua
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - lua
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b13992903e7f0f04380fb71e673aee5f
+    m_Address: Lua/View/KeyboardPanel.lua
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - lua
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c3fbe0c7991a94d4ab1264553184b75f
+    m_Address: Lua/Controller/BaseCtrl.lua
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - lua
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dff4d6c65c774fb43b27377ca90aff0f
+    m_Address: Lua/Main.lua
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - lua
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e38cc6ae211f19540aa88581c05762dc
+    m_Address: Lua/View/TestPanel.lua
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - lua
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f0a40a139f20c17429f1347d0c542005
+    m_Address: Lua/View/ExitPanel.lua
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - lua
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f33d262293620ee458a3810ba958728a
+    m_Address: Lua/View/DownloadPanel.lua
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - lua
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fc7bd7181a6702749b2f416117721591
+    m_Address: Lua/Logic/ManagerRegistry.lua
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - lua
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 4ebfcd819b192ce4388f6434a6a7ec9a, type: 2}

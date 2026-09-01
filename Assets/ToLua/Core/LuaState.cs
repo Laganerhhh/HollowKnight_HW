@@ -195,13 +195,19 @@ namespace LuaInterface
                     throw new LuaException(msg);
                 }
 
-                AddSearchPath(LuaConst.toluaDir);
-                AddSearchPath(LuaConst.luaDir);
-#endif
                 if (LuaFileUtils.Instance.GetType() == typeof(LuaFileUtils))
                 {
                     AddSearchPath(LuaConst.luaResDir);
                 }
+
+                AddSearchPath(LuaConst.toluaDir);
+                AddSearchPath(LuaConst.luaDir);
+#else
+                if (LuaFileUtils.Instance.GetType() == typeof(LuaFileUtils))
+                {
+                    AddSearchPath(LuaConst.luaResDir);
+                }
+#endif
             }
         }
 

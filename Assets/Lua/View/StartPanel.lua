@@ -66,6 +66,7 @@ function StartPanel:OnClickExit()
 end
 
 function StartPanel:OnOpen(data)
+	print("[LuaHotUpdateTest] Lua 版本" .. VERSION)
 	self.state.openParam = data
 end
 

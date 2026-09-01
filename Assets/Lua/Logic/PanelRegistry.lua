@@ -1,4 +1,5 @@
 local UIPanelManager = require "Logic.UIPanelManager"
+require "View.TutorialPanel"
 
 local definitions = {
 	{
@@ -46,6 +47,14 @@ local definitions = {
 		modulePath = "View.TestPanel",
 		prefabPath = "UI/TestPanel",
 		layer = "Normal",
+		cache = true,
+		isPopup = false,
+	},
+	{
+		name = "TutorialPanel",
+		modulePath = "View.TutorialPanel",
+		prefabPath = "",
+		layer = "Top",
 		cache = true,
 		isPopup = false,
 	},

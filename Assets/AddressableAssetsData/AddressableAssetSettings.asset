@@ -15,9 +15,9 @@ MonoBehaviour:
   m_DefaultGroup: c7cc750eee4fc9b4e9512e57ea7059a9
   m_currentHash:
     serializedVersion: 2
-    Hash: 419dc3301215b528f03b391af61e7c00
+    Hash: bd9dd1d39a52ed34f0f0cb8b0fe0819a
   m_OptimizeCatalogSize: 0
-  m_BuildRemoteCatalog: 0
+  m_BuildRemoteCatalog: 1
   m_BundleLocalCatalog: 0
   m_CatalogRequestsTimeout: 0
   m_DisableCatalogUpdateOnStart: 0
@@ -96,6 +96,7 @@ MonoBehaviour:
     - Player
     - UI
     - Require
+    - lua
   m_SchemaTemplates: []
   m_GroupTemplateObjects:
   - {fileID: 11400000, guid: 6acb37d49efe64f4980b01a89e78850a, type: 2}
