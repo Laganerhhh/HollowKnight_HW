@@ -15,7 +15,7 @@ local definitions = {
 		modulePath = "View.ExitPanel",
 		prefabPath = "UI/ExitPanel",
 		layer = "Popup",
-		showMode = "Overlay",
+		showMode = "Replace",
 		cache = true,
 		isPopup = true,
 	},

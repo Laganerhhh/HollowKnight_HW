@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -17,10 +18,19 @@ public class GameManager : MonoBehaviour
         {
             instance = this;
             DontDestroyOnLoad(gameObject);
+            SceneManager.sceneLoaded += OnSceneLoaded;
         }
         else
         {
             Destroy(gameObject);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (instance == this)
+        {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
         }
     }
 
@@ -31,9 +41,21 @@ public class GameManager : MonoBehaviour
             player = GameObject.FindGameObjectWithTag("Player");
         }
 
-        playerAnimator = player.GetComponent<Animator>();
+        playerAnimator = player != null ? player.GetComponent<Animator>() : null;
 
         UIManager.Instance.HideCursor();
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        isPlaying = true;
+
+        if (player == null)
+        {
+            player = GameObject.FindGameObjectWithTag("Player");
+        }
+
+        playerAnimator = player != null ? player.GetComponent<Animator>() : null;
     }
 
     public void SetIsPlaying(bool playing)

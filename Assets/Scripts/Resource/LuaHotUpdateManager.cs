@@ -399,7 +399,7 @@ public class LuaHotUpdateManager : MonoBehaviour
         rectTransform.anchorMax = Vector2.one;
         rectTransform.anchoredPosition = Vector2.zero;
         rectTransform.sizeDelta = Vector2.zero;
-        rectTransform.localScale = Vector3.one;
+        //rectTransform.localScale = Vector3.one;
     }
 
     private void UpdateDownloadStatus(ResourceDownloadStatus status)
