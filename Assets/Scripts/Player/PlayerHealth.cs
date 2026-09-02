@@ -105,6 +105,11 @@ public class PlayerHealth : MonoBehaviour
 
     public void TakeDamage(int damage, DamageType damageType = DamageType.NormalDamage)
     {
+        if (GMTool.IsGodModeEnabled)
+        {
+            return;
+        }
+
         if (isInvincible)
             return;
         damage = Mathf.RoundToInt(damage * (1.0f - damageReductionRate));
