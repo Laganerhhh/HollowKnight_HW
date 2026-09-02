@@ -7,6 +7,8 @@ local context = {}
 local layerRoots = {}
 
 local DefaultLayer = "Normal"
+local DefaultShowMode = "Replace"
+local OverlayShowMode = "Overlay"
 
 local function getPanelLayer(name)
 	local panel = panelInstances[name]
@@ -22,6 +24,20 @@ local function getPanelLayer(name)
 	return DefaultLayer
 end
 
+local function getPanelShowMode(name)
+	local panel = panelInstances[name]
+	if panel ~= nil and panel.showMode ~= nil then
+		return panel.showMode
+	end
+
+	local definition = panelDefs[name]
+	if definition ~= nil and definition.showMode ~= nil then
+		return definition.showMode
+	end
+
+	return DefaultShowMode
+end
+
 local function removeFromStack(name)
 	for index = #panelStack, 1, -1 do
 		if panelStack[index] == name then
@@ -30,10 +46,10 @@ local function removeFromStack(name)
 	end
 end
 
-local function findTopPanelNameInLayer(layer, ignoredName)
+local function findTopPanelName(ignoredName)
 	for index = #panelStack, 1, -1 do
 		local name = panelStack[index]
-		if name ~= ignoredName and getPanelLayer(name) == layer then
+		if name ~= ignoredName then
 			return name
 		end
 	end
@@ -41,20 +57,33 @@ local function findTopPanelNameInLayer(layer, ignoredName)
 	return nil
 end
 
-local function hideCurrentTopInLayer(layer, ignoredName)
-	local topName = findTopPanelNameInLayer(layer, ignoredName)
-	if topName == nil then
+local function findTopVisiblePanelName(ignoredName)
+	for index = #panelStack, 1, -1 do
+		local name = panelStack[index]
+		if name ~= ignoredName then
+			local panel = panelInstances[name]
+			if panel ~= nil and panel.visible == true then
+				return name
+			end
+		end
+	end
+
+	return nil
+end
+
+local function hidePanel(name)
+	if name == nil then
 		return
 	end
 
-	local topPanel = panelInstances[topName]
-	if topPanel ~= nil and topPanel.visible == true and topPanel.Hide ~= nil then
-		topPanel:Hide()
+	local panel = panelInstances[name]
+	if panel ~= nil and panel.visible == true and panel.Hide ~= nil then
+		panel:Hide()
 	end
 end
 
-local function restoreTopInLayer(layer)
-	local topName = findTopPanelNameInLayer(layer, nil)
+local function restorePreviousPanel()
+	local topName = findTopPanelName(nil)
 	if topName == nil then
 		return
 	end
@@ -144,6 +173,7 @@ function UIPanelManager.Register(definition)
 	end
 
 	definition.layer = definition.layer or DefaultLayer
+	definition.showMode = definition.showMode or DefaultShowMode
 	definition.cache = definition.cache ~= false
 	panelDefs[definition.name] = definition
 	return definition
@@ -181,7 +211,7 @@ local function createPanel(name)
 	end
 
 	local panel = module.New()
-	panel:SetDefinition(definition)
+		panel:SetDefinition(definition)
 	panel:SetContext(context)
 	return panel
 end
@@ -203,7 +233,11 @@ function UIPanelManager.Open(name, data)
 		panelInstances[name] = panel
 	end
 
-	hideCurrentTopInLayer(panel.layer or definition.layer or DefaultLayer, name)
+	local showMode = panel.showMode or definition.showMode or DefaultShowMode
+	if showMode ~= OverlayShowMode then
+		hidePanel(findTopVisiblePanelName(name))
+	end
+
 	panel:Show(data)
 	removeFromStack(name)
 	table.insert(panelStack, name)
@@ -216,16 +250,16 @@ function UIPanelManager.Close(name)
 		return
 	end
 
-	local layer = panel.layer or getPanelLayer(name)
 	local wasVisible = panel.visible == true
+	local wasTop = panelStack[#panelStack] == name
 	removeFromStack(name)
 
 	local definition = panelDefs[name]
 	if definition ~= nil and definition.cache == false then
 		panel:Dispose()
 		panelInstances[name] = nil
-		if wasVisible then
-			restoreTopInLayer(layer)
+		if wasVisible and wasTop then
+			restorePreviousPanel()
 		end
 		return
 	end
@@ -234,8 +268,8 @@ function UIPanelManager.Close(name)
 		panel:Hide()
 	end
 
-	if wasVisible then
-		restoreTopInLayer(layer)
+	if wasVisible and wasTop then
+		restorePreviousPanel()
 	end
 end
 
@@ -251,8 +285,8 @@ end
 
 function UIPanelManager.Destroy(name)
 	local panel = panelInstances[name]
-	local layer = getPanelLayer(name)
 	local wasVisible = panel ~= nil and panel.visible == true
+	local wasTop = panelStack[#panelStack] == name
 	if panel ~= nil and panel.Dispose ~= nil then
 		panel:Dispose()
 	end
@@ -260,8 +294,8 @@ function UIPanelManager.Destroy(name)
 	removeFromStack(name)
 	panelInstances[name] = nil
 
-	if wasVisible then
-		restoreTopInLayer(layer)
+	if wasVisible and wasTop then
+		restorePreviousPanel()
 	end
 end
 

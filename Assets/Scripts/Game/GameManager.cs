@@ -44,10 +44,20 @@ public class GameManager : MonoBehaviour
     private bool isPlaying = true;
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape) && isPlaying)
+        if (!Input.GetKeyDown(KeyCode.Escape))
+        {
+            return;
+        }
+
+        if (UIManager.Instance != null && UIManager.Instance.IsPaused)
+        {
+            UIManager.Instance.ResumeGame();
+            return;
+        }
+
+        if (isPlaying)
         {
             PauseGame();
-            isPlaying = false;
         }
     }
 
@@ -76,8 +86,14 @@ public class GameManager : MonoBehaviour
 
     public void PauseGame()
     {
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.PauseGame();
+            return;
+        }
+
         Time.timeScale = 0f; //暂停游戏
-        UIManager.Instance.TogglePauseUI();
+        isPlaying = false;
     }
 
     public void EnterNextLevel()
@@ -94,8 +110,13 @@ public class GameManager : MonoBehaviour
 
     public void ResumeGame()
     {
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.ResumeGame();
+            return;
+        }
+
         Time.timeScale = 1f; //恢复游戏
-        UIManager.Instance.TogglePauseUI();
         isPlaying = true;
     }
 

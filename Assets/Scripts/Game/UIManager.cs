@@ -23,6 +23,8 @@ public class UIManager : MonoBehaviour
 
     public GameObject pauseUI; //暂停UI
 
+    private const string PausePanelName = "PausePanel";
+
     public Transform NormalRoot => normalRoot != null ? normalRoot : transform;
     public Transform PopupRoot => popupRoot != null ? popupRoot : NormalRoot;
     public Transform TopRoot => topRoot != null ? topRoot : PopupRoot;
@@ -204,13 +206,33 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    public void PauseGame()
+    public void OpenPausePanel()
     {
+        if (IsPaused)
+        {
+            OpenPanel(PausePanelName);
+            return;
+        }
+
         SetGamePaused(true);
+
+        if (pauseUI != null)
+        {
+            pauseUI.SetActive(false);
+            lastUI = pauseUI;
+        }
+
+        OpenPanel(PausePanelName);
+
+        if (GameManager.instance != null)
+        {
+            GameManager.instance.SetIsPlaying(false);
+        }
     }
 
-    public void ResumeGame()
+    public void ClosePausePanel()
     {
+        ClosePanel(PausePanelName);
         SetGamePaused(false);
 
         if (pauseUI != null)
@@ -223,6 +245,16 @@ public class UIManager : MonoBehaviour
         {
             GameManager.instance.SetIsPlaying(true);
         }
+    }
+
+    public void PauseGame()
+    {
+        OpenPausePanel();
+    }
+
+    public void ResumeGame()
+    {
+        ClosePausePanel();
     }
 
     public void ReturnToMainMenu()
@@ -279,20 +311,12 @@ public class UIManager : MonoBehaviour
     [System.Obsolete("旧暂停UI接口，仅用于兼容已有Inspector按钮事件；新UI请使用OpenPanel/ClosePanel配合SetGamePaused。")]
     public void TogglePauseUI()
     {
-        bool paused = !IsPaused;
-        SetGamePaused(paused);
-
-        if (pauseUI != null)
+        if (IsPaused)
         {
-            pauseUI.SetActive(paused);
-            if (paused)
-            {
-                currentUI = pauseUI;
-            }
-            else
-            {
-                lastUI = pauseUI;
-            }
+            ClosePausePanel();
+            return;
         }
+
+        OpenPausePanel();
     }
 }

@@ -53,6 +53,12 @@ MonoBehaviour:
     m_SerializedLabels:
     - lua
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 63ae0d7b26f87f64a8967c5cc4d9be6c
+    m_Address: Lua/View/PausePanel.lua
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - lua
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 7a795ed8d802b304f95192a0e6809b0e
     m_Address: Lua/LuaManifest.json
     m_ReadOnly: 0
@@ -67,6 +73,12 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 85b886019b555ed4a891ce652ee8e024
     m_Address: Lua/Logic/UIPanelManager.lua
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - lua
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a308b65e2dfcc3b4987759f5461da1e4
+    m_Address: Lua/View/TutorialPanel.lua
     m_ReadOnly: 0
     m_SerializedLabels:
     - lua

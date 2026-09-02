@@ -1,5 +1,18 @@
+---@diagnostic disable: undefined-global
 local BasePanel = {}
 BasePanel.__index = BasePanel
+
+local function isUnityObjectAlive(target)
+	if target == nil then
+		return false
+	end
+
+	if tolua ~= nil and tolua.isnull ~= nil then
+		return not tolua.isnull(target)
+	end
+
+	return true
+end
 
 ---创建一个面板“类”表，并将其元表指向 `BasePanel`。
 ---子类通常使用 `local XXXPanel = BasePanel.New()` 的方式定义，再在该类表上扩展显示与交互逻辑。
@@ -29,6 +42,7 @@ function BasePanel:CreateInstance(...)
 		panelName = nil,
 		prefabPath = nil,
 		layer = "Normal",
+		showMode = "Replace",
 		cache = true,
 		isPopup = false,
 		closeOnMask = false,
@@ -56,12 +70,14 @@ function BasePanel:SetDefinition(definition)
 	self.panelName = self.definition.name or self.panelName
 	self.prefabPath = self.definition.prefabPath or self.prefabPath
 	self.layer = self.definition.layer or self.layer or "Normal"
+	self.showMode = self.definition.showMode or self.showMode or "Replace"
 	self.cache = self.definition.cache ~= false
 	self.isPopup = self.definition.isPopup == true
 	self.closeOnMask = self.definition.closeOnMask == true
 	self.meta = self.meta or {}
 	self.meta.definition = self.definition
 	self.meta.prefabPath = self.prefabPath
+	self.meta.showMode = self.showMode
 end
 
 ---注入 UI 框架上下文。
@@ -69,6 +85,26 @@ end
 function BasePanel:SetContext(context)
 	self.context = context or {}
 	self.resourceManager = self.context.resourceManager or self.resourceManager
+end
+
+function BasePanel:InvalidateRuntimeObjects()
+	self.gameObject = nil
+	self.transform = nil
+	self.isInited = false
+	self.ui = {}
+end
+
+function BasePanel:HasAliveGameObject()
+	if isUnityObjectAlive(self.gameObject) then
+		return true
+	end
+
+	if self.gameObject ~= nil then
+		print("[Lua] BasePanel detected destroyed GameObject:", self.panelName or "UnnamedPanel")
+		self:InvalidateRuntimeObjects()
+	end
+
+	return false
 end
 
 ---获取当前面板应该挂载到的父节点。
@@ -92,7 +128,7 @@ end
 
 ---创建并挂载面板 Prefab。
 function BasePanel:CreateGameObject()
-	if self.gameObject ~= nil then
+	if self:HasAliveGameObject() then
 		return self.gameObject
 	end
 
@@ -131,7 +167,7 @@ function BasePanel:Show(data)
 	self.visible = true
 	self.data = data
 
-	if self.gameObject ~= nil then
+	if self:HasAliveGameObject() then
 		self.gameObject:SetActive(true)
 	end
 
@@ -157,7 +193,7 @@ function BasePanel:Hide()
 	self.visible = false
 	self:OnHide()
 
-	if self.gameObject ~= nil then
+	if self:HasAliveGameObject() then
 		self.gameObject:SetActive(false)
 	end
 
@@ -172,7 +208,7 @@ function BasePanel:Dispose()
 
 	self:OnDispose()
 
-	if self.gameObject ~= nil and self.resourceManager ~= nil then
+	if self:HasAliveGameObject() and self.resourceManager ~= nil then
 		self.resourceManager:ReleaseInstance(self.gameObject)
 	end
 
