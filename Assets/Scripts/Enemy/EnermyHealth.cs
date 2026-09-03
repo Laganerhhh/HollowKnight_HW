@@ -8,9 +8,16 @@ public class EnermyHealth : MonoBehaviour
     public int max_health = 2;
 
     [SerializeField] private string dieAnimParam = "Die";
+    [SerializeField] private bool keepCorpseAfterDeath = true;
+    [SerializeField] private float corpseDurationForPool = 8f;
+    [SerializeField] private float respawnTimeForPool = 0f;
     private Animator animator;
 
     private SpriteRenderer spriteRenderer;
+    private Component pooledEnemyComponent;
+    private Rigidbody2D cachedRigidbody;
+    private bool cachedRigidbodySimulated;
+    private Coroutine delayedReturnCoroutine;
 
     [SerializeField] private GameObject injury_effect;
     [SerializeField] private GameObject hit_particle_effect;
@@ -24,12 +31,39 @@ public class EnermyHealth : MonoBehaviour
 
     private FalseKnight falseKnight = null;
 
+    private void Awake()
+    {
+        EnsureReferences();
+    }
+
     void Start()
     {
         current_health = max_health;
-        animator = GetComponent<Animator>();
+        EnsureReferences();
+    }
 
-        if (isFalseknight)
+    private void EnsureReferences()
+    {
+        if (animator == null)
+        {
+            animator = GetComponent<Animator>();
+        }
+
+        if (pooledEnemyComponent == null)
+        {
+            pooledEnemyComponent = GetComponent("PooledEnemy");
+        }
+
+        if (cachedRigidbody == null)
+        {
+            cachedRigidbody = GetComponent<Rigidbody2D>();
+            if (cachedRigidbody != null)
+            {
+                cachedRigidbodySimulated = cachedRigidbody.simulated;
+            }
+        }
+
+        if (isFalseknight && falseKnight == null)
         {
             falseKnight = GetComponentInParent<FalseKnight>();
         }
@@ -50,13 +84,11 @@ public class EnermyHealth : MonoBehaviour
         }
 
         current_health -= damage;
-        //创建受伤特效
         if (injury_effect != null)
         {
             Instantiate(injury_effect, transform.position, Quaternion.identity, transform);
             Instantiate(hit_particle_effect, transform.position - transform.up * 0.5f, Quaternion.identity);
         }
-        //播放受伤音效
         SoundManager.instance.PlaySound(SoundIndex.enermy_damage);
         if (current_health <= 0)
         {
@@ -74,7 +106,6 @@ public class EnermyHealth : MonoBehaviour
 
     private void FalseKnightTakeDamege(int damage)
     {
-        //创建受伤特效
         if (injury_effect != null)
         {
             Instantiate(injury_effect, transform.position + transform.up * 0.5f, Quaternion.identity, transform);
@@ -88,14 +119,19 @@ public class EnermyHealth : MonoBehaviour
         Instantiate(death_effect, transform.position - transform.up * 0.5f, Quaternion.identity);
 
         animator.SetTrigger(dieAnimParam);
-        //禁用敌人的碰撞体等
         Collider2D collider = GetComponent<Collider2D>();
         if (collider != null)
         {
             collider.enabled = false;
         }
 
-        //禁用敌人的移动脚本等
+        if (cachedRigidbody != null)
+        {
+            cachedRigidbody.velocity = Vector2.zero;
+            cachedRigidbody.angularVelocity = 0f;
+            cachedRigidbody.simulated = false;
+        }
+
         MonoBehaviour[] scripts = GetComponents<MonoBehaviour>();
         foreach (MonoBehaviour script in scripts)
         {
@@ -108,14 +144,76 @@ public class EnermyHealth : MonoBehaviour
 
     void OnDieAnimEnd()
     {
+        EnsureReferences();
+
+        if (pooledEnemyComponent != null)
+        {
+            if (keepCorpseAfterDeath && corpseDurationForPool > 0f)
+            {
+                if (delayedReturnCoroutine != null)
+                {
+                    StopCoroutine(delayedReturnCoroutine);
+                }
+
+                delayedReturnCoroutine = StartCoroutine(ReturnToPoolAfterDelay(corpseDurationForPool));
+                return;
+            }
+
+            ScheduleRespawnIfNeeded();
+            pooledEnemyComponent.SendMessage("ReturnToPool", SendMessageOptions.DontRequireReceiver);
+            return;
+        }
+
         DestroySelf();
+    }
+
+    private IEnumerator ReturnToPoolAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        delayedReturnCoroutine = null;
+
+        EnsureReferences();
+        ScheduleRespawnIfNeeded();
+        if (pooledEnemyComponent != null)
+        {
+            pooledEnemyComponent.SendMessage("ReturnToPool", SendMessageOptions.DontRequireReceiver);
+        }
+    }
+
+    private void ScheduleRespawnIfNeeded()
+    {
+        PooledEnemy pooledEnemy = pooledEnemyComponent as PooledEnemy;
+        if (pooledEnemy == null)
+        {
+            return;
+        }
+
+        pooledEnemy.ClearScheduledRespawn();
+        if (respawnTimeForPool <= 0f)
+        {
+            return;
+        }
+
+        if (respawnTimeForPool <= corpseDurationForPool)
+        {
+            Debug.LogWarning($"[EnermyHealth] Respawn time must be greater than corpse duration on '{gameObject.name}'. Current respawnTime={respawnTimeForPool}, corpseDuration={corpseDurationForPool}.");
+            return;
+        }
+
+        float remainingDelay = keepCorpseAfterDeath ? respawnTimeForPool - Mathf.Max(corpseDurationForPool, 0f) : respawnTimeForPool;
+        if (remainingDelay <= 0f)
+        {
+            Debug.LogWarning($"[EnermyHealth] Respawn delay is invalid on '{gameObject.name}'.");
+            return;
+        }
+
+        pooledEnemy.ScheduleRespawn(remainingDelay);
     }
 
     private void DestroySelf()
     {
         Rigidbody2D rb = GetComponent<Rigidbody2D>();
         Destroy(rb);
-        //删除所有脚本，只保留sprite渲染器用于播放死亡动画
         MonoBehaviour[] scripts = GetComponents<MonoBehaviour>();
         foreach (MonoBehaviour script in scripts)
         {
@@ -126,4 +224,52 @@ public class EnermyHealth : MonoBehaviour
         }
     }
 
+    public void OnSpawnFromPool()
+    {
+        EnsureReferences();
+        if (delayedReturnCoroutine != null)
+        {
+            StopCoroutine(delayedReturnCoroutine);
+            delayedReturnCoroutine = null;
+        }
+
+        if (pooledEnemyComponent is PooledEnemy pooledEnemy)
+        {
+            pooledEnemy.ClearScheduledRespawn();
+        }
+
+        current_health = max_health;
+        isDefensing = false;
+        if (cachedRigidbody != null)
+        {
+            cachedRigidbody.velocity = Vector2.zero;
+            cachedRigidbody.angularVelocity = 0f;
+            cachedRigidbody.simulated = cachedRigidbodySimulated;
+        }
+
+        if (animator != null)
+        {
+            animator.Rebind();
+            animator.Update(0f);
+        }
+    }
+
+    public void OnDespawnToPool()
+    {
+        if (delayedReturnCoroutine != null)
+        {
+            StopCoroutine(delayedReturnCoroutine);
+            delayedReturnCoroutine = null;
+        }
+
+        current_health = max_health;
+        isDefensing = false;
+    }
+
+    public void ConfigurePoolDeathBehaviour(bool shouldKeepCorpseAfterDeath, float corpseDuration, float respawnTime)
+    {
+        keepCorpseAfterDeath = shouldKeepCorpseAfterDeath;
+        corpseDurationForPool = corpseDuration;
+        respawnTimeForPool = respawnTime;
+    }
 }

@@ -2,18 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-
-public class HuskDandy : MonoBehaviour
+public class HuskDandy : MonoBehaviour, IPoolableEnemy
 {
     private State currentState = State.Idle;
 
-    // 敌人通用属性
     public float x_min = -10f;
     public float x_max = 10f;
     public float speed = 2f;
     public int blood = 10;
 
-    //控制
     private Animator animator;
     private bool isMoveRight = false;
     private Vector3 startPosition;
@@ -21,30 +18,50 @@ public class HuskDandy : MonoBehaviour
     private float idleStartTime = 0f;
     public float idleBeforeAttackDuration = 1.0f;
 
-    //交互
     private float attackRange = 1.0F;
     private Transform playerTransform;
     private float chaseDistance = 5f;
     private bool isAttacking = false;
+    private EnermyHealth enermyHealth;
+    private bool hasInitialized;
 
-    // Start is called before the first frame update
-    void Start()
+    private void Awake()
     {
-        animator = GetComponent<Animator>();
-        startPosition = transform.position;
-        transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
-        originalScale = transform.localScale;
-        
-        currentState = State.Idle;
-        idleStartTime = Time.time;
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
-        if (player != null)
-        {
-            playerTransform = player.transform;
-        }
+        EnsureInitialized();
     }
 
-    // Update is called once per frame
+    void Start()
+    {
+        EnsureInitialized();
+        currentState = State.Idle;
+        idleStartTime = Time.time;
+        RefreshPlayerReference();
+    }
+
+    private void EnsureInitialized()
+    {
+        if (hasInitialized)
+        {
+            return;
+        }
+
+        animator = GetComponent<Animator>();
+        enermyHealth = GetComponent<EnermyHealth>();
+        startPosition = transform.position;
+        if (transform.localScale.x > 0f)
+        {
+            transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
+        }
+        originalScale = transform.localScale;
+        hasInitialized = true;
+    }
+
+    private void RefreshPlayerReference()
+    {
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        playerTransform = player != null ? player.transform : null;
+    }
+
     void Update()
     {
         switch (currentState)
@@ -117,13 +134,11 @@ public class HuskDandy : MonoBehaviour
 
         if (distanceToPlayer > chaseDistance && playerTransform.position.y > transform.position.y + 3f)
         {
-            // 玩家跑远，返回 Idle/Walking
             currentState = State.Idle;
             idleStartTime = Time.time;
             return;
         }
 
-        // 面向玩家
         if (!isAttacking)
         {
             FacePlayer();
@@ -132,12 +147,10 @@ public class HuskDandy : MonoBehaviour
         if (distanceToPlayer <= attackRange)
         {
              currentState = State.Idle;
-             idleStartTime = Time.time; // 开始 Idle 计时
-             animator.SetTrigger("c_to_idle"); // 触发 Idle 过渡动画
+             idleStartTime = Time.time;
+             animator.SetTrigger("c_to_idle");
              return; 
         }
-
-        // 追逐移动
 
         animator.SetBool("iswalking", true);
         transform.Translate((isMoveRight ? 1 : -1) * speed * Time.deltaTime, 0, 0);
@@ -146,15 +159,12 @@ public class HuskDandy : MonoBehaviour
     void TurnAround()
     {
         isMoveRight = !isMoveRight;
-        //transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
         if (isMoveRight)
         {
-            // 移动向右，需要面向右 (负的 X Scale)
             transform.localScale = new Vector3(-Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);
         }
         else
         {
-            // 移动向左，需要面向左 (正的 X Scale)
             transform.localScale = new Vector3(Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);
         }
         currentState = State.Walking;
@@ -214,22 +224,17 @@ public class HuskDandy : MonoBehaviour
     {
         if (playerTransform == null) return;
         
-        // 玩家在右边 (需要怪物面向右边)
         if (playerTransform.position.x > transform.position.x)
         {
             isMoveRight = true;
-            //如果原始模型面向左，面朝右需要 **负** 的 X Scale
             transform.localScale = new Vector3(-Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);
         }
-        // 玩家在左边 (需要怪物面向左边)
         else
         {
             isMoveRight = false;
-            //如果原始模型面向左，面朝左需要 **正** 的 X Scale
             transform.localScale = new Vector3(Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);
         }
     }
-
 
     void OnCollisionEnter2D(Collision2D collision)
     {
@@ -237,20 +242,46 @@ public class HuskDandy : MonoBehaviour
         {
             PlayerHealth playerHealth = collision.gameObject.GetComponent<PlayerHealth>();
             playerHealth.TakeDamage(1, DamageType.CollideDamage);
-            //击退玩家
             PlayerController playerController = collision.gameObject.GetComponent<PlayerController>();
             float knockbackForce = 5f;
             if (playerTransform.position.x < transform.position.x)
             {
-                // 玩家在左侧，向左击退
                 playerController.ApplyKnockback(knockbackForce, Vector2.left);
             }
             else
             {
-                // 玩家在右侧，向右击退
                 playerController.ApplyKnockback(knockbackForce, Vector2.right);
             }
         }
+    }
+
+    public void OnSpawnFromPool()
+    {
+        EnsureInitialized();
+        startPosition = transform.position;
+        currentState = State.Idle;
+        isAttacking = false;
+        isMoveRight = false;
+        idleStartTime = Time.time;
+        blood = enermyHealth != null ? enermyHealth.max_health : blood;
+        transform.localScale = new Vector3(-Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);
+        RefreshPlayerReference();
+        if (animator != null)
+        {
+            animator.SetBool("iswalking", false);
+            animator.SetBool("findplayer", false);
+            animator.SetBool("Death", false);
+            animator.Rebind();
+            animator.Update(0f);
+        }
+    }
+
+    public void OnDespawnToPool()
+    {
+        EnsureInitialized();
+        currentState = State.Idle;
+        isAttacking = false;
+        blood = enermyHealth != null ? enermyHealth.max_health : blood;
     }
 }
 

@@ -14,7 +14,7 @@ public enum State
     Defense // 防御状态
 };
 
-public class GreateHusk : MonoBehaviour
+public class GreateHusk : MonoBehaviour, IPoolableEnemy
 {
     private State currentState = State.Idle;
 
@@ -49,19 +49,65 @@ public class GreateHusk : MonoBehaviour
     private bool isAttacking = false;  // 标志，用于防止在动画播放期间重复触发
     private Transform playerTransform;
     private EnermyHealth EnermyHealth;
+    private bool hasInitialized;
+
+    void Awake()
+    {
+        EnsureInitialized();
+    }
 
     void Start()
     {
+        EnsureInitialized();
+        ResetRuntimeState();
+    }
+
+    private void EnsureInitialized()
+    {
+        if (hasInitialized)
+        {
+            return;
+        }
+
         animator = GetComponent<Animator>();
         startPosition = transform.position;
         originalScale = transform.localScale;
         EnermyHealth = GetComponent<EnermyHealth>();
+        hasInitialized = true;
+    }
+
+    private void RefreshPlayerReference()
+    {
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        playerTransform = player != null ? player.transform : null;
+    }
+
+    private void ResetRuntimeState()
+    {
         currentState = State.Idle;
         idleStartTime = Time.time;
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
-        if (player != null)
+        movementEnabled = true;
+        isAttacking = false;
+        nextAttackTime = 0f;
+        nextDefenseTime = 0f;
+        attackLockPosition = transform.position;
+        startPosition = transform.position;
+        blood = EnermyHealth != null ? EnermyHealth.max_health : blood;
+        isMoveRight = true;
+        transform.localScale = new Vector3(Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);
+        RefreshPlayerReference();
+
+        if (animator != null)
         {
-            playerTransform = player.transform;
+            animator.SetBool("isWalking", false);
+            animator.SetBool("findplayer", false);
+            animator.Rebind();
+            animator.Update(0f);
+        }
+
+        if (EnermyHealth != null)
+        {
+            EnermyHealth.isDefensing = false;
         }
     }
 
@@ -360,6 +406,25 @@ public class GreateHusk : MonoBehaviour
                 // 玩家在右侧，向右击退
                 playerController.ApplyKnockback(knockbackForce, Vector2.right);
             }
+        }
+    }
+
+    public void OnSpawnFromPool()
+    {
+        EnsureInitialized();
+        StopAllCoroutines();
+        ResetRuntimeState();
+    }
+
+    public void OnDespawnToPool()
+    {
+        EnsureInitialized();
+        StopAllCoroutines();
+        movementEnabled = true;
+        isAttacking = false;
+        if (EnermyHealth != null)
+        {
+            EnermyHealth.isDefensing = false;
         }
     }
 }

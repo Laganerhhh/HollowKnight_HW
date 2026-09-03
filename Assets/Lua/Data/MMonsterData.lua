@@ -1,0 +1,56 @@
+local MMonsterData = {
+	Crawlid = {
+		monsterId = "Crawlid",
+		prefabPath = "Assets/Prefab/Enemy/Crawlid_0.prefab",
+		poolPrewarm = 3,
+		maxHealth = 2,
+		blood = 5,
+		speed = 2,
+		keepCorpseAfterDeath = true,
+		corpseDuration = 8,
+		respawnTime = 15,
+		patrol = {
+			xMin = -6,
+			xMax = 6,
+		},
+	},
+	HuskDandy = {
+		monsterId = "HuskDandy",
+		prefabPath = "Assets/Prefab/Enemy/HuskDandy.prefab",
+		poolPrewarm = 1,
+		maxHealth = 5,
+		blood = 10,
+		speed = 2,
+		idleBeforeAttackDuration = 1,
+		keepCorpseAfterDeath = true,
+		corpseDuration = 8,
+		respawnTime = 30,
+		patrol = {
+			xMin = -2,
+			xMax = 3,
+		},
+	},
+	GreatHusk = {
+		monsterId = "GreatHusk",
+		prefabPath = "Assets/Prefab/Enemy/GreatHusk.prefab",
+		poolPrewarm = 1,
+		maxHealth = 10,
+		blood = 10,
+		speed = 2,
+		idleBeforeAttackDuration = 1,
+		chaseDistance = 8,
+		attackRange = 4,
+		attackCooldown = 2,
+		defenseDuration = 0.3,
+		defenseCooldown = 3,
+		keepCorpseAfterDeath = true,
+		corpseDuration = 8,
+		respawnTime = 60,
+		patrol = {
+			xMin = -2,
+			xMax = 2,
+		},
+	},
+}
+
+return MMonsterData
