@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 /// <summary>
 /// 玩家控制脚本
 /// </summary>
@@ -64,9 +65,15 @@ public class PlayerController : MonoBehaviour
     private Animator anim;
     private PlayerSoulPower soulPower;
     private PlayerHealth playerHealth;
+    private bool isSceneClosing;
 
     void OnEnable()
     {
+        isSceneClosing = false;
+        SceneManager.sceneUnloaded -= OnSceneUnloaded;
+        SceneManager.sceneUnloaded += OnSceneUnloaded;
+        SceneManager.activeSceneChanged -= OnActiveSceneChanged;
+        SceneManager.activeSceneChanged += OnActiveSceneChanged;
         //重设置动画状态
         currentState = PlayerState.Movement;
         moveChanged = 0;
@@ -75,6 +82,9 @@ public class PlayerController : MonoBehaviour
 
     void OnDisable()
     {
+        isSceneClosing = true;
+        SceneManager.sceneUnloaded -= OnSceneUnloaded;
+        SceneManager.activeSceneChanged -= OnActiveSceneChanged;
         ResetAllParameters();
         anim.SetInteger("movement", 0);
     }
@@ -90,6 +100,27 @@ public class PlayerController : MonoBehaviour
         {
             Debug.LogWarning($"火球预制体预加载失败: {FireBallPrefabPath}");
         }
+    }
+
+    private void OnSceneUnloaded(Scene unloadedScene)
+    {
+        if (unloadedScene == gameObject.scene)
+        {
+            isSceneClosing = true;
+        }
+    }
+
+    private void OnActiveSceneChanged(Scene currentScene, Scene nextScene)
+    {
+        if (currentScene == gameObject.scene)
+        {
+            isSceneClosing = true;
+        }
+    }
+
+    private void OnApplicationQuit()
+    {
+        isSceneClosing = true;
     }
 
     // 将安全点的 Y 固定为检测到的平台顶部（更安全），如果未检测到平台则使用当前坐标
@@ -564,6 +595,22 @@ public class PlayerController : MonoBehaviour
         Grounding(collision, true);
     }
 
+    private void SpawnDustEffect(Collider2D col)
+    {
+        if (isSceneClosing || dust_effect == null || col == null)
+        {
+            return;
+        }
+
+        Vector2 closestPoint = col.ClosestPoint(transform.position);
+        Vector3 effectPos = new Vector3(closestPoint.x, closestPoint.y - 0.1f, 0f);
+        GameObject dustEff = Instantiate(dust_effect, effectPos, Quaternion.identity);
+        if (dustEff != null)
+        {
+            dustEff.transform.Rotate(new Vector3(-90f, 0f, -90f));
+        }
+    }
+
     private void Grounding(Collider2D col, bool exitState)
     {
         if (exitState)
@@ -575,9 +622,7 @@ public class PlayerController : MonoBehaviour
                 isOnGround = false;
 
                 //离开地面创建特效
-                Vector3 effectPos = new Vector3(col.ClosestPoint(transform.position).x, col.ClosestPoint(transform.position).y - 0.1f, 0);
-                GameObject dust_eff = Instantiate(dust_effect, effectPos, Quaternion.identity);
-                dust_eff.transform.Rotate(new Vector3(-90, 0, -90));
+                SpawnDustEffect(col);
                 anim.SetBool("isOnGround", isOnGround);
             }
         }
@@ -595,10 +640,7 @@ public class PlayerController : MonoBehaviour
                     anim.GetCurrentAnimatorClipInfo(0)[0].clip.name == "fall")
                 {
                     //创建着陆特效在地面表面
-                    col.ClosestPoint(transform.position);
-                    Vector3 effectPos = new Vector3(col.ClosestPoint(transform.position).x, col.ClosestPoint(transform.position).y - 0.1f, 0);
-                    GameObject dust_eff = Instantiate(dust_effect, effectPos, Quaternion.identity);
-                    dust_eff.transform.Rotate(new Vector3(-90, 0, -90));
+                    SpawnDustEffect(col);
                     TransitionToGround();
                 }
 
@@ -693,9 +735,18 @@ public class PlayerController : MonoBehaviour
 
     private void OnDestroy()
     {
+        isSceneClosing = true;
+        SceneManager.sceneUnloaded -= OnSceneUnloaded;
+        SceneManager.activeSceneChanged -= OnActiveSceneChanged;
+
         if (fireBallPrefabAsset != null)
         {
-            ResourceManager.EnsureInstance().Release(fireBallPrefabAsset);
+            BundleManager existingBundleManager = BundleManager.Instance;
+            if (existingBundleManager != null)
+            {
+                existingBundleManager.Release(fireBallPrefabAsset);
+            }
+
             fireBallPrefabAsset = null;
         }
     }
