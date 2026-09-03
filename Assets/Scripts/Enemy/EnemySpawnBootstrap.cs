@@ -6,15 +6,15 @@ using UnityEngine.SceneManagement;
 
 public class EnemySpawnBootstrap : MonoBehaviour
 {
-    private const string Level1SceneName = "Level1";
     private const string MonsterTablePath = "MMonsterData";
-    private const string Level1SpawnTablePath = "MLevel1MonsterSpawnData";
+    private const string MonsterModulePath = "Data.MMonsterData";
+    private const string SceneSpawnTablePath = "EnemySpawnSceneData";
     private const string EnemyRootName = "EnemyRoot";
 
     public static EnemySpawnBootstrap Instance { get; private set; }
 
     private readonly List<GameObject> spawnedEnemies = new List<GameObject>();
-    private bool level1Spawned;
+    private string spawnedSceneName;
     private Transform currentEnemyRoot;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -57,7 +57,7 @@ public class EnemySpawnBootstrap : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        level1Spawned = false;
+        spawnedSceneName = null;
         spawnedEnemies.Clear();
         currentEnemyRoot = null;
         TrySpawnForScene(scene);
@@ -65,14 +65,14 @@ public class EnemySpawnBootstrap : MonoBehaviour
 
     private void TrySpawnForScene(Scene scene)
     {
-        if (scene.name != Level1SceneName || level1Spawned)
+        if (!scene.IsValid() || string.IsNullOrEmpty(scene.name) || spawnedSceneName == scene.name)
         {
             return;
         }
 
         if (!TryGetLuaState(out LuaState luaState))
         {
-            Debug.LogWarning("[EnemySpawnBootstrap] LuaState is not ready, skip Level1 enemy spawn.");
+            Debug.LogWarning($"[EnemySpawnBootstrap] LuaState is not ready, skip enemy spawn for scene '{scene.name}'.");
             return;
         }
 
@@ -85,32 +85,33 @@ public class EnemySpawnBootstrap : MonoBehaviour
 
         try
         {
-            luaState.DoString("MMonsterData = require 'Data.MMonsterData'", "EnemySpawnBootstrap_MMonsterData");
-            luaState.DoString("MLevel1MonsterSpawnData = require 'Data.MLevel1MonsterSpawnData'", "EnemySpawnBootstrap_MLevel1MonsterSpawnData");
-
-            monsterTable = luaState.GetTable(MonsterTablePath, false);
-            spawnRootTable = luaState.GetTable(Level1SpawnTablePath, false);
-            if (monsterTable == null || spawnRootTable == null)
+            if (!TryLoadMonsterTable(luaState, out monsterTable))
             {
-                Debug.LogError("[EnemySpawnBootstrap] Failed to load monster spawn config tables from Lua.");
                 return;
             }
+
+            if (!TryLoadSceneSpawnTable(luaState, scene.name, out spawnRootTable))
+            {
+                return;
+            }
+
+            ValidateSceneConfig(scene.name, spawnRootTable);
 
             spawnListTable = spawnRootTable.GetTable<LuaTable>("spawns");
             if (spawnListTable == null)
             {
-                Debug.LogError("[EnemySpawnBootstrap] Spawn list table is missing in MLevel1MonsterSpawnData.");
+                Debug.LogWarning($"[EnemySpawnBootstrap] Spawn list table is missing in {GetSceneSpawnTableName(scene.name)}.");
                 return;
             }
 
             PrewarmPools(monsterTable, spawnListTable);
-            DisableLegacyLevel1Enemies();
+            DisableLegacyEnemies(spawnRootTable);
             SpawnConfiguredEnemies(monsterTable, spawnListTable);
-            level1Spawned = true;
+            spawnedSceneName = scene.name;
         }
         catch (Exception exception)
         {
-            Debug.LogError($"[EnemySpawnBootstrap] Failed to spawn Level1 enemies: {exception}");
+            Debug.LogError($"[EnemySpawnBootstrap] Failed to spawn enemies for scene '{scene.name}': {exception}");
         }
         finally
         {
@@ -128,6 +129,57 @@ public class EnemySpawnBootstrap : MonoBehaviour
             {
                 monsterTable.Dispose();
             }
+        }
+    }
+
+    private bool TryLoadMonsterTable(LuaState luaState, out LuaTable monsterTable)
+    {
+        monsterTable = null;
+        luaState.DoString($"{MonsterTablePath} = require '{MonsterModulePath}'", "EnemySpawnBootstrap_MMonsterData");
+        monsterTable = luaState.GetTable(MonsterTablePath, false);
+        if (monsterTable != null)
+        {
+            return true;
+        }
+
+        Debug.LogError("[EnemySpawnBootstrap] Failed to load monster template table 'MMonsterData'.");
+        return false;
+    }
+
+    private bool TryLoadSceneSpawnTable(LuaState luaState, string sceneName, out LuaTable spawnRootTable)
+    {
+        spawnRootTable = null;
+        string sceneSpawnTableName = GetSceneSpawnTableName(sceneName);
+        string sceneSpawnModulePath = $"Data.{sceneSpawnTableName}";
+
+        try
+        {
+            luaState.DoString(
+                $"{SceneSpawnTablePath} = require '{sceneSpawnModulePath}'",
+                $"EnemySpawnBootstrap_{sceneSpawnTableName}");
+        }
+        catch (Exception exception)
+        {
+            Debug.Log($"[EnemySpawnBootstrap] No enemy spawn config found for scene '{sceneName}' at module '{sceneSpawnModulePath}'. Detail: {exception.Message}");
+            return false;
+        }
+
+        spawnRootTable = luaState.GetTable(SceneSpawnTablePath, false);
+        if (spawnRootTable != null)
+        {
+            return true;
+        }
+
+        Debug.LogWarning($"[EnemySpawnBootstrap] Scene spawn table '{sceneSpawnTableName}' loaded but returned nil.");
+        return false;
+    }
+
+    private void ValidateSceneConfig(string sceneName, LuaTable spawnRootTable)
+    {
+        string configuredSceneName = Convert.ToString(spawnRootTable["sceneName"]);
+        if (!string.IsNullOrEmpty(configuredSceneName) && !string.Equals(configuredSceneName, sceneName, StringComparison.Ordinal))
+        {
+            Debug.LogWarning($"[EnemySpawnBootstrap] Scene spawn config name mismatch. Active scene='{sceneName}', config sceneName='{configuredSceneName}'.");
         }
     }
 
@@ -350,13 +402,34 @@ public class EnemySpawnBootstrap : MonoBehaviour
         }
     }
 
-    private void DisableLegacyLevel1Enemies()
+    private void DisableLegacyEnemies(LuaTable spawnRootTable)
     {
-        DisableLegacyEnemyByName("Crawlid_0");
-        DisableLegacyEnemyByName("Crawlid_0 (1)");
-        DisableLegacyEnemyByName("Crawlid_0 (2)");
-        DisableLegacyEnemyByName("HuskDandy (2)");
-        DisableLegacyEnemyByName("GreatHusk");
+        LuaTable legacyEnemiesTable = spawnRootTable.GetTable<LuaTable>("legacyEnemies");
+        if (legacyEnemiesTable == null)
+        {
+            return;
+        }
+
+        try
+        {
+            for (int i = 1; i <= legacyEnemiesTable.Length; i++)
+            {
+                string legacyEnemyName = Convert.ToString(legacyEnemiesTable[i]);
+                if (!string.IsNullOrEmpty(legacyEnemyName))
+                {
+                    DisableLegacyEnemyByName(legacyEnemyName);
+                }
+            }
+        }
+        finally
+        {
+            legacyEnemiesTable.Dispose();
+        }
+    }
+
+    private static string GetSceneSpawnTableName(string sceneName)
+    {
+        return $"M{sceneName}MonsterSpawnData";
     }
 
     private Transform GetOrCreateEnemyRoot()

@@ -1,5 +1,12 @@
 local MLevel1MonsterSpawnData = {
 	sceneName = "Level1",
+	legacyEnemies = {
+		"Crawlid_0",
+		"Crawlid_0 (1)",
+		"Crawlid_0 (2)",
+		"HuskDandy (2)",
+		"GreatHusk",
+	},
 	spawns = {
 		{
 			spawnId = "level1_crawlid_01",
