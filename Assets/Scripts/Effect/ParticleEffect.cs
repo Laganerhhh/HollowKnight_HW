@@ -5,10 +5,12 @@ using UnityEngine;
 public class ParticleEffect : MonoBehaviour
 {
     private new ParticleSystem particleSystem;
+    private PooledEffect pooledEffect;
 
     void Start()
     {
         particleSystem = GetComponent<ParticleSystem>();
+        ResolvePooledEffect();
         if (particleSystem != null)
         {
             StartCoroutine(CheckAndRecycle());
@@ -22,8 +24,23 @@ public class ParticleEffect : MonoBehaviour
         {
             yield return null;
         }
-        // 播放完毕后销毁游戏对象以回收资源
-        Destroy(gameObject);
+        // 播放完毕后优先回池，未接入对象池时继续销毁
+        ResolvePooledEffect();
+        if (pooledEffect != null)
+        {
+            pooledEffect.ReturnToPool();
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 
+    private void ResolvePooledEffect()
+    {
+        if (pooledEffect == null)
+        {
+            pooledEffect = GetComponent<PooledEffect>();
+        }
+    }
 }

@@ -460,25 +460,30 @@ public class FalseKnight: MonoBehaviour
 
     private void FireShockwave()
     {
-        GameObject wave = Instantiate(
+        if (shockwavePrefab == null)
+        {
+            return;
+        }
+
+        GameObject wave = global::ProjectilePoolManager.Spawn(
             shockwavePrefab,
             transform.position,
             Quaternion.identity
         );
+        if (wave == null)
+        {
+            wave = Instantiate(
+                shockwavePrefab,
+                transform.position,
+                Quaternion.identity
+            );
+        }
 
         float direction = isFacingRight ? 1f : -1f;
-
-        // *** 关键更改：获取 ShockwaveController 并初始化它 ***
-        ShockwaveController controller = wave.GetComponent<ShockwaveController>();
-        
+        ShockwaveController controller = wave != null ? wave.GetComponent<ShockwaveController>() : null;
         if (controller != null)
         {
             controller.Initialize(shockwaveSpeed, shockwaveLifetime, direction);
-            // Debug.Log("冲击波已启动。");
-        }
-        else
-        {
-            // Debug.LogError("冲击波 Prefab 上缺少 ShockwaveController 脚本！");
         }
     }
 

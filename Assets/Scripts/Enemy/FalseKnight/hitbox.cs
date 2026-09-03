@@ -36,8 +36,11 @@ public class hitbox : MonoBehaviour
     {
         if (effect != null)
         {
-            GameObject newEffect = Instantiate(effect, transform.position + new Vector3(0, -1f, 0), Quaternion.identity);
-            newEffect.transform.Rotate(-90, 0, 0);
+            GameObject newEffect = PlayEffect(effect, transform.position + new Vector3(0, -1f, 0), Quaternion.identity, null);
+            if (newEffect != null)
+            {
+                newEffect.transform.Rotate(-90, 0, 0);
+            }
         }
     }
 
@@ -52,5 +55,21 @@ public class hitbox : MonoBehaviour
         {
             playerHealth.TakeDamage(damage);
         }
+    }
+
+    private GameObject PlayEffect(GameObject effectPrefab, Vector3 position, Quaternion rotation, Transform parent)
+    {
+        if (effectPrefab == null)
+        {
+            return null;
+        }
+
+        GameObject effectInstance = EffectPoolManager.Play(effectPrefab, position, rotation, parent);
+        if (effectInstance == null)
+        {
+            effectInstance = Instantiate(effectPrefab, position, rotation, parent);
+        }
+
+        return effectInstance;
     }
 }

@@ -57,8 +57,11 @@ public class Ball : MonoBehaviour
         {
             tail_particle.SetActive(false);
 
-            GameObject explode_part = Instantiate(explode_particle, transform.position, Quaternion.identity);
-            explode_part.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+            GameObject explodePart = PlayEffect(explode_particle, transform.position, Quaternion.identity, null);
+            if (explodePart != null)
+            {
+                explodePart.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+            }
             Explode();
         }
     }
@@ -84,5 +87,21 @@ public class Ball : MonoBehaviour
 
         // 3. 销毁整个父物体（连同子物体一起销毁）
         Destroy(gameObject, destroyDelay);
+    }
+
+    private GameObject PlayEffect(GameObject effectPrefab, Vector3 position, Quaternion rotation, Transform parent)
+    {
+        if (effectPrefab == null)
+        {
+            return null;
+        }
+
+        GameObject effectInstance = EffectPoolManager.Play(effectPrefab, position, rotation, parent);
+        if (effectInstance == null)
+        {
+            effectInstance = Instantiate(effectPrefab, position, rotation, parent);
+        }
+
+        return effectInstance;
     }
 }

@@ -36,7 +36,7 @@ public class Sword : MonoBehaviour
                 normal = Vector2.up;
             }
             Quaternion rot = Quaternion.FromToRotation(Vector3.up, normal);
-            Instantiate(hitEffect, hitPoint, rot);
+            PlayEffect(hitEffect, hitPoint, rot, null);
 
             SoundManager.instance.PlaySound(SoundIndex.player_hitRecoil);
 
@@ -67,8 +67,7 @@ public class Sword : MonoBehaviour
                 enermyHealth.TakeDamage(1);
             }
 
-
-            Instantiate(hit_Enermy_Effect, collision.transform);
+            PlayEffect(hit_Enermy_Effect, collision.transform.position, collision.transform.rotation, collision.transform);
 
             Vector2 knockbackDirection = GetAttackDirection();
             //给玩家一个反冲的力
@@ -81,7 +80,6 @@ public class Sword : MonoBehaviour
             this.enabled = false;
         }
     }
-
 
     private Vector2 GetAttackDirection()
     {
@@ -106,5 +104,21 @@ public class Sword : MonoBehaviour
             knockbackDirection = Vector2.up;
         }
         return knockbackDirection;
+    }
+
+    private GameObject PlayEffect(GameObject effectPrefab, Vector3 position, Quaternion rotation, Transform parent)
+    {
+        if (effectPrefab == null)
+        {
+            return null;
+        }
+
+        GameObject effectInstance = EffectPoolManager.Play(effectPrefab, position, rotation, parent);
+        if (effectInstance == null)
+        {
+            effectInstance = Instantiate(effectPrefab, position, rotation, parent);
+        }
+
+        return effectInstance;
     }
 }

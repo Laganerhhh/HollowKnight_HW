@@ -1,61 +1,97 @@
 using UnityEngine;
-using System.Collections;
 
 public class ShockwaveController : MonoBehaviour
 {
     private float speed;
     private float lifetime;
     private float direction;
+    private float elapsedTime;
+    private bool isActiveProjectile;
+    private PooledProjectile pooledProjectile;
 
     [Header("生长设置")]
-    [SerializeField] private float growDuration = 0.2f; // 冲击波变到最大所需的时间
+    [SerializeField] private float growDuration = 0.2f;
     private Vector3 targetScale;
+
+    private void Awake()
+    {
+        ResolvePooledProjectile();
+        targetScale = transform.localScale;
+    }
 
     public void Initialize(float shockwaveSpeed, float shockwaveLifetime, float moveDirection)
     {
-        this.speed = shockwaveSpeed;
-        this.lifetime = shockwaveLifetime;
-        this.direction = moveDirection;
+        ResolvePooledProjectile();
+        speed = shockwaveSpeed;
+        lifetime = shockwaveLifetime;
+        direction = moveDirection;
+        elapsedTime = 0f;
+        isActiveProjectile = true;
 
-        // 记录初始设定的缩放值（假设你在 Prefab 里调好了最终大小）
-        targetScale = transform.localScale;
-        
-        // 初始 X 缩放设为 0
-        transform.localScale = new Vector3(0, targetScale.y, targetScale.z);
-
-        StartCoroutine(MoveAndDestroy());
+        targetScale = new Vector3(Mathf.Abs(targetScale.x) * Mathf.Sign(moveDirection), targetScale.y, targetScale.z);
+        transform.localScale = new Vector3(0f, targetScale.y, targetScale.z);
     }
 
-    IEnumerator MoveAndDestroy()
+    private void Update()
     {
-        float startTime = Time.time;
-        float endTime = startTime + lifetime;
-        Vector3 moveVector = new Vector3(direction * speed, 0, 0);
-
-        while (Time.time < endTime)
+        if (!isActiveProjectile)
         {
-            // --- 1. 移动逻辑 ---
-            transform.position += moveVector * Time.deltaTime;
+            return;
+        }
 
-            // --- 2. 缩放逻辑 (生长) ---
-            float elapsed = Time.time - startTime;
-            if (elapsed < growDuration)
-            {
-                // 计算当前的进度 (0 到 1)
-                float t = elapsed / growDuration;
-                // 只平滑改变 X 轴
-                float newX = Mathf.Lerp(0, targetScale.x, t);
-                transform.localScale = new Vector3(newX, targetScale.y, targetScale.z);
-            }
-            else
-            {
-                // 确保生长结束后保持在目标缩放
-                transform.localScale = targetScale;
-            }
+        elapsedTime += Time.deltaTime;
+        transform.position += new Vector3(direction * speed * Time.deltaTime, 0f, 0f);
 
-            yield return null;
+        if (elapsedTime < growDuration)
+        {
+            float t = elapsedTime / Mathf.Max(growDuration, 0.0001f);
+            float newX = Mathf.Lerp(0f, targetScale.x, t);
+            transform.localScale = new Vector3(newX, targetScale.y, targetScale.z);
+        }
+        else
+        {
+            transform.localScale = targetScale;
+        }
+
+        if (elapsedTime >= lifetime)
+        {
+            Despawn();
+        }
+    }
+
+    public void OnSpawnFromPool()
+    {
+        ResolvePooledProjectile();
+        elapsedTime = 0f;
+        isActiveProjectile = false;
+        transform.localScale = targetScale;
+    }
+
+    public void OnDespawnToPool()
+    {
+        elapsedTime = 0f;
+        isActiveProjectile = false;
+        transform.localScale = targetScale;
+    }
+
+    private void Despawn()
+    {
+        isActiveProjectile = false;
+        elapsedTime = 0f;
+        if (pooledProjectile != null)
+        {
+            pooledProjectile.ReturnToPool();
+            return;
         }
 
         Destroy(gameObject);
+    }
+
+    private void ResolvePooledProjectile()
+    {
+        if (pooledProjectile == null)
+        {
+            pooledProjectile = GetComponent<PooledProjectile>();
+        }
     }
 }

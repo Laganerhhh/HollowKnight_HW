@@ -117,7 +117,7 @@ public class PlayerHealth : MonoBehaviour
         current_health -= damage;
 
         //生成受伤特效
-        Instantiate(player_hit_particle, transform.position, Quaternion.identity);
+        PlayEffect(player_hit_particle, transform.position, Quaternion.identity, null);
 
         if (current_health <= 0)
         {
@@ -169,5 +169,21 @@ public class PlayerHealth : MonoBehaviour
     private void OnDeathAnimEnd()
     {
         GameManager.instance.GameOver();
+    }
+
+    private GameObject PlayEffect(GameObject effectPrefab, Vector3 position, Quaternion rotation, Transform parent)
+    {
+        if (effectPrefab == null)
+        {
+            return null;
+        }
+
+        GameObject effectInstance = EffectPoolManager.Play(effectPrefab, position, rotation, parent);
+        if (effectInstance == null)
+        {
+            effectInstance = Instantiate(effectPrefab, position, rotation, parent);
+        }
+
+        return effectInstance;
     }
 }

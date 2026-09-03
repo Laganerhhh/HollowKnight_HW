@@ -446,8 +446,13 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        GameObject fireBallObj = Instantiate(fireBallPrefabAsset, fireBallSpawnPoint.position, fireBallSpawnPoint.rotation);
-        FireBall fireBall = fireBallObj.GetComponent<FireBall>();
+        GameObject fireBallObj = global::ProjectilePoolManager.Spawn(fireBallPrefabAsset, fireBallSpawnPoint.position, fireBallSpawnPoint.rotation);
+        if (fireBallObj == null)
+        {
+            fireBallObj = Instantiate(fireBallPrefabAsset, fireBallSpawnPoint.position, fireBallSpawnPoint.rotation);
+        }
+
+        FireBall fireBall = fireBallObj != null ? fireBallObj.GetComponent<FireBall>() : null;
         if (fireBall == null)
         {
             Debug.LogWarning("火球预制体缺少 FireBall 组件");
@@ -604,7 +609,7 @@ public class PlayerController : MonoBehaviour
 
         Vector2 closestPoint = col.ClosestPoint(transform.position);
         Vector3 effectPos = new Vector3(closestPoint.x, closestPoint.y - 0.1f, 0f);
-        GameObject dustEff = Instantiate(dust_effect, effectPos, Quaternion.identity);
+        GameObject dustEff = PlayEffect(dust_effect, effectPos, Quaternion.identity, null);
         if (dustEff != null)
         {
             dustEff.transform.Rotate(new Vector3(-90f, 0f, -90f));
@@ -749,5 +754,26 @@ public class PlayerController : MonoBehaviour
 
             fireBallPrefabAsset = null;
         }
+    }
+
+    private GameObject PlayEffect(GameObject effectPrefab, Vector3 position, Quaternion rotation, Transform parent)
+    {
+        if (effectPrefab == null || isSceneClosing)
+        {
+            return null;
+        }
+
+        GameObject effectInstance = TryPlayEffectFromPool(effectPrefab, position, rotation, parent);
+        if (effectInstance == null)
+        {
+            effectInstance = Instantiate(effectPrefab, position, rotation, parent);
+        }
+
+        return effectInstance;
+    }
+
+    private static GameObject TryPlayEffectFromPool(GameObject effectPrefab, Vector3 position, Quaternion rotation, Transform parent)
+    {
+        return EffectPoolManager.Play(effectPrefab, position, rotation, parent);
     }
 }

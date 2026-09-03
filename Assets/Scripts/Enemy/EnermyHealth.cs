@@ -86,8 +86,8 @@ public class EnermyHealth : MonoBehaviour
         current_health -= damage;
         if (injury_effect != null)
         {
-            Instantiate(injury_effect, transform.position, Quaternion.identity, transform);
-            Instantiate(hit_particle_effect, transform.position - transform.up * 0.5f, Quaternion.identity);
+            PlayEffect(injury_effect, transform.position, Quaternion.identity, transform, null);
+            PlayEffect(hit_particle_effect, transform.position - transform.up * 0.5f, Quaternion.identity, null, null);
         }
         SoundManager.instance.PlaySound(SoundIndex.enermy_damage);
         if (current_health <= 0)
@@ -101,22 +101,22 @@ public class EnermyHealth : MonoBehaviour
     private void DefenseDamege()
     {
         SoundManager.instance.PlaySound(SoundIndex.player_hitRecoil);
-        Instantiate(defense_particle, transform.position + new Vector3(0.5f, 0, 0), Quaternion.identity, transform);
+        PlayEffect(defense_particle, transform.position + new Vector3(0.5f, 0, 0), Quaternion.identity, transform, null);
     }
 
     private void FalseKnightTakeDamege(int damage)
     {
         if (injury_effect != null)
         {
-            Instantiate(injury_effect, transform.position + transform.up * 0.5f, Quaternion.identity, transform);
-            Instantiate(hit_particle_effect, transform.position + transform.up * 0.5f, Quaternion.identity);
+            PlayEffect(injury_effect, transform.position + transform.up * 0.5f, Quaternion.identity, transform, null);
+            PlayEffect(hit_particle_effect, transform.position + transform.up * 0.5f, Quaternion.identity, null, null);
         }
         falseKnight.TakeDamage(damage);
     }
 
     void Die()
     {
-        Instantiate(death_effect, transform.position - transform.up * 0.5f, Quaternion.identity);
+        PlayEffect(death_effect, transform.position - transform.up * 0.5f, Quaternion.identity, null, null);
 
         animator.SetTrigger(dieAnimParam);
         Collider2D collider = GetComponent<Collider2D>();
@@ -271,5 +271,31 @@ public class EnermyHealth : MonoBehaviour
         keepCorpseAfterDeath = shouldKeepCorpseAfterDeath;
         corpseDurationForPool = corpseDuration;
         respawnTimeForPool = respawnTime;
+    }
+
+    private GameObject PlayEffect(GameObject effectPrefab, Vector3 position, Quaternion rotation, Transform parent, Vector3? localScale)
+    {
+        if (effectPrefab == null)
+        {
+            return null;
+        }
+
+        GameObject effectInstance = TryPlayEffectFromPool(effectPrefab, position, rotation, parent);
+        if (effectInstance == null)
+        {
+            effectInstance = Instantiate(effectPrefab, position, rotation, parent);
+        }
+
+        if (effectInstance != null && localScale.HasValue)
+        {
+            effectInstance.transform.localScale = localScale.Value;
+        }
+
+        return effectInstance;
+    }
+
+    private static GameObject TryPlayEffectFromPool(GameObject effectPrefab, Vector3 position, Quaternion rotation, Transform parent)
+    {
+        return EffectPoolManager.Play(effectPrefab, position, rotation, parent);
     }
 }
