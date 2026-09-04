@@ -690,6 +690,16 @@ public class PlayerController : MonoBehaviour
         return isOnGround;
     }
 
+    public Vector3 GetSavePosition()
+    {
+        if (isOnGround)
+        {
+            return transform.position;
+        }
+
+        return new Vector3(playerHealth.safePosition.x, playerHealth.safePosition.y, transform.position.z);
+    }
+
     public bool IsClimbing()
     {
         return currentState == PlayerState.Climb;

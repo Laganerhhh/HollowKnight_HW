@@ -16,7 +16,7 @@ public enum SoulPowerSkill
 public class PlayerSoulPower : MonoBehaviour
 {
     private float currentSoulPower = 100;
-    public float CurrentSoulPower { get; private set; }
+    public float CurrentSoulPower => currentSoulPower;
 
     public float maxSoulPower = 100;
 
@@ -77,6 +77,13 @@ public class PlayerSoulPower : MonoBehaviour
     public void ResetSoulPower()
     {
         currentSoulPower = maxSoulPower;
+        UpdateSoulPowerUI();
+    }
+
+    public void SetSoulPower(float currentValue, float maxValue)
+    {
+        maxSoulPower = maxValue;
+        currentSoulPower = Mathf.Clamp(currentValue, 0f, maxSoulPower);
         UpdateSoulPowerUI();
     }
 

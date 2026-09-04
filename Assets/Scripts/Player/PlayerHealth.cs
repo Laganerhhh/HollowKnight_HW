@@ -19,6 +19,7 @@ public class PlayerHealth : MonoBehaviour
     private PlayerController playerController;
     private PlayerSoulPower playerSoulPower;
     private Rigidbody2D rb2d;
+    private bool hasAppliedSaveData;
 
     // 最后一个安全位置（掉落或陷阱将回到此位置）
     public Vector2 safePosition;
@@ -36,14 +37,16 @@ public class PlayerHealth : MonoBehaviour
 
     void Start()
     {
-        current_health = max_health;
         animator = GetComponent<Animator>();
         playerController = GetComponent<PlayerController>();
         playerSoulPower = GetComponent<PlayerSoulPower>();
         rb2d = GetComponent<Rigidbody2D>();
 
-        // 初始化安全点为当前出生点
-        safePosition = transform.position;
+        if (!hasAppliedSaveData)
+        {
+            current_health = max_health;
+            safePosition = transform.position;
+        }
     }
 
     IEnumerator RespawnAndInvincible()
@@ -101,6 +104,16 @@ public class PlayerHealth : MonoBehaviour
             TutorialUI.instance.HideTutorial(TutorialUITyepe.Recover);
             current_health += 1;
         }
+    }
+
+    public void ApplySaveData(int savedCurrentHealth, int savedMaxHealth, Vector2 savedSafePosition)
+    {
+        hasAppliedSaveData = true;
+        max_health = savedMaxHealth;
+        current_health = Mathf.Clamp(savedCurrentHealth, 0, max_health);
+        safePosition = savedSafePosition;
+        isInvincible = false;
+        HealthUIMgr.Instance.SetHealth(current_health, max_health);
     }
 
     public void TakeDamage(int damage, DamageType damageType = DamageType.NormalDamage)

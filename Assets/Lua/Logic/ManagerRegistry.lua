@@ -40,6 +40,10 @@ function ManagerRegistry.Init()
 		return UIManager.Instance
 	end)
 
+	register("save", function()
+		return SaveManager.EnsureInstance()
+	end)
+
 	register("input", function()
 		return InputManager.instance
 	end)
@@ -87,6 +91,10 @@ end
 
 function ManagerRegistry.UI()
 	return ManagerRegistry.Get("ui")
+end
+
+function ManagerRegistry.Save()
+	return ManagerRegistry.Get("save")
 end
 
 function ManagerRegistry.Resource()

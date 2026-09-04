@@ -1,6 +1,6 @@
+---@diagnostic disable: undefined-global
 local BasePanel = require "View.BasePanel"
 local UIPanelManager = require "Logic.UIPanelManager"
-
 local StartPanel = BasePanel.New()
 
 function StartPanel.New()
@@ -11,12 +11,19 @@ function StartPanel:Ctor()
 end
 
 function StartPanel:InitUIAndMetaData()
+	self.ui.continueButton = self.ui.root:Find("Buttons/ContinueBt"):GetComponent("UnityEngine.UI.Button")
 	self.ui.startGameButton = self.ui.root:Find("Buttons/StartGameBt"):GetComponent("UnityEngine.UI.Button")
 	self.ui.optionButton = self.ui.root:Find("Buttons/OptionBt"):GetComponent("UnityEngine.UI.Button")
 	self.ui.exitButton = self.ui.root:Find("Buttons/ExitBt"):GetComponent("UnityEngine.UI.Button")
 end
 
 function StartPanel:InitUIEvent()
+	if self.ui.continueButton ~= nil then
+		self.ui.continueButton.onClick:AddListener(function()
+			self:OnClickContinue()
+		end)
+	end
+
 	if self.ui.startGameButton ~= nil then
 		self.ui.startGameButton.onClick:AddListener(function()
 			self:OnClickStartGame()
@@ -36,8 +43,18 @@ function StartPanel:InitUIEvent()
 	end
 end
 
+function StartPanel:OnClickContinue()
+	print("[Lua] StartPanel.OnClickContinue")
+	SaveManager.ContinueLastGame()
+end
+
 function StartPanel:OnClickStartGame()
 	print("[Lua] StartPanel.OnClickStartGame")
+
+	if UIPanelManager.GetDefinition("SavePanel") ~= nil then
+		UIPanelManager.Open("SavePanel")
+		return
+	end
 
 	local uiManager = self.context and self.context.uiManager or nil
 	if uiManager ~= nil then
@@ -71,6 +88,9 @@ function StartPanel:OnOpen(data)
 end
 
 function StartPanel:RefreshView(data)
+	if self.ui.continueButton ~= nil then
+		self.ui.continueButton.gameObject:SetActive(SaveManager.HasAnySlot())
+	end
 end
 
 function StartPanel:OnHide()

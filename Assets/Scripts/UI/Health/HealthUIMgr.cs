@@ -51,4 +51,20 @@ public class HealthUIMgr : MonoBehaviour
             healthIcon.SetIsLoseHealth(false);
         }
     }
+
+    public void SetHealth(int currentHealth, int maxHealth)
+    {
+        int validMaxHealth = Mathf.Min(maxHealth, healthIcons.Length);
+        currentHealth = Mathf.Clamp(currentHealth, 0, validMaxHealth);
+
+        for (int i = 0; i < healthIcons.Length; i++)
+        {
+            if (healthIcons[i] == null)
+            {
+                continue;
+            }
+
+            healthIcons[i].SetIsLoseHealthImmediate(i >= currentHealth || i >= validMaxHealth);
+        }
+    }
 }

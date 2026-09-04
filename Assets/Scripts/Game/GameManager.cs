@@ -43,7 +43,10 @@ public class GameManager : MonoBehaviour
 
         playerAnimator = player != null ? player.GetComponent<Animator>() : null;
 
-        UIManager.Instance.HideCursor();
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.RefreshCursorStateForCurrentScene();
+        }
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -56,6 +59,11 @@ public class GameManager : MonoBehaviour
         }
 
         playerAnimator = player != null ? player.GetComponent<Animator>() : null;
+
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.RefreshCursorStateForCurrentScene();
+        }
     }
 
     public void SetIsPlaying(bool playing)

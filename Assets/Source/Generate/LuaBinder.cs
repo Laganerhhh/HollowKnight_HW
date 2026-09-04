@@ -17,6 +17,7 @@ public static class LuaBinder
 		BundleManagerWrap.Register(L);
 		GameManagerWrap.Register(L);
 		UIManagerWrap.Register(L);
+		SaveManagerWrap.Register(L);
 		InputManagerWrap.Register(L);
 		CameraManagerWrap.Register(L);
 		SoundManagerWrap.Register(L);

@@ -283,7 +283,7 @@ function UIPanelManager.Back()
 	UIPanelManager.Close(name)
 end
 
-function UIPanelManager.Destroy(name)
+function UIPanelManager.Destroy(name, suppressRestore)
 	local panel = panelInstances[name]
 	local wasVisible = panel ~= nil and panel.visible == true
 	local wasTop = panelStack[#panelStack] == name
@@ -294,7 +294,7 @@ function UIPanelManager.Destroy(name)
 	removeFromStack(name)
 	panelInstances[name] = nil
 
-	if wasVisible and wasTop then
+	if suppressRestore ~= true and wasVisible and wasTop then
 		restorePreviousPanel()
 	end
 end

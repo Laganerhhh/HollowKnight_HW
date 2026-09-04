@@ -10,6 +10,7 @@ local SceneBoundPanels = {
 	"ExitPanel",
 	"KeyboardPanel",
 	"OptionPanel",
+	"SavePanel",
 	"PausePanel",
 	"StartPanel",
 	"TestPanel",
@@ -47,7 +48,7 @@ end
 
 function UIRootCtrl:ResetSceneBoundPanels()
 	for _, panelName in ipairs(SceneBoundPanels) do
-		UIPanelManager.Destroy(panelName)
+		UIPanelManager.Destroy(panelName, true)
 	end
 end
 

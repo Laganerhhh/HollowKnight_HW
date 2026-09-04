@@ -23,6 +23,12 @@ MonoBehaviour:
     m_SerializedLabels:
     - lua
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 13f382a1f287a074782fa70302102d6c
+    m_Address: Lua/Data/MMonsterData.lua
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - lua
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 23491198ac0ce0d4bb35155c3d27bd18
     m_Address: Lua/Controller/UIRootCtrl.lua
     m_ReadOnly: 0
@@ -41,6 +47,12 @@ MonoBehaviour:
     m_SerializedLabels:
     - lua
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 355dd45fc239f934787039491e44cde2
+    m_Address: Lua/View/SavePanel.lua
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - lua
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 3b7bc794475e5b94c888eb2984c3bd47
     m_Address: Assets/Textures/HollowKnightIcon.jpg
     m_ReadOnly: 0
@@ -49,6 +61,12 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 525e92c46c22e8e4e9940deaca8a6482
     m_Address: Lua/View/BasePanel.lua
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - lua
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 548794ece6e07dd4a9d83351b7d9af2e
+    m_Address: Lua/Data/MLevel2MonsterSpawnData.lua
     m_ReadOnly: 0
     m_SerializedLabels:
     - lua
@@ -101,8 +119,20 @@ MonoBehaviour:
     m_SerializedLabels:
     - lua
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c52977a9427408347bb970b1d383441b
+    m_Address: Lua/View/ConfirmPanel.lua
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - lua
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: dff4d6c65c774fb43b27377ca90aff0f
     m_Address: Lua/Main.lua
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - lua
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e2565c7472a087c4a9b21fa1aee48810
+    m_Address: Lua/Data/MLevel1MonsterSpawnData.lua
     m_ReadOnly: 0
     m_SerializedLabels:
     - lua

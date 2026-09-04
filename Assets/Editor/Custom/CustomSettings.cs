@@ -279,6 +279,7 @@ public static class CustomSettings
         _GT(typeof(BundleManager)),
         _GT(typeof(GameManager)),
         _GT(typeof(UIManager)),
+        _GT(typeof(SaveManager)),
         _GT(typeof(InputManager)),
         _GT(typeof(InputManager.GameButton)),
         _GT(typeof(CameraManager)),

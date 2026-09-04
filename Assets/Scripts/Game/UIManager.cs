@@ -24,6 +24,10 @@ public class UIManager : MonoBehaviour
     public GameObject pauseUI; //暂停UI
 
     private const string PausePanelName = "PausePanel";
+    private const int MainMenuSceneIndex = 0;
+
+    private bool desiredCursorVisible = true;
+    private CursorLockMode desiredCursorLockState = CursorLockMode.None;
 
     public Transform NormalRoot => normalRoot != null ? normalRoot : transform;
     public Transform PopupRoot => popupRoot != null ? popupRoot : NormalRoot;
@@ -36,6 +40,8 @@ public class UIManager : MonoBehaviour
     {
         Instance = this;
         EnsureLayerRoots();
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+        SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     private void Start()
@@ -47,6 +53,36 @@ public class UIManager : MonoBehaviour
         }
 
         SetupCursor();
+        RefreshCursorStateForCurrentScene();
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
+
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void LateUpdate()
+    {
+        ApplyDesiredCursorState();
+    }
+
+    private void OnApplicationFocus(bool hasFocus)
+    {
+        if (hasFocus)
+        {
+            ApplyDesiredCursorState(true);
+        }
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        IsPaused = false;
+        RefreshCursorStateForScene(scene.buildIndex);
     }
 
     private void EnsureLayerRoots()
@@ -172,13 +208,14 @@ public class UIManager : MonoBehaviour
     private IEnumerator EnterNextSceneCoroutine(float delay)
     {
         yield return new WaitForSeconds(delay);
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+        LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
     }
 
     public void LoadScene(int sceneIndex)
     {
         Time.timeScale = 1f;
         IsPaused = false;
+        SetCursorVisible(sceneIndex == MainMenuSceneIndex);
         SceneManager.LoadScene(sceneIndex);
     }
 
@@ -259,21 +296,53 @@ public class UIManager : MonoBehaviour
 
     public void ReturnToMainMenu()
     {
+        SaveManager.SaveCurrentGameToCurrentSlot();
         LoadScene(0); //主菜单是第0个场景
     }
 
     public void HideCursor()
     {
-        //隐藏光标
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        SetCursorVisible(false);
     }
 
     public void ShowCursor()
     {
-        //显示光标
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
+        SetCursorVisible(true);
+    }
+
+    public void RefreshCursorStateForCurrentScene()
+    {
+        RefreshCursorStateForScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    private void RefreshCursorStateForScene(int sceneBuildIndex)
+    {
+        SetCursorVisible(IsPaused || sceneBuildIndex == MainMenuSceneIndex);
+    }
+
+    private void SetCursorVisible(bool visible)
+    {
+        desiredCursorVisible = visible;
+        desiredCursorLockState = visible ? CursorLockMode.None : CursorLockMode.Locked;
+        ApplyDesiredCursorState(true);
+    }
+
+    private void ApplyDesiredCursorState(bool force = false)
+    {
+        if (!force && Cursor.visible == desiredCursorVisible && Cursor.lockState == desiredCursorLockState)
+        {
+            return;
+        }
+
+        if (desiredCursorVisible)
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+            return;
+        }
+
+        Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
     }
 
     [System.Obsolete("旧UI切换接口，仅用于兼容已有Inspector按钮事件；新UI请使用OpenPanel(string)。")]
