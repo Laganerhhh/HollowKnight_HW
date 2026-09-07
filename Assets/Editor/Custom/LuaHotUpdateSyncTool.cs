@@ -10,7 +10,9 @@ using UnityEngine;
 
 public static class LuaHotUpdateSyncTool
 {
-    private const string SourceLuaDir = "Assets/Lua";
+    private const string SourceGameLuaDir = "Assets/Lua";
+    private const string SourceToLuaDir = "Assets/ToLua/Lua";
+    private static readonly string[] SourceLuaDirs = { SourceToLuaDir, SourceGameLuaDir };
     private const string TargetLuaHotUpdateDir = "Assets/LuaHotUpdate";
     private const string ManifestFileName = "LuaManifest.json";
     private const string LuaAddressPrefix = "Lua";
@@ -24,9 +26,15 @@ public static class LuaHotUpdateSyncTool
     [MenuItem("Tools/Lua HotUpdate/Sync Lua To LuaHotUpdate")]
     public static void SyncLuaToLuaHotUpdate()
     {
-        if (!Directory.Exists(SourceLuaDir))
+        if (!Directory.Exists(SourceGameLuaDir))
         {
-            EditorUtility.DisplayDialog("Lua 热更同步失败", $"找不到 Lua 开发目录：{SourceLuaDir}", "确定");
+            EditorUtility.DisplayDialog("Lua 热更同步失败", $"找不到 Lua 开发目录：{SourceGameLuaDir}", "确定");
+            return;
+        }
+
+        if (!Directory.Exists(SourceToLuaDir))
+        {
+            EditorUtility.DisplayDialog("Lua 热更同步失败", $"找不到 ToLua 基础库目录：{SourceToLuaDir}", "确定");
             return;
         }
 
@@ -34,19 +42,15 @@ public static class LuaHotUpdateSyncTool
         {
             PrepareTargetDirectory();
 
-            string[] luaFiles = Directory.GetFiles(SourceLuaDir, "*.lua", SearchOption.AllDirectories);
-            Array.Sort(luaFiles, StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, string> luaFileMap = CollectLuaFiles();
+            List<string> relativePaths = new List<string>(luaFileMap.Keys);
+            relativePaths.Sort(StringComparer.OrdinalIgnoreCase);
 
             List<ManifestEntry> manifestEntries = new List<ManifestEntry>();
-            for (int i = 0; i < luaFiles.Length; i++)
+            for (int i = 0; i < relativePaths.Count; i++)
             {
-                string sourcePath = NormalizeAssetPath(luaFiles[i]);
-                string relativePath = GetRelativePath(SourceLuaDir, sourcePath);
-                if (string.IsNullOrEmpty(relativePath))
-                {
-                    continue;
-                }
-
+                string relativePath = relativePaths[i];
+                string sourcePath = luaFileMap[relativePath];
                 string targetPath = Path.Combine(TargetLuaHotUpdateDir, relativePath + ".bytes").Replace('\\', '/');
                 string targetDirectory = Path.GetDirectoryName(targetPath);
                 if (!string.IsNullOrEmpty(targetDirectory))
@@ -114,6 +118,37 @@ public static class LuaHotUpdateSyncTool
         {
             File.Delete(metaPath);
         }
+    }
+
+    private static Dictionary<string, string> CollectLuaFiles()
+    {
+        Dictionary<string, string> luaFileMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        for (int dirIndex = 0; dirIndex < SourceLuaDirs.Length; dirIndex++)
+        {
+            string sourceDir = SourceLuaDirs[dirIndex];
+            string[] luaFiles = Directory.GetFiles(sourceDir, "*.lua", SearchOption.AllDirectories);
+            Array.Sort(luaFiles, StringComparer.OrdinalIgnoreCase);
+
+            for (int fileIndex = 0; fileIndex < luaFiles.Length; fileIndex++)
+            {
+                string sourcePath = NormalizeAssetPath(luaFiles[fileIndex]);
+                string relativePath = GetRelativePath(sourceDir, sourcePath);
+                if (string.IsNullOrEmpty(relativePath))
+                {
+                    continue;
+                }
+
+                if (luaFileMap.TryGetValue(relativePath, out string existingPath))
+                {
+                    Debug.LogWarning($"[LuaHotUpdateSyncTool] Lua file conflict detected, override with later source. RelativePath={relativePath}, Old={existingPath}, New={sourcePath}");
+                }
+
+                luaFileMap[relativePath] = sourcePath;
+            }
+        }
+
+        return luaFileMap;
     }
 
     private static void WriteManifest(List<ManifestEntry> entries)
@@ -256,7 +291,7 @@ public static class LuaHotUpdateSyncTool
 
     private static string ReadLuaVersion()
     {
-        string mainLuaPath = Path.Combine(SourceLuaDir, "Main.lua").Replace('\\', '/');
+        string mainLuaPath = Path.Combine(SourceGameLuaDir, "Main.lua").Replace('\\', '/');
         if (!File.Exists(mainLuaPath))
         {
             return "0.0.0";
