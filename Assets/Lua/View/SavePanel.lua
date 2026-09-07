@@ -86,6 +86,7 @@ function SavePanel:RefreshSlotItem(item)
 	item.info.gameObject:SetActive(hasSlot)
 	item.healthImg.gameObject:SetActive(hasSlot)
 	item.deleteButton.gameObject:SetActive(hasSlot)
+	item.icon.gameObject:SetActive(hasSlot)
 
 	local iconPath = DefaultIconPath
 	if hasSlot then
@@ -94,12 +95,11 @@ function SavePanel:RefreshSlotItem(item)
 		iconPath = SaveManager.GetSlotIconPath(item.slotId)
 		self:RefreshHealth(item, SaveManager.GetSlotCurrentHealth(item.slotId), SaveManager.GetSlotMaxHealth(item.slotId))
 		item.soulPower.fillAmount = SaveManager.GetSlotSoulPowerRate(item.slotId)
+		item.icon.sprite = self.resourceManager:LoadSprite(iconPath)
 	else
 		item.lblDesc.text = "New Game"
 		item.soulPower.fillAmount = 0
 	end
-
-	item.icon.sprite = self.resourceManager:LoadSprite(iconPath)
 end
 
 function SavePanel:RefreshHealth(item, currentHealth, maxHealth)

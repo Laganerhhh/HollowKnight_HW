@@ -192,7 +192,19 @@ public class SaveManager : MonoBehaviour
 
     public static string GetSlotLocationName(int slotId)
     {
-        return EnsureInstance().ReadSlot(slotId).locationName;
+        SaveData data = EnsureInstance().ReadSlot(slotId);
+        string displayLocationName = GetDisplayLocationName(data.sceneName);
+        if (!string.IsNullOrEmpty(displayLocationName))
+        {
+            return displayLocationName;
+        }
+
+        if (!string.IsNullOrEmpty(data.locationName))
+        {
+            return data.locationName;
+        }
+
+        return data.sceneName;
     }
 
     public static string GetSlotPlayTimeText(int slotId)
@@ -223,7 +235,13 @@ public class SaveManager : MonoBehaviour
     public static string GetSlotIconPath(int slotId)
     {
         SaveData data = EnsureInstance().ReadSlot(slotId);
-        return "SaveIcon/" + data.iconName;
+        string iconName = GetIconName(data.sceneName);
+        if (string.IsNullOrEmpty(iconName))
+        {
+            iconName = string.IsNullOrEmpty(data.iconName) ? "Area_Dirtmouth" : data.iconName;
+        }
+
+        return "SaveIcon/" + iconName;
     }
 
     private void SaveCurrentGame(int slotId)
@@ -385,19 +403,50 @@ public class SaveManager : MonoBehaviour
 
     private static string GetLocationName(string sceneName)
     {
-        if (sceneName == "Level1")
+        string displayLocationName = GetDisplayLocationName(sceneName);
+        if (!string.IsNullOrEmpty(displayLocationName))
         {
-            return "City of Tears";
+            return displayLocationName;
         }
 
         return sceneName;
+    }
+
+    private static string GetDisplayLocationName(string sceneName)
+    {
+        if (sceneName == "Level1")
+        {
+            return "Kings Pass";
+        }
+
+        if (sceneName == "Level2")
+        {
+            return "White Palace";
+        }
+
+        if (sceneName == "FalseKnight")
+        {
+            return "Forgotten Crossroads";
+        }
+
+        return string.Empty;
     }
 
     private static string GetIconName(string sceneName)
     {
         if (sceneName == "Level1")
         {
-            return "Area_Art_City_of_Tears";
+            return "Area_Kings_Pass";
+        }
+
+        if (sceneName == "Level2")
+        {
+            return "Area_White_Palace";
+        }
+
+        if (sceneName == "FalseKnight")
+        {
+            return "Area_Forgotten Crossroads";
         }
 
         return "Area_Dirtmouth";
