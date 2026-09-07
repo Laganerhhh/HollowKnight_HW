@@ -17,14 +17,20 @@ MonoBehaviour:
     m_SerializedData: []
   m_GUID: c7cc750eee4fc9b4e9512e57ea7059a9
   m_SerializeEntries:
-  - m_GUID: 1ae8226e82bc71e42ba95b9dd4fedfa8
-    m_Address: UI
+  - m_GUID: 1517764280cd5524b8c230c5f599a227
+    m_Address: UI/TutorialUI
     m_ReadOnly: 0
     m_SerializedLabels:
     - UI
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 544dfaf3ae7bff740a1bf8071839dc6c
-    m_Address: UI/LuaUpdateUI
+  - m_GUID: 16473840aa6f39b4aa0c0ff008c6963a
+    m_Address: UI/DownloadPanel
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - UI
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1b4d32657969f0c41a6f1b2fb4838974
+    m_Address: UI/SavePanel
     m_ReadOnly: 0
     m_SerializedLabels:
     - UI
@@ -34,6 +40,18 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - Environment
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 34229b92e9b254d4fa51575c95db7acc
+    m_Address: UI/Health_Icon
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - UI
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 41779a2ae23be0449aea208e4e9fc425
+    m_Address: UI/StartPanel
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - UI
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 4c71166486c3a114987f40ddc89ed922
     m_Address: FalseKnight
@@ -47,17 +65,77 @@ MonoBehaviour:
     m_SerializedLabels:
     - Effect
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4e21d5bb915e97f4a8b7c11870e40c07
+    m_Address: UI/SaveSlotItem
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - UI
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5425762abd7805a4587adc99dd8546df
+    m_Address: UI/KeyboardPanel
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - UI
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 544dfaf3ae7bff740a1bf8071839dc6c
+    m_Address: UI/LuaUpdateUI
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - UI
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6ce1c00e2c1632d4bac60fd200082b1c
     m_Address: Enemy
     m_ReadOnly: 0
     m_SerializedLabels:
     - Enermy
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6dee6ec4cba2ef84eaa56024e9ba6db8
+    m_Address: UI/TestPanel
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - UI
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 72064495ad78f1042b0f235bb9d9356a
+    m_Address: UI/ExitPanel
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - UI
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 8e4a2630cd5a2f04dbabf4e4a323d7bf
     m_Address: Player
     m_ReadOnly: 0
     m_SerializedLabels:
     - Player
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 974e6bdaf449bc046b51c6bdfd7c2d7d
+    m_Address: UI/MainUI
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - UI
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9a1e71efa2098a04f9df7b6b12315e22
+    m_Address: UI/key_button
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - UI
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: af4a853c08e9e9a499993aed7b2cabd3
+    m_Address: UI/ConfirmPanel
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - UI
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f101dccc79138c6499fc57cd4f719381
+    m_Address: UI/PausePanel
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - UI
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fe80b6a7eb188f54c9318d83dfd65dee
+    m_Address: UI/OptionPanel
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - UI
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 4ebfcd819b192ce4388f6434a6a7ec9a, type: 2}

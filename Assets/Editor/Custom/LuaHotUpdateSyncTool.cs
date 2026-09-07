@@ -20,8 +20,8 @@ public static class LuaHotUpdateSyncTool
     private const string LocalPrefabGroupName = "Prefab";
     private const string LuaLabel = "lua";
     private const string UiLabel = "UI";
-    private const string LuaUpdateUIPrefabPath = "Assets/Prefab/UI/LuaUpdateUI.prefab";
-    private const string LuaUpdateUIPrefabAddress = "UI/LuaUpdateUI";
+    private const string UIPrefabRootDir = "Assets/Prefab/UI";
+    private const string UIPrefabAddressPrefix = "UI";
 
     [MenuItem("Tools/Lua HotUpdate/Sync Lua To LuaHotUpdate")]
     public static void SyncLuaToLuaHotUpdate()
@@ -68,15 +68,15 @@ public static class LuaHotUpdateSyncTool
 
             WriteManifest(manifestEntries);
             AssetDatabase.Refresh();
-            ConfigureAddressables(manifestEntries);
+            int configuredUiPrefabCount = ConfigureAddressables(manifestEntries);
             AssetDatabase.SaveAssets();
 
             EditorUtility.DisplayDialog(
                 "Lua 热更同步完成",
-                $"已同步 {manifestEntries.Count} 个 Lua 文件到：{TargetLuaHotUpdateDir}\n\n已自动配置 Addressables Group：{AddressableGroupName}\n已自动设置 Label：{LuaLabel}",
+                $"已同步 {manifestEntries.Count} 个 Lua 文件到：{TargetLuaHotUpdateDir}\n\n已自动配置 Addressables Group：{AddressableGroupName}\n已自动设置 Label：{LuaLabel}\n已自动规范 UI Prefab Address：{configuredUiPrefabCount} 个",
                 "确定");
 
-            Debug.Log($"[LuaHotUpdateSyncTool] 已同步 {manifestEntries.Count} 个 Lua 文件到 {TargetLuaHotUpdateDir}，并完成 Addressables 配置。" );
+            Debug.Log($"[LuaHotUpdateSyncTool] 已同步 {manifestEntries.Count} 个 Lua 文件到 {TargetLuaHotUpdateDir}，并完成 Addressables 配置。UI Prefab Count={configuredUiPrefabCount}");
         }
         catch (Exception exception)
         {
@@ -179,7 +179,7 @@ public static class LuaHotUpdateSyncTool
         File.WriteAllText(manifestPath, builder.ToString(), new UTF8Encoding(false));
     }
 
-    private static void ConfigureAddressables(List<ManifestEntry> entries)
+    private static int ConfigureAddressables(List<ManifestEntry> entries)
     {
         AddressableAssetSettings settings = AddressableAssetSettingsDefaultObject.Settings;
         if (settings == null)
@@ -196,7 +196,8 @@ public static class LuaHotUpdateSyncTool
         settings.AddLabel(LuaLabel);
         settings.AddLabel(UiLabel);
         RemoveLuaHotUpdateEntries(settings);
-        ConfigureLuaUpdateUIPrefab(settings);
+        RemoveUIPrefabFolderEntries(settings);
+        int configuredUiPrefabCount = ConfigureUIPrefabs(settings);
 
         AddOrMoveAddressableAsset(settings, group, GetManifestPath(), $"{LuaAddressPrefix}/{ManifestFileName}");
         for (int i = 0; i < entries.Count; i++)
@@ -207,7 +208,8 @@ public static class LuaHotUpdateSyncTool
         }
 
         settings.SetDirty(AddressableAssetSettings.ModificationEvent.EntryMoved, group, true);
-        Debug.Log($"[LuaHotUpdateSyncTool] 已配置 Addressables：Group={AddressableGroupName}, Label={LuaLabel}, 文件数={entries.Count + 1}");
+        Debug.Log($"[LuaHotUpdateSyncTool] 已配置 Addressables：Group={AddressableGroupName}, Label={LuaLabel}, 文件数={entries.Count + 1}, UI Prefab数={configuredUiPrefabCount}");
+        return configuredUiPrefabCount;
     }
 
     private static void AddOrMoveAddressableAsset(AddressableAssetSettings settings, AddressableAssetGroup group, string assetPath, string address)
@@ -228,22 +230,77 @@ public static class LuaHotUpdateSyncTool
         entry.SetLabel(label, true, true, false);
     }
 
-    private static void ConfigureLuaUpdateUIPrefab(AddressableAssetSettings settings)
+    private static int ConfigureUIPrefabs(AddressableAssetSettings settings)
     {
-        if (!File.Exists(LuaUpdateUIPrefabPath))
+        if (!Directory.Exists(UIPrefabRootDir))
         {
-            Debug.LogWarning($"[LuaHotUpdateSyncTool] LuaUpdateUI prefab not found: {LuaUpdateUIPrefabPath}");
-            return;
+            Debug.LogWarning($"[LuaHotUpdateSyncTool] UI prefab root not found: {UIPrefabRootDir}");
+            return 0;
         }
 
         AddressableAssetGroup localPrefabGroup = settings.FindGroup(LocalPrefabGroupName);
         if (localPrefabGroup == null)
         {
             Debug.LogWarning($"[LuaHotUpdateSyncTool] Addressables group not found: {LocalPrefabGroupName}");
-            return;
+            return 0;
         }
 
-        AddOrMoveAddressableAsset(settings, localPrefabGroup, LuaUpdateUIPrefabPath, LuaUpdateUIPrefabAddress, UiLabel);
+        string[] prefabFiles = Directory.GetFiles(UIPrefabRootDir, "*.prefab", SearchOption.AllDirectories);
+        Array.Sort(prefabFiles, StringComparer.OrdinalIgnoreCase);
+
+        int configuredCount = 0;
+        for (int i = 0; i < prefabFiles.Length; i++)
+        {
+            string prefabPath = NormalizeAssetPath(prefabFiles[i]);
+            string address = BuildUIPrefabAddress(prefabPath);
+            if (string.IsNullOrEmpty(address))
+            {
+                continue;
+            }
+
+            AddOrMoveAddressableAsset(settings, localPrefabGroup, prefabPath, address, UiLabel);
+            configuredCount++;
+        }
+
+        Debug.Log($"[LuaHotUpdateSyncTool] 已自动规范 UI Prefab 地址，数量={configuredCount}, 根目录={UIPrefabRootDir}");
+        return configuredCount;
+    }
+
+    private static void RemoveUIPrefabFolderEntries(AddressableAssetSettings settings)
+    {
+        List<string> removeGuids = new List<string>();
+        for (int i = 0; i < settings.groups.Count; i++)
+        {
+            AddressableAssetGroup group = settings.groups[i];
+            if (group == null)
+            {
+                continue;
+            }
+
+            foreach (AddressableAssetEntry entry in group.entries)
+            {
+                if (entry == null || string.IsNullOrEmpty(entry.AssetPath))
+                {
+                    continue;
+                }
+
+                string assetPath = NormalizeAssetPath(entry.AssetPath);
+                if (!assetPath.StartsWith(UIPrefabRootDir, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                if (AssetDatabase.IsValidFolder(assetPath))
+                {
+                    removeGuids.Add(entry.guid);
+                }
+            }
+        }
+
+        for (int i = 0; i < removeGuids.Count; i++)
+        {
+            settings.RemoveAssetEntry(removeGuids[i], false);
+        }
     }
 
     private static void RemoveLuaHotUpdateEntries(AddressableAssetSettings settings)
@@ -287,6 +344,18 @@ public static class LuaHotUpdateSyncTool
     private static string GetHotUpdateLuaAssetPath(string relativePath)
     {
         return Path.Combine(TargetLuaHotUpdateDir, relativePath + ".bytes").Replace('\\', '/');
+    }
+
+    private static string BuildUIPrefabAddress(string assetPath)
+    {
+        string relativePath = GetRelativePath(UIPrefabRootDir, assetPath);
+        if (string.IsNullOrEmpty(relativePath) || !relativePath.EndsWith(".prefab", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        string addressRelativePath = relativePath.Substring(0, relativePath.Length - ".prefab".Length);
+        return $"{UIPrefabAddressPrefix}/{addressRelativePath}".Replace('\\', '/');
     }
 
     private static string ReadLuaVersion()
