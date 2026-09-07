@@ -44,7 +44,7 @@ function ConfirmPanel:OnOpen(data)
 end
 
 function ConfirmPanel:RefreshView(data)
-	local message = "Confirmed?"
+	local message = "确认吗？"
 	if data ~= nil and data.message ~= nil then
 		message = data.message
 	end

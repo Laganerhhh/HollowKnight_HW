@@ -91,7 +91,7 @@ public class CheckUpdateAndDownload : MonoBehaviour
             retryBtn.gameObject.SetActive(false);
         }
 
-        UpdateStatus("Preparing to check resources...");
+        UpdateStatus("正在准备检查资源...");
         targetProgress = 0f;
         displayedProgress = 0f;
         currentBytes = 0L;
@@ -118,7 +118,7 @@ public class CheckUpdateAndDownload : MonoBehaviour
         isUpdating = false;
         currentDownloadBytesPerSecond = 0f;
         ApplyProgressVisual(displayedProgress, currentBytes, totalBytes, currentDownloadBytesPerSecond);
-        UpdateStatus("Resource download completed.");
+        UpdateStatus("资源下载完成。");
 
         if (switchDelay > 0f)
         {
@@ -160,7 +160,7 @@ public class CheckUpdateAndDownload : MonoBehaviour
         isUpdating = false;
         currentDownloadBytesPerSecond = 0f;
         ApplyProgressVisual(displayedProgress, currentBytes, totalBytes, currentDownloadBytesPerSecond);
-        UpdateStatus(string.IsNullOrEmpty(message) ? "Resource update failed." : message);
+        UpdateStatus(string.IsNullOrEmpty(message) ? "资源更新失败。" : message);
 
         if (retryBtn != null)
         {
@@ -172,7 +172,7 @@ public class CheckUpdateAndDownload : MonoBehaviour
 
     private void ResetProgressView()
     {
-        UpdateStatus("Preparing to check resources...");
+        UpdateStatus("正在准备检查资源...");
         targetProgress = 0f;
         displayedProgress = 0f;
         currentBytes = 0L;

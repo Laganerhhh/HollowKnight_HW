@@ -132,7 +132,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 275}
-  m_SizeDelta: {x: 1274, y: 521}
+  m_SizeDelta: {x: 1044, y: 509}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3840860629236226885
 CanvasRenderer:
@@ -162,7 +162,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: caf34e4fa89a48d4fa6e3031387e1ec2, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 8efd68b9da5ae6e4992464e01d2d6d01, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -237,7 +237,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Downloading...
+  m_text: "\u4E0B\u8F7D\u4E2D..."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -371,10 +371,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Retry
+  m_text: "\u91CD\u8BD5"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 1b17542fbeb1dc549905ae50b0c42508, type: 2}
-  m_sharedMaterial: {fileID: -8165979115252055257, guid: 1b17542fbeb1dc549905ae50b0c42508, type: 2}
+  m_sharedMaterial: {fileID: 8940816486106591291, guid: 1b17542fbeb1dc549905ae50b0c42508, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []

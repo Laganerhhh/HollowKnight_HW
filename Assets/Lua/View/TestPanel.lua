@@ -17,7 +17,7 @@ function TestPanel:InitUIAndMetaData()
 	uiContainer.button = self.ui.root:Find("btn"):GetComponent("UnityEngine.UI.Button")
 
 	uiContainer.img.sprite = self.resourceManager:LoadSprite("Assets/Textures/HollowKnightIcon.jpg")
-	uiContainer.txt.text = "this is Test from Lua!"
+	uiContainer.txt.text = "这是来自 Lua 的测试界面！"
 
 	print("初始化数据")
 end

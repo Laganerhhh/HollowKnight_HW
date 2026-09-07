@@ -445,7 +445,7 @@ public class BundleManager : MonoBehaviour
     {
         if (remoteUpdateCoroutine != null)
         {
-            onError?.Invoke("A resource update is already in progress.");
+            onError?.Invoke("资源更新正在进行中。请稍候再试。");
             return;
         }
 
@@ -465,14 +465,14 @@ public class BundleManager : MonoBehaviour
         {
             Debug.Log($"{DownloadLogPrefix} Begin update flow. UseAllRemoteTargets={useAllRemoteTargets}, InputLabelCount={(labels != null ? labels.Count : 0)}");
 
-            ReportProgress(onProgress, progress, "Initializing resource system...", string.Empty, 0L, 0L, 0f, false, false);
+            ReportProgress(onProgress, progress, "正在初始化资源系统...", string.Empty, 0L, 0L, 0f, false, false);
             Debug.Log($"{DownloadLogPrefix} Initializing Addressables.");
 
             AsyncOperationHandle<IResourceLocator> initHandle = Addressables.InitializeAsync(false);
             yield return initHandle;
             if (initHandle.Status != AsyncOperationStatus.Succeeded)
             {
-                string errorMessage = GetHandleErrorMessage(initHandle, "Failed to initialize the resource system.");
+                string errorMessage = GetHandleErrorMessage(initHandle, "初始化资源系统失败。");
                 Debug.LogError($"{DownloadLogPrefix} Initialize failed. {errorMessage}");
                 ReleaseHandle(initHandle);
                 onError?.Invoke(errorMessage);
@@ -481,13 +481,13 @@ public class BundleManager : MonoBehaviour
             Debug.Log($"{DownloadLogPrefix} Addressables initialized successfully.");
             ReleaseHandle(initHandle);
 
-            ReportProgress(onProgress, progress, "Checking for resource updates...", string.Empty, 0L, 0L, 0f, false, false);
+            ReportProgress(onProgress, progress, "正在检查资源更新...", string.Empty, 0L, 0L, 0f, false, false);
             Debug.Log($"{DownloadLogPrefix} Checking for catalog updates.");
             AsyncOperationHandle<List<string>> checkHandle = Addressables.CheckForCatalogUpdates(false);
             yield return checkHandle;
             if (checkHandle.Status != AsyncOperationStatus.Succeeded)
             {
-                string errorMessage = GetHandleErrorMessage(checkHandle, "Failed to check for resource updates.");
+                string errorMessage = GetHandleErrorMessage(checkHandle, "检查资源更新失败。");
                 Debug.LogError($"{DownloadLogPrefix} Catalog update check failed. {errorMessage}");
                 ReleaseHandle(checkHandle);
                 onError?.Invoke(errorMessage);
@@ -505,13 +505,13 @@ public class BundleManager : MonoBehaviour
 
             if (hasCatalogUpdate)
             {
-                ReportProgress(onProgress, progress, "Update found. Syncing catalog...", string.Empty, 0L, 0L, 0f, true, false);
+                ReportProgress(onProgress, progress, "发现更新，正在同步资源目录...", string.Empty, 0L, 0L, 0f, true, false);
                 Debug.Log($"{DownloadLogPrefix} Updating catalogs.");
                 AsyncOperationHandle<List<IResourceLocator>> updateCatalogHandle = Addressables.UpdateCatalogs(catalogsToUpdate, false);
                 yield return updateCatalogHandle;
                 if (updateCatalogHandle.Status != AsyncOperationStatus.Succeeded)
                 {
-                    string errorMessage = GetHandleErrorMessage(updateCatalogHandle, "Failed to sync the resource catalog.");
+                    string errorMessage = GetHandleErrorMessage(updateCatalogHandle, "同步资源目录失败。");
                     Debug.LogError($"{DownloadLogPrefix} Catalog update failed. {errorMessage}");
                     ReleaseHandle(updateCatalogHandle);
                     onError?.Invoke(errorMessage);
@@ -541,12 +541,12 @@ public class BundleManager : MonoBehaviour
             if (targetCount == 0)
             {
                 Debug.Log($"{DownloadLogPrefix} No remote targets found after initialization, finishing without download.");
-                ReportProgress(onProgress, progress, "No remote resources need to be downloaded.", string.Empty, 0L, 0L, 0f, hasCatalogUpdate, true);
+                ReportProgress(onProgress, progress, "当前没有需要下载的远端资源。", string.Empty, 0L, 0L, 0f, hasCatalogUpdate, true);
                 onCompleted?.Invoke();
                 yield break;
             }
 
-            ReportProgress(onProgress, progress, "Calculating download size...", string.Empty, 0L, 0L, 0f, hasCatalogUpdate, false);
+            ReportProgress(onProgress, progress, "正在计算下载大小...", string.Empty, 0L, 0L, 0f, hasCatalogUpdate, false);
             Debug.Log($"{DownloadLogPrefix} Calculating total download size.");
             if (useAllRemoteTargets)
             {
@@ -567,7 +567,7 @@ public class BundleManager : MonoBehaviour
                     yield return sizeHandle;
                     if (sizeHandle.Status != AsyncOperationStatus.Succeeded)
                     {
-                        string errorMessage = GetHandleErrorMessage(sizeHandle, $"Failed to get download size: {label}");
+                        string errorMessage = GetHandleErrorMessage(sizeHandle, $"获取下载大小失败：{label}");
                         Debug.LogError($"{DownloadLogPrefix} Size calculation failed for label={label}. {errorMessage}");
                         ReleaseHandle(sizeHandle);
                         onError?.Invoke(errorMessage);
@@ -582,7 +582,7 @@ public class BundleManager : MonoBehaviour
             }
 
             Debug.Log($"{DownloadLogPrefix} Total download size confirmed: {FormatSizeForLog(totalBytes)} ({totalBytes} bytes)");
-            ReportProgress(onProgress, progress, totalBytes > 0L ? "Preparing remote download..." : "Resources are already up to date.", string.Empty, 0L, totalBytes, 0f, hasCatalogUpdate, totalBytes <= 0L);
+            ReportProgress(onProgress, progress, totalBytes > 0L ? "正在准备远端下载..." : "资源已是最新版本。", string.Empty, 0L, totalBytes, 0f, hasCatalogUpdate, totalBytes <= 0L);
             if (totalBytes <= 0L)
             {
                 Debug.Log($"{DownloadLogPrefix} Total download size is zero, resources are already up to date.");
@@ -608,7 +608,7 @@ public class BundleManager : MonoBehaviour
                 {
                     if (downloadHandle.Status == AsyncOperationStatus.Failed)
                     {
-                        string errorMessage = GetHandleErrorMessage(downloadHandle, "Failed to download all remote resources.");
+                        string errorMessage = GetHandleErrorMessage(downloadHandle, "下载全部远端资源失败。");
                         Debug.LogError($"{DownloadLogPrefix} Combined remote bundle download failed. {errorMessage}");
                         ReleaseHandle(downloadHandle);
                         onError?.Invoke(errorMessage);
@@ -624,13 +624,13 @@ public class BundleManager : MonoBehaviour
                         Debug.Log($"{DownloadLogPrefix} Progress. Target=All remote bundles, Downloaded={FormatSizeForLog(reportedDownloadedBytes)}/{FormatSizeForLog(totalBytes)}, Speed={FormatSizeForLog((long)downloadBytesPerSecond)}/s, Percent={(totalBytes > 0L ? (reportedDownloadedBytes * 100f / totalBytes) : 0f):0.00}%");
                         nextProgressLogTime = currentSampleTime + 0.5f;
                     }
-                    ReportProgress(onProgress, progress, "Downloading all remote resources...", "All remote bundles", reportedDownloadedBytes, totalBytes, downloadBytesPerSecond, hasCatalogUpdate, false);
+                    ReportProgress(onProgress, progress, "正在下载全部远端资源...", "All remote bundles", reportedDownloadedBytes, totalBytes, downloadBytesPerSecond, hasCatalogUpdate, false);
                     yield return null;
                 }
 
                 if (downloadHandle.Status != AsyncOperationStatus.Succeeded)
                 {
-                    string errorMessage = GetHandleErrorMessage(downloadHandle, "Failed to download all remote resources.");
+                    string errorMessage = GetHandleErrorMessage(downloadHandle, "下载全部远端资源失败。");
                     Debug.LogError($"{DownloadLogPrefix} Combined remote bundle download finished with failure status. {errorMessage}");
                     ReleaseHandle(downloadHandle);
                     onError?.Invoke(errorMessage);
@@ -640,7 +640,7 @@ public class BundleManager : MonoBehaviour
                 downloadedBytes = totalBytes;
                 downloadBytesPerSecond = 0f;
                 Debug.Log($"{DownloadLogPrefix} Combined remote bundle download completed. Downloaded={FormatSizeForLog(downloadedBytes)} ({downloadedBytes} bytes)");
-                ReportProgress(onProgress, progress, "All remote resources downloaded.", "All remote bundles", downloadedBytes, totalBytes, 0f, hasCatalogUpdate, false);
+                ReportProgress(onProgress, progress, "全部远端资源下载完成。", "All remote bundles", downloadedBytes, totalBytes, 0f, hasCatalogUpdate, false);
                 ReleaseHandle(downloadHandle);
             }
             else
@@ -652,7 +652,7 @@ public class BundleManager : MonoBehaviour
                     yield return sizeHandle;
                     if (sizeHandle.Status != AsyncOperationStatus.Succeeded)
                     {
-                        string errorMessage = GetHandleErrorMessage(sizeHandle, $"Failed to get label size: {label}");
+                        string errorMessage = GetHandleErrorMessage(sizeHandle, $"获取下载标签大小失败：{label}");
                         Debug.LogError($"{DownloadLogPrefix} Failed to query label size before download. Label={label}. {errorMessage}");
                         ReleaseHandle(sizeHandle);
                         onError?.Invoke(errorMessage);
@@ -665,7 +665,7 @@ public class BundleManager : MonoBehaviour
                     if (labelTotalBytes <= 0L)
                     {
                         Debug.Log($"{DownloadLogPrefix} Skip label because it is already up to date. Label={label}");
-                        ReportProgress(onProgress, progress, $"{label} is already up to date.", label, downloadedBytes, totalBytes, 0f, hasCatalogUpdate, false);
+                        ReportProgress(onProgress, progress, $"{label} 已是最新。", label, downloadedBytes, totalBytes, 0f, hasCatalogUpdate, false);
                         continue;
                     }
 
@@ -678,7 +678,7 @@ public class BundleManager : MonoBehaviour
                     {
                         if (downloadHandle.Status == AsyncOperationStatus.Failed)
                         {
-                            string errorMessage = GetHandleErrorMessage(downloadHandle, $"Download failed: {label}");
+                            string errorMessage = GetHandleErrorMessage(downloadHandle, $"下载失败：{label}");
                             Debug.LogError($"{DownloadLogPrefix} Label download failed. Label={label}. {errorMessage}");
                             ReleaseHandle(downloadHandle);
                             onError?.Invoke(errorMessage);
@@ -694,13 +694,13 @@ public class BundleManager : MonoBehaviour
                             Debug.Log($"{DownloadLogPrefix} Progress. Label={label}, LabelDownloaded={FormatSizeForLog(downloadStatus.DownloadedBytes)}/{FormatSizeForLog(labelTotalBytes)}, TotalDownloaded={FormatSizeForLog(currentDownloadedBytes)}/{FormatSizeForLog(totalBytes)}, Speed={FormatSizeForLog((long)downloadBytesPerSecond)}/s, LabelPercent={(labelTotalBytes > 0L ? (downloadStatus.DownloadedBytes * 100f / labelTotalBytes) : 0f):0.00}%");
                             nextProgressLogTime = currentSampleTime + 0.5f;
                         }
-                        ReportProgress(onProgress, progress, $"Downloading: {label}", label, currentDownloadedBytes, totalBytes, downloadBytesPerSecond, hasCatalogUpdate, false);
+                        ReportProgress(onProgress, progress, $"正在下载：{label}", label, currentDownloadedBytes, totalBytes, downloadBytesPerSecond, hasCatalogUpdate, false);
                         yield return null;
                     }
 
                     if (downloadHandle.Status != AsyncOperationStatus.Succeeded)
                     {
-                        string errorMessage = GetHandleErrorMessage(downloadHandle, $"Download failed: {label}");
+                        string errorMessage = GetHandleErrorMessage(downloadHandle, $"下载失败：{label}");
                         Debug.LogError($"{DownloadLogPrefix} Label download finished with failure status. Label={label}. {errorMessage}");
                         ReleaseHandle(downloadHandle);
                         onError?.Invoke(errorMessage);
@@ -710,13 +710,13 @@ public class BundleManager : MonoBehaviour
                     downloadedBytes += labelTotalBytes;
                     downloadBytesPerSecond = 0f;
                     Debug.Log($"{DownloadLogPrefix} Label download completed. Label={label}, AccumulatedDownloaded={FormatSizeForLog(downloadedBytes)}/{FormatSizeForLog(totalBytes)}");
-                    ReportProgress(onProgress, progress, $"Completed: {label}", label, downloadedBytes, totalBytes, 0f, hasCatalogUpdate, false);
+                    ReportProgress(onProgress, progress, $"下载完成：{label}", label, downloadedBytes, totalBytes, 0f, hasCatalogUpdate, false);
                     ReleaseHandle(downloadHandle);
                 }
             }
 
             Debug.Log($"{DownloadLogPrefix} Update flow completed successfully.");
-            ReportProgress(onProgress, progress, "Resource download completed.", string.Empty, totalBytes, totalBytes, 0f, hasCatalogUpdate, true);
+            ReportProgress(onProgress, progress, "资源下载完成。", string.Empty, totalBytes, totalBytes, 0f, hasCatalogUpdate, true);
             onCompleted?.Invoke();
         }
         finally

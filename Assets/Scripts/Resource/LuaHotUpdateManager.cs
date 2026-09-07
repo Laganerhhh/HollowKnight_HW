@@ -29,7 +29,7 @@ public class LuaHotUpdateManager : MonoBehaviour
     private GameObject updateCanvasObject;
     private GameObject updateEventSystemObject;
     private bool isUsingFallbackView;
-    private string currentStatusMessage = "Preparing Lua update...";
+    private string currentStatusMessage = "正在准备 Lua 更新...";
     private float currentProgress;
     private long currentDownloadedBytes;
     private long currentTotalBytes;
@@ -115,7 +115,7 @@ public class LuaHotUpdateManager : MonoBehaviour
                 retryClicked = true;
             });
             ApplyTrackedViewState(updateView);
-            SetUpdateStatus(string.IsNullOrEmpty(updateError) ? "Lua update failed." : updateError);
+            SetUpdateStatus(string.IsNullOrEmpty(updateError) ? "Lua 更新失败。" : updateError);
             ShowRetry();
 
             while (!retryClicked)
@@ -176,13 +176,13 @@ public class LuaHotUpdateManager : MonoBehaviour
             yield break;
         }
 
-        SetUpdateStatus("Loading Lua manifest...");
+        SetUpdateStatus("正在加载 Lua 清单...");
         string manifestJson = null;
         yield return LoadTextAssetContentCoroutine(manifestAddress, content => manifestJson = content);
         if (string.IsNullOrEmpty(manifestJson))
         {
             Debug.Log("[LuaHotUpdate] LuaManifest not found, skip Lua file installation.");
-            SetUpdateStatus("No Lua update manifest found.");
+            SetUpdateStatus("未找到 Lua 更新清单。");
             IsUpdating = false;
             onCompleted?.Invoke(true);
             yield break;
@@ -204,7 +204,7 @@ public class LuaHotUpdateManager : MonoBehaviour
         if (manifest == null || manifest.files == null || manifest.files.Count == 0)
         {
             Debug.Log("[LuaHotUpdate] LuaManifest has no files to install.");
-            SetUpdateStatus("Lua manifest has no files.");
+            SetUpdateStatus("Lua 清单中没有可安装文件。");
             DeleteInstalledManifestFile();
             IsUpdating = false;
             onCompleted?.Invoke(true);
@@ -219,7 +219,7 @@ public class LuaHotUpdateManager : MonoBehaviour
 
         if (!shouldInstall)
         {
-            SetUpdateStatus($"Lua is up to date. Version: {manifestVersion}");
+            SetUpdateStatus($"Lua 已是最新版本。版本：{manifestVersion}");
             UpdateInstallProgress(manifest.files.Count, manifest.files.Count);
             Debug.Log($"[LuaHotUpdate] Lua files are already installed locally. Version={manifestVersion}, Directory={LuaConst.luaResDir}");
             IsUpdating = false;
@@ -229,7 +229,7 @@ public class LuaHotUpdateManager : MonoBehaviour
 
         DeleteStaleLuaFiles(installedManifest, manifest);
 
-        SetUpdateStatus($"Installing Lua files... Version: {manifestVersion}");
+        SetUpdateStatus($"正在安装 Lua 文件... 版本：{manifestVersion}");
 
         int successCount = 0;
         for (int i = 0; i < manifest.files.Count; i++)
@@ -240,7 +240,7 @@ public class LuaHotUpdateManager : MonoBehaviour
                 continue;
             }
 
-            SetUpdateStatus($"Installing Lua file {i + 1}/{manifest.files.Count}...");
+            SetUpdateStatus($"正在安装 Lua 文件 {i + 1}/{manifest.files.Count}...");
             UpdateInstallProgress(i, manifest.files.Count);
 
             byte[] luaBytes = null;
@@ -285,7 +285,7 @@ public class LuaHotUpdateManager : MonoBehaviour
         if (updateView != null)
         {
             updateView.Complete(manifestVersion);
-            CacheViewState($"Lua update completed. Version: {manifestVersion}", 1f, Math.Max(currentDownloadedBytes, currentTotalBytes), Math.Max(currentDownloadedBytes, currentTotalBytes), 0f, false);
+            CacheViewState($"Lua 更新完成，版本：{manifestVersion}", 1f, Math.Max(currentDownloadedBytes, currentTotalBytes), Math.Max(currentDownloadedBytes, currentTotalBytes), 0f, false);
         }
         IsUpdating = false;
         onCompleted?.Invoke(true);
@@ -411,7 +411,7 @@ public class LuaHotUpdateManager : MonoBehaviour
         updateCanvasObject = null;
         updateEventSystemObject = null;
         isUsingFallbackView = false;
-        currentStatusMessage = "Preparing Lua update...";
+        currentStatusMessage = "正在准备 Lua 更新...";
         currentProgress = 0f;
         currentDownloadedBytes = 0L;
         currentTotalBytes = 0L;
@@ -471,7 +471,7 @@ public class LuaHotUpdateManager : MonoBehaviour
             return;
         }
 
-        string message = string.IsNullOrEmpty(status.StatusMessage) ? "Checking Lua update..." : status.StatusMessage;
+        string message = string.IsNullOrEmpty(status.StatusMessage) ? "正在检查 Lua 更新..." : status.StatusMessage;
         CacheViewState(message, status.Progress, status.DownloadedBytes, status.TotalBytes, status.DownloadBytesPerSecond, false);
         if (updateView == null)
         {
@@ -584,7 +584,7 @@ public class LuaHotUpdateManager : MonoBehaviour
         background.color = new Color(0f, 0f, 0f, 0.72f);
         background.raycastTarget = true;
 
-        CreateText(root.transform, "statusTip", new Vector2(0.5f, 0.58f), new Vector2(640f, 80f), 34, TextAlignmentOptions.Center, "Preparing Lua update...");
+        CreateText(root.transform, "statusTip", new Vector2(0.5f, 0.58f), new Vector2(640f, 80f), 34, TextAlignmentOptions.Center, "正在准备 Lua 更新...");
 
         GameObject progressBar = new GameObject("progressBar", typeof(RectTransform), typeof(Image));
         progressBar.transform.SetParent(root.transform, false);
@@ -617,7 +617,7 @@ public class LuaHotUpdateManager : MonoBehaviour
         CreateText(root.transform, "downloadSizeText", new Vector2(0.5f, 0.44f), new Vector2(320f, 50f), 28, TextAlignmentOptions.Center, "0 B / 0 B");
         CreateText(root.transform, "downloadSpeedText", new Vector2(0.65f, 0.5f), new Vector2(160f, 50f), 28, TextAlignmentOptions.Left, "0 B/s");
 
-        GameObject retryButton = CreateButton(root.transform, "retryBtn", new Vector2(0.5f, 0.37f), new Vector2(220f, 72f), "Retry");
+        GameObject retryButton = CreateButton(root.transform, "retryBtn", new Vector2(0.5f, 0.37f), new Vector2(220f, 72f), "重试");
         retryButton.SetActive(false);
 
         updateViewObject = root;

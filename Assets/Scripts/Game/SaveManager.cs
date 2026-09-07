@@ -416,17 +416,17 @@ public class SaveManager : MonoBehaviour
     {
         if (sceneName == "Level1")
         {
-            return "Kings Pass";
+            return "国王山道";
         }
 
         if (sceneName == "Level2")
         {
-            return "White Palace";
+            return "白色宫殿";
         }
 
         if (sceneName == "FalseKnight")
         {
-            return "Forgotten Crossroads";
+            return "遗忘十字路";
         }
 
         return string.Empty;

@@ -94,7 +94,7 @@ end
 function DownloadPanel:StartUpdateFlow()
 	local bridge = self:GetBridge()
 	if bridge == nil then
-		self:OnDownloadError("Resource update bridge is not ready.")
+		self:OnDownloadError("资源更新桥未就绪。")
 		return
 	end
 
@@ -105,7 +105,7 @@ function DownloadPanel:StartUpdateFlow()
 	self.state.isUpdating = true
 	self.state.switchTimer = nil
 	self:SetRetryVisible(false)
-	self:UpdateStatus("Preparing to check resources...")
+	self:UpdateStatus("正在准备检查资源...")
 	self:SetProgressData(0, 0, 0, 0)
 
 	bridge:StartUpdateByLabelString(
@@ -137,7 +137,7 @@ function DownloadPanel:OnDownloadCompleted()
 	self.state.targetProgress = 1
 	self.state.displayedProgress = 1
 	self:ApplyProgressVisual(1, self.state.currentBytes, self.state.totalBytes, 0)
-	self:UpdateStatus("Resource download completed.")
+	self:UpdateStatus("资源下载完成。")
 	self.state.switchTimer = CompleteSwitchDelay
 end
 
@@ -146,7 +146,7 @@ function DownloadPanel:OnDownloadError(message)
 	self.state.downloadBytesPerSecond = 0
 	self.state.switchTimer = nil
 	self:ApplyProgressVisual(self.state.displayedProgress, self.state.currentBytes, self.state.totalBytes, 0)
-	self:UpdateStatus(message ~= nil and message ~= "" and message or "Resource update failed.")
+	self:UpdateStatus(message ~= nil and message ~= "" and message or "资源更新失败。")
 	self:SetRetryVisible(true)
 	print("[Lua] DownloadPanel.OnDownloadError:", message)
 end
@@ -158,7 +158,7 @@ function DownloadPanel:ResetProgressView()
 	self.state.totalBytes = 0
 	self.state.downloadBytesPerSecond = 0
 	self:SetRetryVisible(false)
-	self:UpdateStatus("Preparing to check resources...")
+	self:UpdateStatus("正在准备检查资源...")
 	self:ApplyProgressVisual(0, 0, 0, 0)
 end
 

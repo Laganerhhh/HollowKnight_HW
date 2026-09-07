@@ -97,7 +97,7 @@ function SavePanel:RefreshSlotItem(item)
 		item.soulPower.fillAmount = SaveManager.GetSlotSoulPowerRate(item.slotId)
 		item.icon.sprite = self.resourceManager:LoadSprite(iconPath)
 	else
-		item.lblDesc.text = "New Game"
+		item.lblDesc.text = "新游戏"
 		item.soulPower.fillAmount = 0
 	end
 end
@@ -118,7 +118,7 @@ function SavePanel:OnClickDeleteSlot(slotId)
 	print("[Lua] SavePanel.OnClickDeleteSlot", slotId)
 
 	UIPanelManager.Open("ConfirmPanel", {
-		message = "Delete this save?",
+		message = "要删除这个存档吗？",
 		onConfirm = function()
 			SaveManager.DeleteSlot(slotId)
 			self:RefreshSlotItems()

@@ -455,7 +455,7 @@ MonoBehaviour:
   m_text: 1.
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 1b17542fbeb1dc549905ae50b0c42508, type: 2}
-  m_sharedMaterial: {fileID: -8165979115252055257, guid: 1b17542fbeb1dc549905ae50b0c42508, type: 2}
+  m_sharedMaterial: {fileID: 8940816486106591291, guid: 1b17542fbeb1dc549905ae50b0c42508, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -664,7 +664,7 @@ MonoBehaviour:
   m_text: City of Tears
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 1b17542fbeb1dc549905ae50b0c42508, type: 2}
-  m_sharedMaterial: {fileID: -8165979115252055257, guid: 1b17542fbeb1dc549905ae50b0c42508, type: 2}
+  m_sharedMaterial: {fileID: 8940816486106591291, guid: 1b17542fbeb1dc549905ae50b0c42508, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -870,10 +870,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: New Game
+  m_text: "\u65B0\u6E38\u620F"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 1b17542fbeb1dc549905ae50b0c42508, type: 2}
-  m_sharedMaterial: {fileID: -8165979115252055257, guid: 1b17542fbeb1dc549905ae50b0c42508, type: 2}
+  m_sharedMaterial: {fileID: 8940816486106591291, guid: 1b17542fbeb1dc549905ae50b0c42508, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1007,7 +1007,7 @@ MonoBehaviour:
   m_text: 180.4M
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 1b17542fbeb1dc549905ae50b0c42508, type: 2}
-  m_sharedMaterial: {fileID: -8165979115252055257, guid: 1b17542fbeb1dc549905ae50b0c42508, type: 2}
+  m_sharedMaterial: {fileID: 8940816486106591291, guid: 1b17542fbeb1dc549905ae50b0c42508, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []

@@ -63,7 +63,7 @@ public class LuaUpdateUIView : MonoBehaviour
         }
 
         HideRetry();
-        SetStatus("Preparing Lua update...");
+        SetStatus("正在准备 Lua 更新...");
         SetProgress(0f, 0L, 0L, 0f);
     }
 
@@ -83,7 +83,7 @@ public class LuaUpdateUIView : MonoBehaviour
             return;
         }
 
-        SetStatus($"Lua version: {version}");
+        SetStatus($"Lua 版本：{version}");
     }
 
     public void SetProgress(float progress, long downloadedBytes, long totalBytes, float downloadBytesPerSecond)
@@ -129,7 +129,7 @@ public class LuaUpdateUIView : MonoBehaviour
     {
         HideRetry();
         SetProgress(1f, Math.Max(currentBytes, totalBytes), Math.Max(currentBytes, totalBytes), 0f);
-        SetStatus(string.IsNullOrWhiteSpace(version) ? "Lua update completed." : $"Lua update completed. Version: {version}");
+        SetStatus(string.IsNullOrWhiteSpace(version) ? "Lua 更新完成。" : $"Lua 更新完成，版本：{version}");
     }
 
     private void BindIfNeeded()
