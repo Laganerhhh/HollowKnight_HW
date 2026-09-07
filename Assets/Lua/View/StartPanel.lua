@@ -92,7 +92,7 @@ function StartPanel:RefreshView(data)
 	if self.ui.continueButton ~= nil then
 		self.ui.continueButton.gameObject:SetActive(SaveManager.HasAnySlot())
 	end
-	self.ui.descText.text = "Hellow HollwKnight! " .. VERSION
+	self.ui.descText.text = "Hey, Knight! " .. VERSION
 end
 
 function StartPanel:OnHide()
