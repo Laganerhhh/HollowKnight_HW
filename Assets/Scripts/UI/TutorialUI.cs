@@ -18,6 +18,18 @@ public class TutorialUI : MonoBehaviour
 {
     public static TutorialUI instance;
 
+    private static readonly string[] TutorialNodeNames =
+    {
+        "tutorial_jump",
+        "tutorial_attack",
+        "tutorial_climb",
+        "tutorial_superdash",
+        "tutorial_recover",
+        "tutorial_skill",
+        "tutorial_dash",
+        "tutorial_attack_down"
+    };
+
     [SerializeField] private GameObject[] tutorialUIs;
     private int[] hideTokens;
 
@@ -41,11 +53,18 @@ public class TutorialUI : MonoBehaviour
 
     private void CacheTutorialItems()
     {
-        tutorialUIs = new GameObject[transform.childCount];
-        hideTokens = new int[transform.childCount];
-        for (int i = 0; i < transform.childCount; i++)
+        tutorialUIs = new GameObject[TutorialNodeNames.Length];
+        hideTokens = new int[TutorialNodeNames.Length];
+
+        for (int i = 0; i < TutorialNodeNames.Length; i++)
         {
-            tutorialUIs[i] = transform.GetChild(i).gameObject;
+            Transform child = transform.Find(TutorialNodeNames[i]);
+            tutorialUIs[i] = child != null ? child.gameObject : null;
+
+            if (tutorialUIs[i] == null)
+            {
+                Debug.LogWarning($"[TutorialUI] Missing tutorial node: {TutorialNodeNames[i]}", this);
+            }
         }
     }
 
@@ -132,12 +151,11 @@ public class TutorialUI : MonoBehaviour
 
     private void ShowTutorialFallback(TutorialUITyepe type)
     {
-        if (!IsValidType(type))
+        if (!TryGetTutorialObject(type, out GameObject tutorial))
         {
             return;
         }
 
-        GameObject tutorial = tutorialUIs[(int)type];
         if (tutorial.activeSelf)
         {
             return;
@@ -161,12 +179,12 @@ public class TutorialUI : MonoBehaviour
 
     private void HideTutorialFallback(TutorialUITyepe type)
     {
-        if (!IsValidType(type))
+        if (!TryGetTutorialObject(type, out GameObject tutorial))
         {
             return;
         }
 
-        tutorialUIs[(int)type].SetActive(false);
+        tutorial.SetActive(false);
     }
 
     private void HideAllTutorials()
@@ -187,6 +205,35 @@ public class TutorialUI : MonoBehaviour
 
     private bool IsValidType(TutorialUITyepe type)
     {
-        return tutorialUIs != null && type >= 0 && (int)type < tutorialUIs.Length;
+        return type >= 0 && (int)type < TutorialNodeNames.Length;
+    }
+
+    private bool TryGetTutorialObject(TutorialUITyepe type, out GameObject tutorial)
+    {
+        tutorial = null;
+        if (!IsValidType(type))
+        {
+            return false;
+        }
+
+        if (tutorialUIs == null || tutorialUIs.Length != TutorialNodeNames.Length)
+        {
+            CacheTutorialItems();
+        }
+
+        tutorial = tutorialUIs[(int)type];
+        if (tutorial == null)
+        {
+            CacheTutorialItems();
+            tutorial = tutorialUIs[(int)type];
+        }
+
+        if (tutorial == null)
+        {
+            Debug.LogWarning($"[TutorialUI] Tutorial node is missing for type {type}.", this);
+            return false;
+        }
+
+        return true;
     }
 }

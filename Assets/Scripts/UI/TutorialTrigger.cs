@@ -12,7 +12,14 @@ public class TutorialTrigger : MonoBehaviour
     {
         if (collision.CompareTag("Player"))
         {
-            TutorialUI.instance.ShowTutorial(tutorialType, displayTime);
+            if (TutorialUI.instance != null)
+            {
+                TutorialUI.instance.ShowTutorial(tutorialType, displayTime);
+            }
+            else
+            {
+                Debug.LogWarning("[TutorialTrigger] TutorialUI.instance is null when entering trigger.", this);
+            }
         }
     }
 
@@ -20,7 +27,14 @@ public class TutorialTrigger : MonoBehaviour
     {
         if (collision.CompareTag("Player"))
         {
-            TutorialUI.instance.HideTutorial(tutorialType);
+            if (TutorialUI.instance != null)
+            {
+                TutorialUI.instance.HideTutorial(tutorialType);
+            }
+            else
+            {
+                Debug.LogWarning("[TutorialTrigger] TutorialUI.instance is null when exiting trigger.", this);
+            }
         }
     }
 }
