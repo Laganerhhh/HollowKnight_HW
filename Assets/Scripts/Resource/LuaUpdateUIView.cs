@@ -171,12 +171,49 @@ public class LuaUpdateUIView : MonoBehaviour
                 retryButton = retryTransform.GetComponent<Button>();
             }
         }
+
+        EnsureTextFont(progressPercentText);
+        EnsureTextFont(downloadSizeText);
+        EnsureTextFont(downloadSpeedText);
+        EnsureTextFont(statusTip);
+        EnsureRetryButtonTextFont();
     }
 
     private TextMeshProUGUI FindText(string childName)
     {
         Transform child = transform.Find(childName);
         return child != null ? child.GetComponent<TextMeshProUGUI>() : null;
+    }
+
+    private void EnsureTextFont(TextMeshProUGUI text)
+    {
+        if (text == null || text.font != null)
+        {
+            return;
+        }
+
+        TMP_FontAsset defaultFont = TMP_Settings.defaultFontAsset;
+        if (defaultFont == null)
+        {
+            return;
+        }
+
+        text.font = defaultFont;
+        if (defaultFont.material != null)
+        {
+            text.fontSharedMaterial = defaultFont.material;
+        }
+    }
+
+    private void EnsureRetryButtonTextFont()
+    {
+        if (retryButton == null)
+        {
+            return;
+        }
+
+        TextMeshProUGUI retryLabel = retryButton.GetComponentInChildren<TextMeshProUGUI>(true);
+        EnsureTextFont(retryLabel);
     }
 
     private void ApplyProgressVisual(float progress, long downloadedBytes, long totalBytes, float downloadBytesPerSecond)

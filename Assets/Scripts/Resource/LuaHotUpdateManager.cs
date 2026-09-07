@@ -382,6 +382,7 @@ public class LuaHotUpdateManager : MonoBehaviour
             {
                 updateView = updateViewObject.AddComponent<LuaUpdateUIView>();
             }
+            ApplyFallbackFontToHierarchy(updateViewObject.transform);
             updateView.Initialize(null);
             ApplyTrackedViewState(updateView);
         }
@@ -641,6 +642,7 @@ public class LuaHotUpdateManager : MonoBehaviour
             prefabView = prefabInstance.AddComponent<LuaUpdateUIView>();
         }
 
+        ApplyFallbackFontToHierarchy(prefabInstance.transform);
         updateViewObject = prefabInstance;
         updateView = prefabView;
         isUsingFallbackView = false;
@@ -725,6 +727,20 @@ public class LuaHotUpdateManager : MonoBehaviour
         if (fontAsset.material != null)
         {
             label.fontSharedMaterial = fontAsset.material;
+        }
+    }
+
+    private void ApplyFallbackFontToHierarchy(Transform root)
+    {
+        if (root == null)
+        {
+            return;
+        }
+
+        TextMeshProUGUI[] labels = root.GetComponentsInChildren<TextMeshProUGUI>(true);
+        for (int i = 0; i < labels.Length; i++)
+        {
+            ApplyFallbackFont(labels[i]);
         }
     }
 
