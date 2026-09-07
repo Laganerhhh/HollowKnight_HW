@@ -15,6 +15,7 @@ function StartPanel:InitUIAndMetaData()
 	self.ui.startGameButton = self.ui.root:Find("Buttons/StartGameBt"):GetComponent("UnityEngine.UI.Button")
 	self.ui.optionButton = self.ui.root:Find("Buttons/OptionBt"):GetComponent("UnityEngine.UI.Button")
 	self.ui.exitButton = self.ui.root:Find("Buttons/ExitBt"):GetComponent("UnityEngine.UI.Button")
+	self.ui.descText = self.ui.root:Find("desc"):GetComponent("TMPro.TextMeshProUGUI")
 end
 
 function StartPanel:InitUIEvent()
@@ -91,6 +92,7 @@ function StartPanel:RefreshView(data)
 	if self.ui.continueButton ~= nil then
 		self.ui.continueButton.gameObject:SetActive(SaveManager.HasAnySlot())
 	end
+	self.ui.descText.text = "Hellow HollwKnight! " .. VERSION
 end
 
 function StartPanel:OnHide()
