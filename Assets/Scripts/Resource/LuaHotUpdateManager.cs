@@ -35,6 +35,7 @@ public class LuaHotUpdateManager : MonoBehaviour
     private long currentTotalBytes;
     private float currentDownloadBytesPerSecond;
     private bool isRetryVisible;
+    private TMP_FontAsset fallbackUIFontAsset;
 
     public static LuaHotUpdateManager EnsureInstance()
     {
@@ -668,6 +669,7 @@ public class LuaHotUpdateManager : MonoBehaviour
         rect.anchoredPosition = Vector2.zero;
 
         TextMeshProUGUI label = go.GetComponent<TextMeshProUGUI>();
+        ApplyFallbackFont(label);
         label.text = text;
         label.fontSize = fontSize;
         label.alignment = alignment;
@@ -695,6 +697,7 @@ public class LuaHotUpdateManager : MonoBehaviour
         RectTransform labelRect = labelObject.GetComponent<RectTransform>();
         StretchToParent(labelRect);
         TextMeshProUGUI label = labelObject.GetComponent<TextMeshProUGUI>();
+        ApplyFallbackFont(label);
         label.text = text;
         label.fontSize = 30f;
         label.alignment = TextAlignmentOptions.Center;
@@ -702,6 +705,43 @@ public class LuaHotUpdateManager : MonoBehaviour
         label.raycastTarget = false;
 
         return buttonObject;
+    }
+
+    private void ApplyFallbackFont(TextMeshProUGUI label)
+    {
+        if (label == null)
+        {
+            return;
+        }
+
+        TMP_FontAsset fontAsset = GetFallbackUIFontAsset();
+        if (fontAsset == null)
+        {
+            Debug.LogWarning("[LuaHotUpdate] Fallback update UI font is missing. TMP text may be invisible in player.");
+            return;
+        }
+
+        label.font = fontAsset;
+        if (fontAsset.material != null)
+        {
+            label.fontSharedMaterial = fontAsset.material;
+        }
+    }
+
+    private TMP_FontAsset GetFallbackUIFontAsset()
+    {
+        if (fallbackUIFontAsset != null)
+        {
+            return fallbackUIFontAsset;
+        }
+
+        fallbackUIFontAsset = TMP_Settings.defaultFontAsset;
+        if (fallbackUIFontAsset == null)
+        {
+            Debug.LogWarning("[LuaHotUpdate] TMP default font asset is not assigned.");
+        }
+
+        return fallbackUIFontAsset;
     }
 
     private void CacheViewState(string statusMessage, float progress, long downloadedBytes, long totalBytes, float downloadBytesPerSecond, bool retryVisible)
