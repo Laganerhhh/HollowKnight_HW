@@ -590,6 +590,12 @@ PC 运行环境，游戏测试如下：
 
 在完成前述核心玩法后，这一阶段我将实习期间学到的很多技术应用到项目中。主要内容包括：资源管理系统、资源热更新、ToLua 热更新、基于 Lua 的 UI 开发框架、对象池、存档系统，以及一批和真机运行相关的稳定性修复。
 
+**PC平台实机运行**
+
+![new_1](README.assets/new_1.gif)
+
+![new_2](README.assets/new_2.gif)
+
 ### （1）资源管理系统与资源热更新
 
 使用Unity的Addressables进行资源管理。其中Lua文件需要加个.bytes后缀才能让Addresables接管
