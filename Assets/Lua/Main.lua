@@ -1,6 +1,6 @@
 require "Logic.AppFacade"
 
-VERSION = "0.0.4" -- 版本号
+VERSION = "0.0.5" -- 版本号
 
 local appUpdateListener = nil
 
