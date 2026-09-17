@@ -220,80 +220,32 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 6
-  jumpForce: 1650
-  jumpForceCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0.00014038105
-      value: 9.720667
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 0.053532224
-      value: 1.258841
-      inSlope: -1.9871995
-      outSlope: -1.9871995
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.3306571
-    - serializedVersion: 3
-      time: 0.38629147
-      value: 1.001276
-      inSlope: 0.0030635542
-      outSlope: 0.0030635542
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.6974194
-    - serializedVersion: 3
-      time: 0.5530051
-      value: 0.7150705
-      inSlope: -1.1839364
-      outSlope: -1.1839364
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 0.8075598
-      value: 0.5046564
-      inSlope: -4.107075
-      outSlope: -4.107075
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.060345307
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 1.0009303
-      value: -0.09956687
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
+  jumpHeight: 3.16
+  minJumpHeight: 1.62
+  jumpTimeToApex: 0.63
+  doubleJumpHeight: 2.25
+  doubleJumpTimeToApex: 0.45
+  fallGravityMultiplier: 1.05
+  jumpCutGravityMultiplier: 1.65
+  maxFallSpeed: 12
+  coyoteTime: 0.08
+  jumpBufferTime: 0.1
+  wallJumpHorizontalLockTime: 0.12
+  wallJumpHorizontalControlRatio: 0.35
   dashForce: 12
+  knockbackDuration: 0.18
+  knockbackCooldown: 0.08
+  knockbackHorizontalControlRatio: 1
+  knockbackHorizontalDecay: 18
   dashCooldown: 1
   dashDuration: 0.3
+  hardLandingThreshold: 1.5
   dust_effect: {fileID: 6721041919948290835, guid: fccca15e6151c924299734f3b9da20b3, type: 3}
   fireBall_cooldown: 1.5
-  fireBallPrefab: {fileID: 3312149520229250569, guid: 53edf60ef8339ad47a5def34c8402f4c, type: 3}
   fireBallSpawnPoint: {fileID: 6186355662608082752}
   canAttack: 1
   attackCooldown: 0.3
   minGroundedTimeForSafe: 1.5
-  maxJumpPressTime: 0.4
-  hardLandingThreshold: 1.5
-  doubleJumpForce: 7
 --- !u!95 &7344360049358926107
 Animator:
   serializedVersion: 5
@@ -542,8 +494,10 @@ MonoBehaviour:
   wallLayer:
     serializedVersion: 2
     m_Bits: 256
-  ClimbJumpForce: {x: 5, y: 8}
+  ClimbJumpForce: {x: 5.5, y: 8}
   wallSlideSpeed: 4
+  climbJumpTimeToApex: 0.65
+  maxExitClimbFallSpeed: 2
 --- !u!1 &2809861003531292320
 GameObject:
   m_ObjectHideFlags: 0

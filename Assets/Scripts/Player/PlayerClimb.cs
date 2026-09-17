@@ -86,6 +86,8 @@ public class PlayerClimb : MonoBehaviour
     public LayerMask wallLayer; //指定哪些层是墙
     public Vector2 ClimbJumpForce = new Vector2(5f, 10f); //攀爬跳跃的力
     public float wallSlideSpeed = 2f; //攀爬时的下滑速度
+    [SerializeField] private float climbJumpTimeToApex = 0.34f;
+    [SerializeField] private float maxExitClimbFallSpeed = 2f;
 
     private bool isTouchingLeftWall;
     private bool isTouchingRightWall;
@@ -161,7 +163,7 @@ public class PlayerClimb : MonoBehaviour
         else
         {
             //什么都不做，在攀爬状态下，则会缓慢下落
-            rb.velocity = new Vector2(rb.velocity.x, Mathf.Max(rb.velocity.y, -wallSlideSpeed));
+            rb.velocity = new Vector2(0f, Mathf.Max(rb.velocity.y, -wallSlideSpeed));
         }
     }
 
@@ -193,6 +195,7 @@ public class PlayerClimb : MonoBehaviour
 
         currentClimbState = ClimbState.Climbing;
         animator.SetBool("isClimbing", true);
+        rb.velocity = new Vector2(0f, Mathf.Max(rb.velocity.y, -wallSlideSpeed));
 
         //播放攀爬音效
         audioSource.clip = climbSlideSound;
@@ -217,7 +220,7 @@ public class PlayerClimb : MonoBehaviour
         //停止攀爬音效
         audioSource.Stop();
 
-
+        rb.velocity = new Vector2(rb.velocity.x, Mathf.Max(rb.velocity.y, -maxExitClimbFallSpeed));
         playerController.OnClimbEnd();
 
         StartCoroutine(ClimbCooldown());
@@ -240,7 +243,8 @@ public class PlayerClimb : MonoBehaviour
         {
             jumpFactor = 1.5f;
         }
-        rb.velocity = new Vector2(jumpDir.x * ClimbJumpForce.x * jumpFactor, ClimbJumpForce.y);
+        Vector2 climbJumpVelocity = new Vector2(jumpDir.x * ClimbJumpForce.x * jumpFactor, ClimbJumpForce.y);
+        playerController.StartClimbJump(climbJumpVelocity, climbJumpTimeToApex);
 
         //播放音效
         SoundManager.instance.PlaySound(SoundIndex.player_wall_jump);

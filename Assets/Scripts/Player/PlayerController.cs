@@ -33,8 +33,33 @@ public class PlayerController : MonoBehaviour
     Vector3 flippedScale = new Vector3(-1, 1, 1);
 
     [SerializeField] private float speed = 5f;
-    [SerializeField] private float jumpForce = 1f;
-    [SerializeField] private AnimationCurve jumpForceCurve;
+
+    [Header("跳跃")]
+    [SerializeField] private float jumpHeight = 2.8f;
+    [SerializeField] private float minJumpHeight = 1.2f;
+    [SerializeField] private float jumpTimeToApex = 0.38f;
+    [SerializeField] private float doubleJumpHeight = 2.2f;
+    [SerializeField] private float doubleJumpTimeToApex = 0.34f;
+    [SerializeField] private float fallGravityMultiplier = 1.35f;
+    [SerializeField] private float jumpCutGravityMultiplier = 2.2f;
+    [SerializeField] private float maxFallSpeed = 18f;
+    [SerializeField] private float coyoteTime = 0.08f;
+    [SerializeField] private float jumpBufferTime = 0.1f;
+    private float baseGravityScale = 1.5f;
+    private float coyoteTimer;
+    private float jumpBufferTimer;
+    private bool isJumpHeld;
+    private bool isJumping;
+    private bool hasConsumedGroundJump;
+    private float currentJumpHeight;
+    private float currentJumpTimeToApex;
+
+    [Header("攀爬跳跃适配")]
+    [SerializeField] private float wallJumpHorizontalLockTime = 0.12f;
+    [SerializeField] private float wallJumpHorizontalControlRatio = 0.35f;
+    private float wallJumpHorizontalVelocity;
+    private float wallJumpHorizontalLockEndTime;
+    private int ignoreJumpPressedFrame = -1;
 
     [SerializeField] private float dashForce = 10f;
 
@@ -53,6 +78,10 @@ public class PlayerController : MonoBehaviour
     private bool canDash = true; //是否可以冲刺
     [SerializeField] private float dashCooldown = 1f;
     [SerializeField] private float dashDuration = 0.2f;
+
+    private float fall_time = 0f; //记录下落时间
+    [SerializeField] private float hardLandingThreshold = 0.5f; //硬着陆阈值
+    private bool hardLand = false; //是否硬着陆
 
     [Header("着陆特效")]
     [SerializeField] private GameObject dust_effect;
@@ -107,6 +136,8 @@ public class PlayerController : MonoBehaviour
         anim = GetComponent<Animator>();
         soulPower = GetComponent<PlayerSoulPower>();
         playerHealth = GetComponent<PlayerHealth>();
+        baseGravityScale = Mathf.Max(0.01f, rb.gravityScale);
+        ResetCurrentJumpProfile();
         fireBallPrefabAsset = ResourceManager.EnsureInstance().LoadPrefab(FireBallPrefabPath);
         if (fireBallPrefabAsset == null)
         {
@@ -188,6 +219,8 @@ public class PlayerController : MonoBehaviour
         anim = GetComponent<Animator>();
         soulPower = GetComponent<PlayerSoulPower>();
         playerHealth = GetComponent<PlayerHealth>();
+        baseGravityScale = Mathf.Max(0.01f, rb.gravityScale);
+        ResetCurrentJumpProfile();
 
         if (!GameManager.instance.isLastLevel)
             this.transform.position = GameManager.instance.GetRespawnPoint();
@@ -357,7 +390,13 @@ public class PlayerController : MonoBehaviour
 
     private void Movement()
     {
-        rb.velocity = new Vector2(moveX * speed, rb.velocity.y);
+        float horizontalSpeed = moveX * speed;
+        if (!isOnGround && Time.time < wallJumpHorizontalLockEndTime)
+        {
+            horizontalSpeed = wallJumpHorizontalVelocity + moveX * speed * wallJumpHorizontalControlRatio;
+        }
+
+        rb.velocity = new Vector2(horizontalSpeed, rb.velocity.y);
 
         if (moveX > 0)
         {
@@ -558,7 +597,7 @@ public class PlayerController : MonoBehaviour
         if (currentState == PlayerState.Dash)
         {
             currentState = PlayerState.Movement;
-            rb.gravityScale = 1.5f; //恢复重力影响
+            rb.gravityScale = baseGravityScale; //恢复重力影响
             rb.velocity = new Vector2(0, 0);//清空所有冲刺时的速度
         }
         StartCoroutine(DashCooldown(dashCooldown));
@@ -583,74 +622,179 @@ public class PlayerController : MonoBehaviour
     }
 
 
-    private float jumpPressTime = 0f;
-    [SerializeField] private float maxJumpPressTime = 0.8f;
-    private bool isJumping = false;
-
-    private float fall_time = 0f; //记录下落时间
-    [SerializeField] private float hardLandingThreshold = 0.5f; //硬着陆阈值
-    private bool hardLand = false; //是否硬着陆
-
     private void Jump()
     {
-        bool jumpDown = (InputManager.instance != null) ? InputManager.instance.GetButtonDown(InputManager.GameButton.Jump) : Input.GetKeyDown(KeyCode.K);
+        UpdateJumpTimers();
+
+        bool ignoreJumpPressedThisFrame = Time.frameCount == ignoreJumpPressedFrame;
+        bool jumpDown = !ignoreJumpPressedThisFrame && ((InputManager.instance != null) ? InputManager.instance.GetButtonDown(InputManager.GameButton.Jump) : Input.GetKeyDown(KeyCode.K));
         if (jumpDown)
         {
-            if (isOnGround)
-            {
-                // 记录跳跃前的安全点为当前 ground collider 的平台顶部（优先），如果该平台是可移动的则不记录
-                if (currentGroundCollider != null)
-                {
-                    SetSafePositionFromCollider(currentGroundCollider);
-                }
-                else
-                {
-                    UpdateSafePositionToPlatformTop();
-                }
-
-                jumpPressTime = 0f;
-                canJumpTwice = true; //在地面时重置二段跳
-                isJumping = true;
-                hardLand = false; //重置硬着陆状态
-                anim.SetBool("hard_land", hardLand);
-                anim.SetTrigger("jump");
-                anim.ResetTrigger("jumpTwo");
-                SoundManager.instance.PlaySound(SoundIndex.player_jump);
-            }
-            else if (canJumpTwice)
-            {
-                jumpPressTime = 0f;
-                canJumpTwice = false; //只能二段跳一次
-                isJumping = false;
-                DoubleJump();
-            }
+            jumpBufferTimer = jumpBufferTime;
         }
 
-        bool jumpHeld = (InputManager.instance != null) ? InputManager.instance.GetButton(InputManager.GameButton.Jump) : Input.GetKey(KeyCode.K);
-        if (jumpHeld && isJumping)
-        {
-            jumpPressTime += Time.deltaTime;
-            jumpPressTime = Mathf.Min(jumpPressTime, maxJumpPressTime);
-            float jumpForceFactor = jumpForceCurve.Evaluate(jumpPressTime / maxJumpPressTime);
-            rb.AddForce(new Vector2(0, jumpForce * jumpForceFactor * Time.deltaTime), ForceMode2D.Force);
-        }
+        isJumpHeld = (InputManager.instance != null) ? InputManager.instance.GetButton(InputManager.GameButton.Jump) : Input.GetKey(KeyCode.K);
 
-        bool jumpUp = (InputManager.instance != null) ? InputManager.instance.GetButtonUp(InputManager.GameButton.Jump) : Input.GetKeyUp(KeyCode.K);
+        bool jumpUp = !ignoreJumpPressedThisFrame && ((InputManager.instance != null) ? InputManager.instance.GetButtonUp(InputManager.GameButton.Jump) : Input.GetKeyUp(KeyCode.K));
         if (jumpUp)
         {
-            jumpPressTime = 0f;
-            isJumping = false;
+            isJumpHeld = false;
+            CutJumpByRelease();
             JumpCancel();
+        }
+
+        TryConsumeJumpBuffer();
+        ApplyJumpGravity();
+    }
+
+    private void UpdateJumpTimers()
+    {
+        if (isOnGround)
+        {
+            coyoteTimer = coyoteTime;
+            canJumpTwice = true;
+            if (rb.velocity.y <= 0f)
+            {
+                isJumping = false;
+            }
+        }
+        else
+        {
+            coyoteTimer -= Time.deltaTime;
+        }
+
+        if (jumpBufferTimer > 0f)
+        {
+            jumpBufferTimer -= Time.deltaTime;
         }
     }
 
-    [SerializeField] private float doubleJumpForce = 6f;
-    private void DoubleJump()
+    private void TryConsumeJumpBuffer()
     {
-        rb.velocity = new Vector2(rb.velocity.x, 0); //重置垂直速度
-        rb.AddForce(new Vector2(0, doubleJumpForce), ForceMode2D.Impulse);
+        if (jumpBufferTimer <= 0f)
+        {
+            return;
+        }
+
+        if (coyoteTimer > 0f && !hasConsumedGroundJump)
+        {
+            StartJump();
+        }
+        else if (canJumpTwice)
+        {
+            StartDoubleJump();
+        }
+    }
+
+    private void StartJump()
+    {
+        // 记录跳跃前的安全点为当前 ground collider 的平台顶部（优先），如果该平台是可移动的则不记录
+        if (currentGroundCollider != null)
+        {
+            SetSafePositionFromCollider(currentGroundCollider);
+        }
+        else
+        {
+            UpdateSafePositionToPlatformTop();
+        }
+
+        jumpBufferTimer = 0f;
+        coyoteTimer = 0f;
+        isJumping = true;
+        isJumpHeld = true;
+        isOnGround = false;
+        hasConsumedGroundJump = true;
+        canJumpTwice = true;
+        hardLand = false;
+        anim.SetBool("isOnGround", isOnGround);
+        anim.SetBool("hard_land", hardLand);
+        anim.SetTrigger("jump");
+        anim.ResetTrigger("jumpTwo");
+        ResetCurrentJumpProfile();
+        rb.gravityScale = GetJumpGravityScale(currentJumpHeight, currentJumpTimeToApex);
+        rb.velocity = new Vector2(rb.velocity.x, GetJumpVelocity(currentJumpHeight, currentJumpTimeToApex));
+        SoundManager.instance.PlaySound(SoundIndex.player_jump);
+    }
+
+    private void StartDoubleJump()
+    {
+        jumpBufferTimer = 0f;
+        coyoteTimer = 0f;
+        canJumpTwice = false;
+        isJumping = true;
+        isJumpHeld = true;
+        isOnGround = false;
+        anim.SetBool("isOnGround", isOnGround);
+        currentJumpHeight = doubleJumpHeight;
+        currentJumpTimeToApex = doubleJumpTimeToApex;
+        rb.gravityScale = GetJumpGravityScale(currentJumpHeight, currentJumpTimeToApex);
+        rb.velocity = new Vector2(rb.velocity.x, GetJumpVelocity(currentJumpHeight, currentJumpTimeToApex));
         anim.SetTrigger("jumpTwo");
         SoundManager.instance.PlaySound(SoundIndex.player_jump);
+    }
+
+    private void ResetCurrentJumpProfile()
+    {
+        currentJumpHeight = jumpHeight;
+        currentJumpTimeToApex = jumpTimeToApex;
+    }
+
+    private void CutJumpByRelease()
+    {
+        if (rb.velocity.y <= 0f)
+        {
+            return;
+        }
+
+        float minJumpVelocity = Mathf.Sqrt(2f * GetGravityMagnitude(currentJumpHeight, currentJumpTimeToApex) * minJumpHeight);
+        if (rb.velocity.y > minJumpVelocity)
+        {
+            rb.velocity = new Vector2(rb.velocity.x, minJumpVelocity);
+        }
+    }
+
+    private void ApplyJumpGravity()
+    {
+        if (isOnGround && rb.velocity.y <= 0f)
+        {
+            rb.gravityScale = baseGravityScale;
+            return;
+        }
+
+        float gravityScale = GetJumpGravityScale(currentJumpHeight, currentJumpTimeToApex);
+        if (rb.velocity.y < -0.01f)
+        {
+            gravityScale *= fallGravityMultiplier;
+        }
+        else if (!isJumpHeld && rb.velocity.y > 0.01f)
+        {
+            gravityScale *= jumpCutGravityMultiplier;
+        }
+
+        rb.gravityScale = gravityScale;
+        if (rb.velocity.y < -maxFallSpeed)
+        {
+            rb.velocity = new Vector2(rb.velocity.x, -maxFallSpeed);
+        }
+    }
+
+    private float GetJumpVelocity(float height, float timeToApex)
+    {
+        timeToApex = Mathf.Max(0.01f, timeToApex);
+        return 2f * Mathf.Max(0.01f, height) / timeToApex;
+    }
+
+    private float GetJumpGravityScale(float height, float timeToApex)
+    {
+        float gravityMagnitude = GetGravityMagnitude(height, timeToApex);
+        float worldGravity = Mathf.Max(0.01f, Mathf.Abs(Physics2D.gravity.y));
+        return gravityMagnitude / worldGravity;
+    }
+
+    private float GetGravityMagnitude(float height, float timeToApex)
+    {
+        timeToApex = Mathf.Max(0.01f, timeToApex);
+        return 2f * Mathf.Max(0.01f, height) / (timeToApex * timeToApex);
     }
 
     //判断是否在地面
@@ -739,6 +883,12 @@ public class PlayerController : MonoBehaviour
     {
         //在地面
         isOnGround = true;
+        isJumping = false;
+        isJumpHeld = false;
+        hasConsumedGroundJump = false;
+        canJumpTwice = true;
+        rb.gravityScale = baseGravityScale;
+        ResetCurrentJumpProfile();
         JumpCancel();
         fall_time = 0f; //重置下落时间
         // 更新玩家的最后安全点为平台顶部（更安全）
@@ -784,6 +934,13 @@ public class PlayerController : MonoBehaviour
     public void OnClimbStart()
     {
         canJumpTwice = true; //重置二段跳
+        jumpBufferTimer = 0f;
+        coyoteTimer = 0f;
+        isJumpHeld = false;
+        hasConsumedGroundJump = false;
+        wallJumpHorizontalLockEndTime = 0f;
+        ResetCurrentJumpProfile();
+        rb.gravityScale = baseGravityScale;
         currentState = PlayerState.Climb;
     }
 
@@ -793,7 +950,37 @@ public class PlayerController : MonoBehaviour
         if (currentState != PlayerState.Knockback)
         {
             currentState = PlayerState.Movement;
+            if (rb.velocity.y <= 0f)
+            {
+                ResetCurrentJumpProfile();
+                rb.gravityScale = baseGravityScale;
+            }
         }
+    }
+
+    public void StartClimbJump(Vector2 jumpVelocity, float timeToApex)
+    {
+        jumpBufferTimer = 0f;
+        coyoteTimer = 0f;
+        isJumping = true;
+        isJumpHeld = true;
+        isOnGround = false;
+        hasConsumedGroundJump = true;
+        // 墙跳属于空中第一次跳跃，消耗地面跳额度，但保留二段跳额度，允许墙跳过程中再次按跳触发二段跳
+        canJumpTwice = true;
+        currentState = PlayerState.Movement;
+
+        currentJumpTimeToApex = Mathf.Max(0.01f, timeToApex);
+        currentJumpHeight = Mathf.Max(minJumpHeight, Mathf.Abs(jumpVelocity.y) * currentJumpTimeToApex * 0.5f);
+        rb.gravityScale = GetJumpGravityScale(currentJumpHeight, currentJumpTimeToApex);
+        rb.velocity = jumpVelocity;
+
+        wallJumpHorizontalVelocity = jumpVelocity.x;
+        wallJumpHorizontalLockEndTime = Time.time + wallJumpHorizontalLockTime;
+        ignoreJumpPressedFrame = Time.frameCount;
+
+        anim.SetBool("isOnGround", isOnGround);
+        anim.ResetTrigger("jump");
     }
 
     //通知playerSuperDash可以超级冲刺
@@ -827,7 +1014,7 @@ public class PlayerController : MonoBehaviour
 
         direction.Normalize();
         knockbackVelocity = direction * force;
-        rb.gravityScale = 1.5f;
+        rb.gravityScale = baseGravityScale;
         rb.velocity = knockbackVelocity;
         knockbackEndTime = Time.time + knockbackDuration;
         nextKnockbackAcceptTime = Time.time + knockbackCooldown;
@@ -835,8 +1022,10 @@ public class PlayerController : MonoBehaviour
         lastKnockbackFrame = Time.frameCount;
         currentState = PlayerState.Knockback;
 
-        jumpPressTime = 0f;
         isJumping = false;
+        isJumpHeld = false;
+        hasConsumedGroundJump = false;
+        ResetCurrentJumpProfile();
         anim.ResetTrigger("jump");
         currentAttackDirection = AttackDirection.None;
         anim.SetInteger("attack_dir", (int)AttackDirection.None);
@@ -858,6 +1047,14 @@ public class PlayerController : MonoBehaviour
         nextKnockbackAcceptTime = 0f;
         currentKnockbackForce = 0f;
         lastKnockbackFrame = -1;
+        coyoteTimer = 0f;
+        jumpBufferTimer = 0f;
+        wallJumpHorizontalVelocity = 0f;
+        wallJumpHorizontalLockEndTime = 0f;
+        isJumpHeld = false;
+        isJumping = false;
+        hasConsumedGroundJump = false;
+        ResetCurrentJumpProfile();
     }
 
     private void OnDestroy()
