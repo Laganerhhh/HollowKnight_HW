@@ -42,6 +42,17 @@ public class PlayerClimb : MonoBehaviour
 
     void Update()
     {
+        if (playerController.IsKnockbacking())
+        {
+            currentClimbState = ClimbState.Jumping;
+            animator.SetBool("isClimbing", false);
+            if (audioSource.isPlaying)
+            {
+                audioSource.Stop();
+            }
+            return;
+        }
+
         switch (currentClimbState)
         {
             case ClimbState.None:

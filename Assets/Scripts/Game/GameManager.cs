@@ -58,6 +58,16 @@ public class GameManager : MonoBehaviour
             player = GameObject.FindGameObjectWithTag("Player");
         }
 
+        GameObject respawnPointObj = GameObject.Find("RespawnPoint");
+        if (respawnPointObj != null)
+        {
+            respawnPoint = respawnPointObj.transform.position;
+        }
+        else if (player != null)
+        {
+            respawnPoint = player.transform.position;
+        }
+
         playerAnimator = player != null ? player.GetComponent<Animator>() : null;
 
         if (UIManager.Instance != null)

@@ -21,7 +21,8 @@ enum PlayerState
     Attack = 2,
     SuperDash = 3,
     FireBall = 4,
-    Climb = 5
+    Climb = 5,
+    Knockback = 6
 }
 
 public class PlayerController : MonoBehaviour
@@ -36,6 +37,17 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private AnimationCurve jumpForceCurve;
 
     [SerializeField] private float dashForce = 10f;
+
+    [Header("反冲")]
+    [SerializeField] private float knockbackDuration = 0.18f;
+    [SerializeField] private float knockbackCooldown = 0.08f;
+    [SerializeField] private float knockbackHorizontalControlRatio = 1f;
+    [SerializeField] private float knockbackHorizontalDecay = 18f;
+    private Vector2 knockbackVelocity;
+    private float knockbackEndTime;
+    private float nextKnockbackAcceptTime;
+    private float currentKnockbackForce;
+    private int lastKnockbackFrame = -1;
 
     private bool canJumpTwice = true; //是否可以二段跳
     private bool canDash = true; //是否可以冲刺
@@ -269,7 +281,10 @@ public class PlayerController : MonoBehaviour
     public void OnAttackEnd()
     {
         //攻击结束后恢复移动状态
-        currentState = PlayerState.Movement;
+        if (currentState != PlayerState.Knockback)
+        {
+            currentState = PlayerState.Movement;
+        }
         anim.SetBool("attack_twice", false);
         currentAttackDirection = AttackDirection.None;
         anim.SetInteger("attack_dir", (int)AttackDirection.None);
@@ -286,6 +301,11 @@ public class PlayerController : MonoBehaviour
     private void HandleInput()
     {
         HandleMovementInput();
+        if (currentState == PlayerState.Knockback)
+        {
+            return;
+        }
+
         HandleDashInput();
         HandleAttackInput();
         HandleFireBallInput();
@@ -320,6 +340,11 @@ public class PlayerController : MonoBehaviour
 
             case PlayerState.Climb:
                 //处理攀爬状态的逻辑
+                break;
+            case PlayerState.Knockback:
+                //反冲期间只允许水平输入修正位置，不处理跳跃、攻击、冲刺等垂直/动作输入
+                KnockbackMove();
+                Direction();
                 break;
         }
     }
@@ -406,6 +431,45 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    private void KnockbackMove()
+    {
+        float controlledHorizontalSpeed = moveX * speed * knockbackHorizontalControlRatio;
+        float finalHorizontalSpeed = knockbackVelocity.x + controlledHorizontalSpeed;
+        rb.velocity = new Vector2(finalHorizontalSpeed, rb.velocity.y);
+        knockbackVelocity.x = Mathf.MoveTowards(knockbackVelocity.x, 0f, knockbackHorizontalDecay * Time.deltaTime);
+
+        if (moveX > 0)
+        {
+            moveChanged = 1;
+        }
+        else if (moveX < 0)
+        {
+            moveChanged = -1;
+        }
+        else
+        {
+            moveChanged = 0;
+        }
+        anim.SetInteger("movement", moveChanged);
+
+        if (Time.time >= knockbackEndTime)
+        {
+            FinishKnockback();
+        }
+    }
+
+    private void FinishKnockback()
+    {
+        if (currentState != PlayerState.Knockback)
+        {
+            return;
+        }
+
+        currentState = PlayerState.Movement;
+        knockbackVelocity = Vector2.zero;
+        currentKnockbackForce = 0f;
+    }
+
 
     private void HandleFireBallInput()
     {
@@ -464,7 +528,10 @@ public class PlayerController : MonoBehaviour
 
     private void OnFireBallAnimEnd()
     {
-        currentState = PlayerState.Movement;
+        if (currentState != PlayerState.Knockback)
+        {
+            currentState = PlayerState.Movement;
+        }
     }
 
     private void Dash()
@@ -488,9 +555,12 @@ public class PlayerController : MonoBehaviour
     IEnumerator DashCoroutine(float dashDuration = 0.2f)
     {
         yield return new WaitForSeconds(dashDuration);
-        currentState = PlayerState.Movement;
-        rb.gravityScale = 1.5f; //恢复重力影响
-        rb.velocity = new Vector2(0, 0);//清空所有冲刺时的速度
+        if (currentState == PlayerState.Dash)
+        {
+            currentState = PlayerState.Movement;
+            rb.gravityScale = 1.5f; //恢复重力影响
+            rb.velocity = new Vector2(0, 0);//清空所有冲刺时的速度
+        }
         StartCoroutine(DashCooldown(dashCooldown));
     }
 
@@ -705,6 +775,11 @@ public class PlayerController : MonoBehaviour
         return currentState == PlayerState.Climb;
     }
 
+    public bool IsKnockbacking()
+    {
+        return currentState == PlayerState.Knockback;
+    }
+
     //PlayerClimb通知PlayerController开始攀爬
     public void OnClimbStart()
     {
@@ -715,7 +790,10 @@ public class PlayerController : MonoBehaviour
     //PlayerClimb通知PlayerController攀爬结束，恢复移动状态
     public void OnClimbEnd()
     {
-        currentState = PlayerState.Movement;
+        if (currentState != PlayerState.Knockback)
+        {
+            currentState = PlayerState.Movement;
+        }
     }
 
     //通知playerSuperDash可以超级冲刺
@@ -732,8 +810,37 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     public void ApplyKnockback(float force, Vector2 direction)
     {
-        rb.velocity = new Vector2(rb.velocity.x, 0);
-        rb.AddForce(direction * force, ForceMode2D.Impulse);
+        if (Time.frameCount == lastKnockbackFrame)
+        {
+            return;
+        }
+
+        if (Time.time < nextKnockbackAcceptTime && force <= currentKnockbackForce)
+        {
+            return;
+        }
+
+        if (direction.sqrMagnitude < 0.001f)
+        {
+            direction = transform.localScale.x > 0 ? Vector2.right : Vector2.left;
+        }
+
+        direction.Normalize();
+        knockbackVelocity = direction * force;
+        rb.gravityScale = 1.5f;
+        rb.velocity = knockbackVelocity;
+        knockbackEndTime = Time.time + knockbackDuration;
+        nextKnockbackAcceptTime = Time.time + knockbackCooldown;
+        currentKnockbackForce = force;
+        lastKnockbackFrame = Time.frameCount;
+        currentState = PlayerState.Knockback;
+
+        jumpPressTime = 0f;
+        isJumping = false;
+        anim.ResetTrigger("jump");
+        currentAttackDirection = AttackDirection.None;
+        anim.SetInteger("attack_dir", (int)AttackDirection.None);
+
         //反冲之后，会重置二段跳
         canJumpTwice = true;
     }
@@ -746,6 +853,11 @@ public class PlayerController : MonoBehaviour
         canJumpTwice = true;
         currentState = PlayerState.Movement;
         moveChanged = 0;
+        knockbackVelocity = Vector2.zero;
+        knockbackEndTime = 0f;
+        nextKnockbackAcceptTime = 0f;
+        currentKnockbackForce = 0f;
+        lastKnockbackFrame = -1;
     }
 
     private void OnDestroy()
