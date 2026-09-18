@@ -30,6 +30,27 @@ public class PlayerController : MonoBehaviour
     private PlayerState currentState = PlayerState.Movement;
     private AttackDirection currentAttackDirection = AttackDirection.None;
 
+    // 玩家输入缓存：Update负责捕获输入，FixedUpdate负责消费输入并执行物理移动。
+    // 这样可以避免GetButtonDown这类瞬时输入在物理帧中被漏掉。
+    private struct PlayerInputCache
+    {
+        public float moveX;
+        public float moveY;
+        public bool jumpPressed;
+        public bool jumpReleased;
+        public bool jumpHeld;
+        public bool dashPressed;
+        public bool attackPressed;
+        public bool fireBallPressed;
+    }
+
+    private PlayerInputCache inputCache;
+    // 玩家控制器内部维护的目标速度，所有移动/跳跃/反冲等逻辑先修改它，最后统一写回Rigidbody2D。
+    private Vector2 motorVelocity;
+    // 外部动作入口（如墙跳、反冲、冲刺结束）需要强制设置速度时，先提交到这里，再由FixedUpdate统一消费。
+    private bool hasPendingVelocityOverride;
+    private Vector2 pendingVelocityOverride;
+
     Vector3 flippedScale = new Vector3(-1, 1, 1);
 
     [SerializeField] private float speed = 5f;
@@ -60,6 +81,7 @@ public class PlayerController : MonoBehaviour
     private float wallJumpHorizontalVelocity;
     private float wallJumpHorizontalLockEndTime;
     private int ignoreJumpPressedFrame = -1;
+    private bool suppressJumpInputUntilReleased;
 
     [SerializeField] private float dashForce = 10f;
 
@@ -237,70 +259,96 @@ public class PlayerController : MonoBehaviour
     private void HandleMovementInput()
     {
         //处理移动输入逻辑
-        moveX = Input.GetAxis("Horizontal");
-        moveY = Input.GetAxisRaw("Vertical");
+        inputCache.moveX = Input.GetAxis("Horizontal");
+        inputCache.moveY = Input.GetAxisRaw("Vertical");
+        moveX = inputCache.moveX;
+        moveY = inputCache.moveY;
+    }
+
+    private void HandleJumpInput()
+    {
+        bool jumpDown = (InputManager.instance != null) ? InputManager.instance.GetButtonDown(InputManager.GameButton.Jump) : Input.GetKeyDown(KeyCode.K);
+        bool jumpUp = (InputManager.instance != null) ? InputManager.instance.GetButtonUp(InputManager.GameButton.Jump) : Input.GetKeyUp(KeyCode.K);
+        bool jumpHeld = (InputManager.instance != null) ? InputManager.instance.GetButton(InputManager.GameButton.Jump) : Input.GetKey(KeyCode.K);
+
+        if (suppressJumpInputUntilReleased && !jumpHeld)
+        {
+            suppressJumpInputUntilReleased = false;
+        }
+
+        inputCache.jumpHeld = jumpHeld;
+        // 瞬时输入用|=累计，避免Update执行多次而FixedUpdate尚未消费时被覆盖成false。
+        inputCache.jumpReleased |= jumpUp;
+        if (!suppressJumpInputUntilReleased)
+        {
+            inputCache.jumpPressed |= jumpDown;
+        }
     }
 
     private void HandleDashInput()
     {
         //处理冲刺输入逻辑
         bool dashInput = (InputManager.instance != null) ? InputManager.instance.GetButtonDown(InputManager.GameButton.Dash) : Input.GetKeyDown(KeyCode.L);
-        if (dashInput && canDash)
-        {
-            currentState = PlayerState.Dash;
-        }
+        inputCache.dashPressed |= dashInput;
     }
 
     private void HandleAttackInput()
     {
         //处理攻击输入逻辑
         bool attackInput = (InputManager.instance != null) ? InputManager.instance.GetButtonDown(InputManager.GameButton.Attack) : Input.GetKeyDown(KeyCode.J);
-        if (attackInput && canAttack)
+        inputCache.attackPressed |= attackInput;
+    }
+
+    private void TryStartAttack()
+    {
+        if (!inputCache.attackPressed || !canAttack)
         {
-            currentState = PlayerState.Attack;
-            //根据按键方向确定攻击方向
-            if (moveY > 0)
-            {
-                currentAttackDirection = AttackDirection.Up;
-            }
-            else if (moveY < 0)
-            {
-                currentAttackDirection = AttackDirection.Down;
-            }
-            else
-            {
-                currentAttackDirection = AttackDirection.LeftRight;
-            }
+            return;
+        }
 
-            if (!canAttack) return;
+        currentState = PlayerState.Attack;
+        //根据按键方向确定攻击方向
+        if (moveY > 0)
+        {
+            currentAttackDirection = AttackDirection.Up;
+        }
+        else if (moveY < 0)
+        {
+            currentAttackDirection = AttackDirection.Down;
+        }
+        else
+        {
+            currentAttackDirection = AttackDirection.LeftRight;
+        }
 
-            if (currentAttackDirection == AttackDirection.LeftRight)
-            {
-                //水平方向有连击
-                if (!anim.GetCurrentAnimatorStateInfo(0).IsName("attack_1") &&
-                !anim.GetCurrentAnimatorStateInfo(0).IsName("attack_2"))
-                {
-                    // 不在攻击状态中，开始第一招
-                    anim.SetTrigger("attack");
-                    anim.SetInteger("attack_dir", (int)currentAttackDirection);
-                    rb.velocity = new Vector2(0, rb.velocity.y); //攻击时水平速度为0
+        if (!canAttack) return;
 
-                }
-                else if (canCombo)
-                {
-                    // 在连击窗口内，触发第二招
-                    anim.SetBool("attack_twice", true);
-                    anim.SetInteger("attack_dir", (int)currentAttackDirection);
-                    canCombo = false;
-                }
-            }
-            else
+        if (currentAttackDirection == AttackDirection.LeftRight)
+        {
+            //水平方向有连击
+            if (!anim.GetCurrentAnimatorStateInfo(0).IsName("attack_1") &&
+            !anim.GetCurrentAnimatorStateInfo(0).IsName("attack_2"))
             {
-                //上下方向无连击
+                // 不在攻击状态中，开始第一招
                 anim.SetTrigger("attack");
                 anim.SetInteger("attack_dir", (int)currentAttackDirection);
-                canAttack = false;
+                motorVelocity.x = 0f; //攻击起手时水平速度为0
+
             }
+            else if (canCombo)
+            {
+                // 在连击窗口内，触发第二招
+                anim.SetBool("attack_twice", true);
+                anim.SetInteger("attack_dir", (int)currentAttackDirection);
+                canCombo = false;
+            }
+        }
+        else
+        {
+            //上下方向无连击
+            anim.SetTrigger("attack");
+            anim.SetInteger("attack_dir", (int)currentAttackDirection);
+            canAttack = false;
         }
     }
 
@@ -334,6 +382,7 @@ public class PlayerController : MonoBehaviour
     private void HandleInput()
     {
         HandleMovementInput();
+        HandleJumpInput();
         if (currentState == PlayerState.Knockback)
         {
             return;
@@ -346,22 +395,19 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        // Update只负责捕获玩家这一帧“想做什么”，不直接修改刚体速度。
         HandleInput();
         switch (currentState)
         {
             case PlayerState.Movement:
-                //处理移动状态的逻辑
-                Movement();
+                //处理移动状态的非物理逻辑
                 Direction();
-                Jump();
                 break;
             case PlayerState.Dash:
-                //处理冲刺状态的逻辑
-                Dash();
+                //冲刺物理逻辑在FixedUpdate中处理
                 break;
             case PlayerState.Attack:
-                //处理攻击状态的逻辑
-                AttackMove();
+                //攻击位移逻辑在FixedUpdate中处理
                 break;
             case PlayerState.SuperDash:
                 //处理超级冲刺状态的逻辑
@@ -376,16 +422,92 @@ public class PlayerController : MonoBehaviour
                 break;
             case PlayerState.Knockback:
                 //反冲期间只允许水平输入修正位置，不处理跳跃、攻击、冲刺等垂直/动作输入
-                KnockbackMove();
                 Direction();
                 break;
         }
     }
 
+    void FixedUpdate()
+    {
+        // FixedUpdate负责让物理世界执行输入意图：先同步当前刚体速度，再根据状态修改motorVelocity。
+        BeginPhysicsStep();
+        ConsumeActionInputs();
+
+        switch (currentState)
+        {
+            case PlayerState.Movement:
+                Movement();
+                Jump();
+                break;
+            case PlayerState.Dash:
+                Dash();
+                break;
+            case PlayerState.Attack:
+                AttackMove();
+                break;
+            case PlayerState.Knockback:
+                KnockbackMove();
+                break;
+        }
+
+        ApplyMotorVelocity();
+        ClearConsumedInput();
+    }
+
+    // 每个物理帧开始时，以Rigidbody当前速度为基础，保证Unity物理和上一帧外部影响不会丢失。
+    private void BeginPhysicsStep()
+    {
+        motorVelocity = rb.velocity;
+        if (hasPendingVelocityOverride)
+        {
+            motorVelocity = pendingVelocityOverride;
+            hasPendingVelocityOverride = false;
+        }
+    }
+
+    // 玩家控制器统一速度出口：本脚本内的移动、跳跃、反冲等都应通过motorVelocity汇总后写回。
+    private void ApplyMotorVelocity()
+    {
+        if (currentState == PlayerState.Movement || currentState == PlayerState.Dash || currentState == PlayerState.Attack || currentState == PlayerState.Knockback)
+        {
+            rb.velocity = motorVelocity;
+        }
+    }
+
+    // 提交一次速度覆盖请求，供墙跳、反冲、冲刺结束等跨状态入口在下一个物理帧安全生效。
+    private void RequestVelocityOverride(Vector2 velocity)
+    {
+        pendingVelocityOverride = velocity;
+        hasPendingVelocityOverride = true;
+    }
+
+    // 在物理帧中消费动作输入，避免攻击/冲刺/火球等状态切换发生在Update里直接影响刚体。
+    private void ConsumeActionInputs()
+    {
+        if (currentState == PlayerState.Knockback || currentState == PlayerState.SuperDash)
+        {
+            return;
+        }
+
+        TryStartDash();
+        TryStartAttack();
+        TryStartFireBall();
+    }
+
+    // 清理已经消费过的一次性输入；持续输入如moveX、jumpHeld会在下一次Update继续刷新。
+    private void ClearConsumedInput()
+    {
+        inputCache.jumpPressed = false;
+        inputCache.jumpReleased = false;
+        inputCache.dashPressed = false;
+        inputCache.attackPressed = false;
+        inputCache.fireBallPressed = false;
+    }
+
     private void AttackMove()
     {
         //攻击移动逻辑
-        transform.position += new Vector3(moveX * speed * 0.5f * Time.deltaTime, 0, 0);
+        motorVelocity.x = moveX * speed * 0.5f;
     }
 
     private void Movement()
@@ -396,7 +518,7 @@ public class PlayerController : MonoBehaviour
             horizontalSpeed = wallJumpHorizontalVelocity + moveX * speed * wallJumpHorizontalControlRatio;
         }
 
-        rb.velocity = new Vector2(horizontalSpeed, rb.velocity.y);
+        motorVelocity.x = horizontalSpeed;
 
         if (moveX > 0)
         {
@@ -418,7 +540,7 @@ public class PlayerController : MonoBehaviour
         {
             if (currentGroundCollider != null)
             {
-                groundedTime += Time.deltaTime;
+                groundedTime += Time.fixedDeltaTime;
                 if (groundedTime >= minGroundedTimeForSafe)
                 {
                     SetSafePositionFromCollider(currentGroundCollider);
@@ -427,7 +549,7 @@ public class PlayerController : MonoBehaviour
             else
             {
                 // fallback: try raycast-based update (keeps previous behavior)
-                groundedTime += Time.deltaTime;
+                groundedTime += Time.fixedDeltaTime;
                 if (groundedTime >= minGroundedTimeForSafe)
                     UpdateSafePositionToPlatformTop();
             }
@@ -439,9 +561,9 @@ public class PlayerController : MonoBehaviour
 
 
         //添加下落时间
-        if (!isOnGround && rb.velocity.y < 0)
+        if (!isOnGround && motorVelocity.y < 0)
         {
-            fall_time += Time.deltaTime;
+            fall_time += Time.fixedDeltaTime;
             if (fall_time > hardLandingThreshold)
             {
                 hardLand = true;
@@ -474,8 +596,8 @@ public class PlayerController : MonoBehaviour
     {
         float controlledHorizontalSpeed = moveX * speed * knockbackHorizontalControlRatio;
         float finalHorizontalSpeed = knockbackVelocity.x + controlledHorizontalSpeed;
-        rb.velocity = new Vector2(finalHorizontalSpeed, rb.velocity.y);
-        knockbackVelocity.x = Mathf.MoveTowards(knockbackVelocity.x, 0f, knockbackHorizontalDecay * Time.deltaTime);
+        motorVelocity.x = finalHorizontalSpeed;
+        knockbackVelocity.x = Mathf.MoveTowards(knockbackVelocity.x, 0f, knockbackHorizontalDecay * Time.fixedDeltaTime);
 
         if (moveX > 0)
         {
@@ -513,7 +635,12 @@ public class PlayerController : MonoBehaviour
     private void HandleFireBallInput()
     {
         bool fireInput = (InputManager.instance != null) ? InputManager.instance.GetButtonDown(InputManager.GameButton.FireBall) : Input.GetKeyDown(KeyCode.U);
-        if (fireInput && canFireBall && anim.GetCurrentAnimatorStateInfo(0).IsName("idle"))
+        inputCache.fireBallPressed |= fireInput;
+    }
+
+    private void TryStartFireBall()
+    {
+        if (inputCache.fireBallPressed && canFireBall && anim.GetCurrentAnimatorStateInfo(0).IsName("idle"))
         {
             if (!soulPower.UseSoulPower(SoulPowerSkill.FireBall))
                 return;
@@ -578,9 +705,8 @@ public class PlayerController : MonoBehaviour
         if (!canDash) return;
         //冲刺逻辑
         canDash = false; //只能冲刺一次，需在地面重置
-        rb.velocity = new Vector2(0, 0); //重置当前速度
         float dashForceDir = transform.localScale.x > 0 ? -1 : 1;
-        rb.AddForce(new Vector2(dashForce * dashForceDir, 0), ForceMode2D.Impulse);
+        motorVelocity = new Vector2(dashForce * dashForceDir, 0f);
         //冲刺时忽略重力影响
         rb.gravityScale = 0;
         anim.SetTrigger("dash");
@@ -588,6 +714,14 @@ public class PlayerController : MonoBehaviour
         SoundManager.instance.PlaySound(SoundIndex.player_dash);
         //使用协程处理冲刺持续时间和结束后的状态恢复
         StartCoroutine(DashCoroutine(dashDuration));
+    }
+
+    private void TryStartDash()
+    {
+        if (inputCache.dashPressed && canDash)
+        {
+            currentState = PlayerState.Dash;
+        }
     }
 
     //冲刺协程
@@ -598,7 +732,7 @@ public class PlayerController : MonoBehaviour
         {
             currentState = PlayerState.Movement;
             rb.gravityScale = baseGravityScale; //恢复重力影响
-            rb.velocity = new Vector2(0, 0);//清空所有冲刺时的速度
+            RequestVelocityOverride(Vector2.zero);//清空所有冲刺时的速度
         }
         StartCoroutine(DashCooldown(dashCooldown));
     }
@@ -627,15 +761,15 @@ public class PlayerController : MonoBehaviour
         UpdateJumpTimers();
 
         bool ignoreJumpPressedThisFrame = Time.frameCount == ignoreJumpPressedFrame;
-        bool jumpDown = !ignoreJumpPressedThisFrame && ((InputManager.instance != null) ? InputManager.instance.GetButtonDown(InputManager.GameButton.Jump) : Input.GetKeyDown(KeyCode.K));
+        bool jumpDown = !ignoreJumpPressedThisFrame && inputCache.jumpPressed;
         if (jumpDown)
         {
             jumpBufferTimer = jumpBufferTime;
         }
 
-        isJumpHeld = (InputManager.instance != null) ? InputManager.instance.GetButton(InputManager.GameButton.Jump) : Input.GetKey(KeyCode.K);
+        isJumpHeld = inputCache.jumpHeld;
 
-        bool jumpUp = !ignoreJumpPressedThisFrame && ((InputManager.instance != null) ? InputManager.instance.GetButtonUp(InputManager.GameButton.Jump) : Input.GetKeyUp(KeyCode.K));
+        bool jumpUp = !ignoreJumpPressedThisFrame && inputCache.jumpReleased;
         if (jumpUp)
         {
             isJumpHeld = false;
@@ -653,19 +787,19 @@ public class PlayerController : MonoBehaviour
         {
             coyoteTimer = coyoteTime;
             canJumpTwice = true;
-            if (rb.velocity.y <= 0f)
+            if (motorVelocity.y <= 0f)
             {
                 isJumping = false;
             }
         }
         else
         {
-            coyoteTimer -= Time.deltaTime;
+            coyoteTimer -= Time.fixedDeltaTime;
         }
 
         if (jumpBufferTimer > 0f)
         {
-            jumpBufferTimer -= Time.deltaTime;
+            jumpBufferTimer -= Time.fixedDeltaTime;
         }
     }
 
@@ -712,7 +846,7 @@ public class PlayerController : MonoBehaviour
         anim.ResetTrigger("jumpTwo");
         ResetCurrentJumpProfile();
         rb.gravityScale = GetJumpGravityScale(currentJumpHeight, currentJumpTimeToApex);
-        rb.velocity = new Vector2(rb.velocity.x, GetJumpVelocity(currentJumpHeight, currentJumpTimeToApex));
+        motorVelocity.y = GetJumpVelocity(currentJumpHeight, currentJumpTimeToApex);
         SoundManager.instance.PlaySound(SoundIndex.player_jump);
     }
 
@@ -728,7 +862,7 @@ public class PlayerController : MonoBehaviour
         currentJumpHeight = doubleJumpHeight;
         currentJumpTimeToApex = doubleJumpTimeToApex;
         rb.gravityScale = GetJumpGravityScale(currentJumpHeight, currentJumpTimeToApex);
-        rb.velocity = new Vector2(rb.velocity.x, GetJumpVelocity(currentJumpHeight, currentJumpTimeToApex));
+        motorVelocity.y = GetJumpVelocity(currentJumpHeight, currentJumpTimeToApex);
         anim.SetTrigger("jumpTwo");
         SoundManager.instance.PlaySound(SoundIndex.player_jump);
     }
@@ -741,40 +875,40 @@ public class PlayerController : MonoBehaviour
 
     private void CutJumpByRelease()
     {
-        if (rb.velocity.y <= 0f)
+        if (motorVelocity.y <= 0f)
         {
             return;
         }
 
         float minJumpVelocity = Mathf.Sqrt(2f * GetGravityMagnitude(currentJumpHeight, currentJumpTimeToApex) * minJumpHeight);
-        if (rb.velocity.y > minJumpVelocity)
+        if (motorVelocity.y > minJumpVelocity)
         {
-            rb.velocity = new Vector2(rb.velocity.x, minJumpVelocity);
+            motorVelocity.y = minJumpVelocity;
         }
     }
 
     private void ApplyJumpGravity()
     {
-        if (isOnGround && rb.velocity.y <= 0f)
+        if (isOnGround && motorVelocity.y <= 0f)
         {
             rb.gravityScale = baseGravityScale;
             return;
         }
 
         float gravityScale = GetJumpGravityScale(currentJumpHeight, currentJumpTimeToApex);
-        if (rb.velocity.y < -0.01f)
+        if (motorVelocity.y < -0.01f)
         {
             gravityScale *= fallGravityMultiplier;
         }
-        else if (!isJumpHeld && rb.velocity.y > 0.01f)
+        else if (!isJumpHeld && motorVelocity.y > 0.01f)
         {
             gravityScale *= jumpCutGravityMultiplier;
         }
 
         rb.gravityScale = gravityScale;
-        if (rb.velocity.y < -maxFallSpeed)
+        if (motorVelocity.y < -maxFallSpeed)
         {
-            rb.velocity = new Vector2(rb.velocity.x, -maxFallSpeed);
+            motorVelocity.y = -maxFallSpeed;
         }
     }
 
@@ -973,11 +1107,14 @@ public class PlayerController : MonoBehaviour
         currentJumpTimeToApex = Mathf.Max(0.01f, timeToApex);
         currentJumpHeight = Mathf.Max(minJumpHeight, Mathf.Abs(jumpVelocity.y) * currentJumpTimeToApex * 0.5f);
         rb.gravityScale = GetJumpGravityScale(currentJumpHeight, currentJumpTimeToApex);
-        rb.velocity = jumpVelocity;
+        RequestVelocityOverride(jumpVelocity);
 
         wallJumpHorizontalVelocity = jumpVelocity.x;
         wallJumpHorizontalLockEndTime = Time.time + wallJumpHorizontalLockTime;
         ignoreJumpPressedFrame = Time.frameCount;
+        suppressJumpInputUntilReleased = true;
+        inputCache.jumpPressed = false;
+        inputCache.jumpReleased = false;
 
         anim.SetBool("isOnGround", isOnGround);
         anim.ResetTrigger("jump");
@@ -990,6 +1127,32 @@ public class PlayerController : MonoBehaviour
             return true;
         else
             return false;
+    }
+
+    public void OnSuperDashStart()
+    {
+        // 超级冲刺接管玩家物理控制权时，不禁用PlayerController，而是切到SuperDash状态让普通移动逻辑让权。
+        currentState = PlayerState.SuperDash;
+        inputCache = default;
+        jumpBufferTimer = 0f;
+        coyoteTimer = 0f;
+        isJumpHeld = false;
+        hasPendingVelocityOverride = false;
+        pendingVelocityOverride = Vector2.zero;
+    }
+
+    public void OnSuperDashEnd()
+    {
+        // 超级冲刺结束后恢复普通移动，并清空旧输入，避免蓄力/停止期间残留按键被立即消费。
+        if (currentState == PlayerState.SuperDash)
+        {
+            currentState = PlayerState.Movement;
+        }
+
+        inputCache = default;
+        hasPendingVelocityOverride = false;
+        pendingVelocityOverride = Vector2.zero;
+        motorVelocity = rb.velocity;
     }
 
     /// <summary>
@@ -1015,7 +1178,7 @@ public class PlayerController : MonoBehaviour
         direction.Normalize();
         knockbackVelocity = direction * force;
         rb.gravityScale = baseGravityScale;
-        rb.velocity = knockbackVelocity;
+        RequestVelocityOverride(knockbackVelocity);
         knockbackEndTime = Time.time + knockbackDuration;
         nextKnockbackAcceptTime = Time.time + knockbackCooldown;
         currentKnockbackForce = force;
@@ -1051,6 +1214,12 @@ public class PlayerController : MonoBehaviour
         jumpBufferTimer = 0f;
         wallJumpHorizontalVelocity = 0f;
         wallJumpHorizontalLockEndTime = 0f;
+        ignoreJumpPressedFrame = -1;
+        suppressJumpInputUntilReleased = false;
+        inputCache = default;
+        hasPendingVelocityOverride = false;
+        pendingVelocityOverride = Vector2.zero;
+        motorVelocity = Vector2.zero;
         isJumpHeld = false;
         isJumping = false;
         hasConsumedGroundJump = false;

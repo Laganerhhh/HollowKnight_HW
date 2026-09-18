@@ -15,6 +15,8 @@ public class SuperDash : MonoBehaviour
     [SerializeField] private float dashSpeed = 20.0f;
     private float chargeTimer = 0.0f;
     private float dashTimer = 0.0f;
+    // Update中收到停止条件后先记录请求，真正切换停止状态放到FixedUpdate的物理流程中执行。
+    private bool stopDashRequested;
 
     private Animator animator;
     private Rigidbody2D rb;
@@ -50,6 +52,7 @@ public class SuperDash : MonoBehaviour
 
     void Update()
     {
+        // Update只负责超级冲刺的输入、计时、动画状态判断，不持续写刚体速度。
         switch (currentState)
         {
             case DashState.Idle:
@@ -74,6 +77,15 @@ public class SuperDash : MonoBehaviour
         }
     }
 
+    private void FixedUpdate()
+    {
+        // 超级冲刺的持续位移属于物理行为，统一放到FixedUpdate写入Rigidbody2D。
+        if (currentState == DashState.Dashing)
+        {
+            ApplyDashingPhysics();
+        }
+    }
+
     public bool IsSuperDashing()
     {
         return currentState == DashState.Dashing;
@@ -91,11 +103,12 @@ public class SuperDash : MonoBehaviour
         switch (newState)
         {
             case DashState.Idle:
-                playerController.enabled = true;
+                playerController.OnSuperDashEnd();
                 break;
 
             case DashState.Charging:
-                playerController.enabled = false;
+                // 开始超级冲刺蓄力时通知PlayerController进入SuperDash状态，让普通移动/跳跃逻辑让出控制权。
+                playerController.OnSuperDashStart();
                 rb.gravityScale = 0;
                 chargeTimer = 0.0f;
                 animator.SetTrigger("superDash");
@@ -115,6 +128,7 @@ public class SuperDash : MonoBehaviour
                     isClimbingSuperDash = false;
                 }
                 dashTimer = 0.0f;
+                stopDashRequested = false;
                 rb.gravityScale = 0;
                 animator.SetTrigger("superDash_sprint");
                 //播放冲刺音效（循环）
@@ -124,7 +138,7 @@ public class SuperDash : MonoBehaviour
                 break;
 
             case DashState.Stopping:
-                rb.velocity = new Vector2(0, 0);
+                rb.velocity = Vector2.zero;
                 rb.gravityScale = 1.5f;
                 animator.SetTrigger("superDash_stop");
                 break;
@@ -136,8 +150,7 @@ public class SuperDash : MonoBehaviour
         switch (oldState)
         {
             case DashState.Idle:
-                playerController.enabled = false;
-                rb.velocity = new Vector2(0, 0);
+                rb.velocity = Vector2.zero;
                 break;
 
             case DashState.Charging:
@@ -156,6 +169,7 @@ public class SuperDash : MonoBehaviour
                 //停止播放冲刺音效
                 audioSource.Stop();
                 rb.gravityScale = 1.5f;
+                stopDashRequested = false;
 
                 OnSuperDashEnd();
                 break;
@@ -235,16 +249,26 @@ public class SuperDash : MonoBehaviour
     private void HandleDashingState()
     {
         dashTimer += Time.deltaTime;
-        float dashDir = transform.localScale.x * -1; //根据角色朝向决定冲刺方向
-        rb.velocity = new Vector2(dashSpeed * dashDir, 0);
 
         if (dashTimer >= dashDuration)
         {
-            ChangeState(DashState.Stopping);
+            stopDashRequested = true;
         }
 
         bool jumpDown = (InputManager.instance != null) ? InputManager.instance.GetButtonDown(InputManager.GameButton.Jump) : Input.GetKeyDown(KeyCode.K);
         if (jumpDown) //按下跳跃键停止冲刺
+        {
+            stopDashRequested = true;
+        }
+    }
+
+    private void ApplyDashingPhysics()
+    {
+        // 冲刺期间每个物理帧强制维持水平速度，避免被重力或上一帧残留速度影响。
+        float dashDir = transform.localScale.x * -1; //根据角色朝向决定冲刺方向
+        rb.velocity = new Vector2(dashSpeed * dashDir, 0);
+
+        if (stopDashRequested)
         {
             ChangeState(DashState.Stopping);
         }
@@ -257,7 +281,6 @@ public class SuperDash : MonoBehaviour
         if (stateInfo.IsName("idle") || stateInfo.IsName("fall"))
         {
             //恢复玩家控制移动
-            playerController.enabled = true;
             ChangeState(DashState.Idle);
         }
     }

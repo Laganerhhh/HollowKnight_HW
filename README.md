@@ -1029,6 +1029,114 @@ return OptionPanel
 
 至此，这个项目已经不仅仅是一个基础的玩法复刻练习，而是具备了资源管理、热更新、Lua UI、对象池、存档系统与真机调试修复能力的完整游戏工程。
 
+
+
+## 7.新增系统与工程化内容二
+
+### （1）物理相关
+
+在后续优化玩家手感时，我对玩家运动相关逻辑做了一次整理。之前很多代码是在Update中检测输入后直接修改Rigidbody2D.velocity，虽然能跑起来，但当普通移动、跳跃、反冲、攀爬、攻击位移、冲刺、超级冲刺等多个系统同时改速度时，就容易互相覆盖。
+
+因此现在采用了更清晰的物理处理方式：
+
+**Update负责捕获玩家想做什么，FixedUpdate负责让物理世界执行这件事。**
+
+也就是说，玩家按键仍然在Update中读取，因为GetButtonDown()这类瞬时输入必须逐帧检测；但真正修改刚体速度、限制下落速度、执行冲刺位移等物理行为，则统一放到FixedUpdate()中处理。
+
+核心思路如下：
+
+```csharp
+// Update中缓存输入
+private void HandleJumpInput()
+{
+    bool jumpDown = InputManager.instance.GetButtonDown(InputManager.GameButton.Jump);
+    inputCache.jumpPressed |= jumpDown;
+}
+
+// FixedUpdate中消费输入并执行物理
+void FixedUpdate()
+{
+    BeginPhysicsStep();
+    ConsumeActionInputs();
+    Movement();
+    Jump();
+    ApplyMotorVelocity();
+    ClearConsumedInput();
+}
+```
+
+其中PlayerController内部维护了一个motorVelocity变量。普通移动、跳跃、反冲、攻击位移、冲刺等逻辑不再到处直接写rb.velocity，而是先修改motorVelocity，最后在物理帧末尾统一写回刚体：
+
+```csharp
+private void ApplyMotorVelocity()
+{
+    rb.velocity = motorVelocity;
+}
+```
+
+这样做之后，各个运动系统之间的职责更明确：
+
+- Update()：读取输入、缓存瞬时按键、处理动画和状态判断。
+- FixedUpdate()：根据当前状态消费输入，并统一执行速度写入。
+- PlayerInputCache：保存玩家这一帧想执行的操作，避免瞬时输入被物理帧漏掉。
+- motorVelocity：作为玩家控制器内部的目标速度，最后统一同步到Rigidbody2D。
+
+这次也顺便优化了几个容易冲突的动作：
+
+1.**反冲**：改为独立Knockback状态，避免被普通移动覆盖，同时允许反冲期间进行少量水平控制。
+
+![knockback](README.assets/knockback.gif)
+
+2.**跳跃**：从旧的AddForce + AnimationCurve改为速度式跳跃，通过跳跃高度和到达最高点时间反推初速度和重力，短按跳跃通过松手截断上升速度实现。
+
+原先跳跃使用长按跳跃、力和动画曲线共同控制。这种方式虽然可以调出手感，但调试成本较高，因为跳跃高度由多个因素叠加决定：初始力大小、持续按键时间、每帧施加的力、动画曲线采样值、Rigidbody当前速读、当前重力......
+
+优化后改为更直接的速度式跳跃模型：**通过“目标跳跃高度”和“到达最高点时间”反推初始速度和重力。**
+
+对于一次普通跳跃，使用两个核心参数：
+
+jumpHeight：目标最大跳跃高度   h
+
+jumpTimeToApex：从起跳到最高点所需时间   t
+
+计算公式是：
+
+```csharp
+private float GetJumpVelocity(float height, float timeToApex)
+{
+    timeToApex = Mathf.Max(0.01f, timeToApex);
+    return 2f * Mathf.Max(0.01f, height) / timeToApex;
+}
+
+private float GetGravityMagnitude(float height, float timeToApex)
+{
+    timeToApex = Mathf.Max(0.01f, timeToApex);
+    return 2f * Mathf.Max(0.01f, height) / (timeToApex * timeToApex);
+}
+```
+
+初速度$v_0 = \frac{2h}{t}$、加速度$g = \frac{2h}{t^2}$
+
+![jump](README.assets/jump.gif)
+
+3.**攀爬跳跃**：墙跳后交回PlayerController处理空中运动和二段跳，避免攀爬脚本自己参与二段跳判断。
+
+![climbJump](README.assets/climbJump.gif)
+
+4.**超级冲刺**：不再禁用PlayerController，而是让PlayerController进入SuperDash状态，让普通移动逻辑让出控制权，超级冲刺位移也迁移到FixedUpdate中执行。
+
+![superdash_normal](README.assets/superdash_normal.gif)
+
+5.**攀爬与超级冲刺互斥**：当超级冲刺进入Dashing或Stopping时，攀爬物理不再写墙滑速度，避免把墙上超级冲刺的水平速度覆盖为0。
+
+![superdash_climb](README.assets/superdash_climb-1789710998203.gif)
+
+最终效果是：玩家移动、跳跃、墙跳、反冲、攀爬和超级冲刺之间的衔接更加稳定，物理速度不再分散在多个脚本中随意覆盖。尤其是墙上超级冲刺的问题得到了修复：现在贴墙蓄力释放后，动画和位移都会正确执行，玩家会朝远离墙壁方向冲刺。
+
+实际操作手感更跟手了！十分流畅，特别是跳跃改为反推速度控制之后，通过调整参数，使得动作自然干净利落。
+
+
+
 后续可以优化：
 1.存档时机
 
@@ -1037,5 +1145,3 @@ return OptionPanel
 3.基于Lua开发更多游戏内UI
 
 ......
-
-

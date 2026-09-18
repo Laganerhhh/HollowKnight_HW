@@ -98,6 +98,8 @@ public class PlayerClimb : MonoBehaviour
     private float inputY;
 
     private bool canClimb = true;
+    // 退出攀爬时只在下一个物理帧限制一次下落速度，避免Update直接写刚体速度。
+    private bool shouldClampExitClimbFallSpeed;
 
     void CheckWall()
     {
@@ -154,8 +156,34 @@ public class PlayerClimb : MonoBehaviour
         {
             ClimbingToClimbJumping();
         }
-        else if (playerSuperDash.GetDashState()  == SuperDash.DashState.Charging 
-        || playerSuperDash.GetDashState() == SuperDash.DashState.Waiting)
+    }
+
+    private void FixedUpdate()
+    {
+        // 攀爬相关速度也放到FixedUpdate，保持和PlayerController的物理帧写入规则一致。
+        if (shouldClampExitClimbFallSpeed)
+        {
+            rb.velocity = new Vector2(rb.velocity.x, Mathf.Max(rb.velocity.y, -maxExitClimbFallSpeed));
+            shouldClampExitClimbFallSpeed = false;
+        }
+
+        if (currentClimbState == ClimbState.Climbing)
+        {
+            ApplyClimbingPhysics();
+        }
+    }
+
+    private void ApplyClimbingPhysics()
+    {
+        SuperDash.DashState superDashState = playerSuperDash.GetDashState();
+        if (superDashState == SuperDash.DashState.Dashing || superDashState == SuperDash.DashState.Stopping)
+        {
+            // 超级冲刺已经接管速度控制时，攀爬不要再写墙滑速度，否则会把水平冲刺速度覆盖为0。
+            return;
+        }
+
+        if (superDashState == SuperDash.DashState.Charging
+        || superDashState == SuperDash.DashState.Waiting)
         {
             //如果在攀爬状态下按下超级冲刺键，会附着在墙壁上
             rb.velocity = Vector2.zero;
@@ -195,7 +223,6 @@ public class PlayerClimb : MonoBehaviour
 
         currentClimbState = ClimbState.Climbing;
         animator.SetBool("isClimbing", true);
-        rb.velocity = new Vector2(0f, Mathf.Max(rb.velocity.y, -wallSlideSpeed));
 
         //播放攀爬音效
         audioSource.clip = climbSlideSound;
@@ -220,7 +247,7 @@ public class PlayerClimb : MonoBehaviour
         //停止攀爬音效
         audioSource.Stop();
 
-        rb.velocity = new Vector2(rb.velocity.x, Mathf.Max(rb.velocity.y, -maxExitClimbFallSpeed));
+        shouldClampExitClimbFallSpeed = true;
         playerController.OnClimbEnd();
 
         StartCoroutine(ClimbCooldown());
